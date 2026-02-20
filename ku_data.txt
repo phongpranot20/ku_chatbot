@@ -40,36 +40,87 @@
 
 
 # หมวดอาคารเรียนและคณะ (กลุ่มเลขหลักหน่วยและสิบต้นๆ)
-* **อาคาร 1 (อาคารบริหาร):** ศูนย์รวมงานทะเบียน, การเงิน, ทำบัตรนิสิต และติดต่อธุรการกลาง
-    - พิกัด: https://maps.app.goo.gl/35U6P9m1YtX6R8pA8
-* **อาคาร 2 (คณะวิทยาการจัดการ 1):** ห้องเรียนและห้องพักอาจารย์คณะจัดการ (ตึกเก่า)
-    - พิกัด: https://maps.app.goo.gl/yYvS4b2v8F9mHj7A6
-* **อาคาร 3 (ศูนย์นาวา):** อาคารเรียนเฉพาะทางโซนหน้ามอ
-    - พิกัด: https://maps.app.goo.gl/zJ7f8u9P2L1K5N4M3
-* **อาคาร 6 (คณะวิศวกรรมศาสตร์ศรีราชา):** ตึกเรียนหลักวิศวะ มีลานเกียร์และโรงประลอง
-    - พิกัด: https://maps.app.goo.gl/6m8U9p4L1K2N5M7X
-* **อาคาร 7 (คณะวิทยาศาสตร์ศรีราชา):** ตึกเรียนและห้องแล็บคอมพิวเตอร์คณะวิทย์
-    - พิกัด: https://maps.app.goo.gl/7n8U2p3L1K5N6M4X
-* **อาคาร 10 (คณะวิทยาการจัดการ 2):** ตึกใหม่คณะจัดการ มีห้องประชุมใหญ่และร้าน Amazon
-    - พิกัด: https://maps.app.goo.gl/2B6G8H7J9K1L4M5N
-* **อาคาร 13 (อาคารเรียนรวม):** ศูนย์กลางการเรียน Gen-Ed ที่นิสิตทุกคณะต้องมาเรียน
-    - พิกัด: https://maps.app.goo.gl/1D3F5G7H9K2L4M6N
-
-# หมวดอาคารปฏิบัติการและตึกใหม่ (กลุ่มเลขสิบปลายๆ และยี่สิบ)
+* **อาคาร 1 (อาคารบริการวิยาการ):
+    - พิกัด: https://maps.app.goo.gl/CmhDvFTt6vsPxgBx5
+* **อาคาร 2 (อาคารปฏิบัติการวิศวกรรมศาสตร์):
+    - พิกัด: https://maps.app.goo.gl/FKnUYRRm5zvrfpa96
+* **อาคาร 3 (อาคารปฏิบัติการวิศวกรรมศาสตร์การบินและอวกาศ):
+    - พิกัด: https://maps.app.goo.gl/HW9Jg12LnzupTop3A
+* **อาคาร 4 (อาคารพักอาศัยบุคลากร):
+    - พิกัด: https://maps.app.goo.gl/psjop4QVExTpYhAs7
+* **อาคาร 5 (อาคารวิทยาศาสตร์พื้นฐาน):
+    - พิกัด: https://maps.app.goo.gl/TpQexrhf8BaNVEpZ6
+* **อาคาร 6 (ศูนย์เรียนรวม):
+    - พิกัด: https://maps.app.goo.gl/FYkmDcEMubx7wvVK7
+* **อาคาร 7 (โรงอาหาร):
+    - พิกัด: https://maps.app.goo.gl/fkWYQTujUkLCBsZQ7
+* **อาคาร 8 (หอพักนิสิต):
+    - พิกัด: https://maps.app.goo.gl/wQHiS9cN2QogB6NGA
+* **อาคาร 9 (ศูนย์กิจกรรม):
+    - พิกัด: https://maps.app.goo.gl/2DbPpDE6JsxTfAse9
+* **อาคาร 10 (ศูนย์เรียนรวม 2):
+    - พิกัด: https://maps.app.goo.gl/Xrk5yUuFkPt4bAoAA
+* **อาคาร 11 (สถานที่และยานพาหณะ):
+    - พิกัด: https://maps.app.goo.gl/ZKcjGJCK77ZPcqMz9
+* **อาคาร 12 (อาคารศรีธรรมเกษตร):
+    - พิกัด: https://maps.app.goo.gl/g9Aa7Tnj5xPU2sPNA
+* **อาคาร 13 (อาคารพลศึกษา):
+    - พิกัด: https://maps.app.goo.gl/Tn5c4dHp1bxnJaka7
+* **อาคาร 14 (หอสมุดอนุสรณ์ 10 ปี):
+    - พิกัด: https://maps.app.goo.gl/6isV4TEebL8SA11S9
+* **อาคาร 15 (ปฏิบัติการวิทยาศาสตร์และเทคโนโลยี):
+    - พิกัด: https://maps.app.goo.gl/UUoqS4hhT2GVwSxM9
+* **อาคาร 16 (รักษาความปลอดภัย):
+    - พิกัด: https://maps.app.goo.gl/PTUt66SSQQb5sg3A6
 * **อาคาร 17 (ศูนย์เรียนรวม 3):
     - พิกัด: https://maps.app.goo.gl/gnQ2GLw8eWeiY7aHA
-* **อาคาร 23 (อาคารปฏิบัติการวิศวกรรม):** ตึกปฏิบัติการเฉพาะทางของวิศวะ โซนด้านหลัง
-    - พิกัด: https://maps.app.goo.gl/1Z3X5C7V9B2N4M6K
-* **อาคาร 24 (อาคารเพชรพลอย):** ตึกทรงเรือของคณะพาณิชยนาวีนานาชาติ
-    - พิกัด: https://maps.app.goo.gl/2Q4W6E8R0T2Y4U6I
-* **อาคาร 25, 26, 27:** กลุ่มอาคารปฏิบัติการและศูนย์วิจัยโซนหลังมอ
+* **อาคาร 18 (เศรษฐศาสตร์ศรีราชา):
+    - พิกัด: https://maps.app.goo.gl/ogBSeTPNixSx8jnN7
+* **อาคาร 19 (พักอาศัยบุคลากร 2):
+    - พิกัด: https://maps.app.goo.gl/i7qop8ZNozZj5dka8
+* **อาคาร 20 (สระว่ายน้ำ):
+    - พิกัด: https://maps.app.goo.gl/mbfWnsBLzAKzJTw38ำ
+* **อาคาร 21 (สนามฟุตซอล):
+    - พิกัด: https://maps.app.goo.gl/pVngJsq87nweQuhU6
+* **อาคาร 22 (อาคารธุรกิจศึกษา):
+    - พิกัด: https://maps.app.goo.gl/PvAUyBi9Xs1TWHJS7
+* **อาคาร 23 (อาคารคณะวิศวกรรมศาสตร์ศรีราชา):
+    - พิกัด: https://maps.app.goo.gl/aQ7rG6YewjRbfwpw6
+* **อาคาร 24 (อาคารคณะพาณิชยนาวีนานาชาติ):
+    - พิกัด: https://maps.app.goo.gl/jDWsdQdKdFg3WePk6
+* **อาคาร 25 (ศูนย์คอมพิวเตอร์):
+    - พิกัด: https://maps.app.goo.gl/NRghPa8oNb5Rtpdt7
+* **อาคาร 26 (อาคารคณะวิทยาศาสตร์ ศรีราชา):
+    - พิกัด: https://maps.app.goo.gl/FsYQktbh5fHAhBVLA
+* **อาคาร 27 (อาคารเรียนและปฏิบัติการพื้นฐานและเทคโนโลยี):
+    - พิกัด: https://maps.app.goo.gl/rgRHSqkuFzVHpaHA6
+* **อาคาร 28 (อาคารอเนกประสงค์และการประชุม):
+    - พิกัด: https://maps.app.goo.gl/RGFzsVPGahHj1sC56
+* **หอพักชายตึก 2: 
+    - พิกัด: https://maps.app.goo.gl/5ZvNBiMJwMhUbcE19
+* **หอพักชายตึก 3: 
+    - พิกัด: https://maps.app.goo.gl/uzbS2BVRcjZHmxU97
+* **หอพักหญิง ตึก 7:
+    - พิกัด: https://maps.app.goo.gl/eHiCCeuWBCXs1JcV6
+* **หอพักหญิง ตึก 8:
+    - พิกัด: https://maps.app.goo.gl/uhZFDyzET3GnxwLR8
+* **ตลาดในไนท์: 
+    - พิกัด: https://maps.app.goo.gl/nYAxXGWidaQ6kWMK6
+* **สนามบาส: 
+    - พิกัด: https://maps.app.goo.gl/TSX4AaxcujwUJZAKA 
+* **ห้องละหามด ชมรมมุสลิมมหาวิทยาลัยเกษตรศาสตร์ศรีราชา: 
+    - พิกัด: https://maps.app.goo.gl/seF7hJHbyrvhxaNAA
+* **ประตู1 มหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตศรีราชา:
+    - พิกัด: https://maps.app.goo.gl/Q41rjPUeqZGywBWa7
+* **ประตู2 มหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตศรีราชา:
+    - พิกัด: https://maps.app.goo.gl/siz7UgNqVhcutmmd9
+* **ประตู3 มหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตศรีราชา:
+    - พิกัด: https://maps.app.goo.gl/hctawbJpuFEFpC9K6
+* **ลานพระพิรุณ เกษตรศาสตร์ ศรีราชา: 
+    - พิกัด: https://maps.app.goo.gl/XoHD4Y7ZMaSTjoG6A
+* **สะพานดาว: 
+    - พิกัด: https://maps.app.goo.gl/FijgUTG39RmtTreK8
+* **พักพิรุณ PAK PI-RUN: 
+    - พิกัด: https://maps.app.goo.gl/nRXpt58L3mBEjLMC9
 
-# หมวดบริการนิสิตและสิ่งอำนวยความสะดวก
-* **อาคาร 9 (หอสมุดบรรณราชนครินทร์):** ห้องสมุด, ศูนย์คอมพิวเตอร์ และโซนอ่านหนังสือ 24 ชม.
-    - พิกัด: https://maps.app.goo.gl/9P7L5K3J1H8G6F4D
-* **อาคารกิจกรรมนิสิต (กองกิจ):** ติดต่อเรื่องหอพัก, ทุนการศึกษา, กยศ. และห้องพยาบาล
-    - พิกัด: https://maps.app.goo.gl/8O6I4U2Y0T9R7E5W
-* **โรงอาหารกลาง (โรงช้าง):** แหล่งรวมร้านอาหารหลักและจุดนัดพบ
-    - พิกัด: https://maps.app.goo.gl/1A2S3D4F5G6H7J8K
-* **หอพักนิสิต (หอใน):** โซนหอพักชายและหอพักหญิง
-    - พิกัด: https://maps.app.goo.gl/9M7N5B3V1C8X6Z4L
+
