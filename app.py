@@ -3,11 +3,7 @@ import google.generativeai as genai
 import os
 
 # 1. ตั้งค่าหน้าเว็บ
-st.set_page_config(
-    page_title="KU Sriracha Bot",
-    page_icon="🐢",
-    layout="wide"
-)
+st.set_page_config(page_title="KU Sriracha Bot", page_icon="🐢", layout="wide")
 
 # 🎨 ธีมสีเขียว KU
 st.markdown("""
@@ -21,21 +17,39 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# 2. ระบบดึง API Key จาก Secrets
+# 2. ระบบดึง API Key และเลือกโมเดลอัตโนมัติ
 # -------------------------------------------------------------
 api_key = st.secrets.get("GEMINI_API_KEY")
-
 if not api_key:
-    st.error("❌ ไม่พบ GEMINI_API_KEY ในหน้า Settings > Secrets ของ Streamlit")
+    st.error("❌ ไม่พบ GEMINI_API_KEY ใน Secrets")
     st.stop()
 
 genai.configure(api_key=api_key)
 
-# แก้ไขจุดนี้: ใช้ชื่อโมเดลที่เสถียรที่สุด
-try:
-    model = genai.GenerativeModel('gemini-1.5-flash-latest') 
-except Exception as e:
-    st.error(f"ไม่สามารถเชื่อมต่อโมเดลได้: {e}")
+# ฟังก์ชันเลือกโมเดลที่ใช้งานได้จริงในบัญชีของคุณ
+@st.cache_resource
+def get_working_model():
+    # รายชื่อโมเดลที่เป็นไปได้ทั้งหมด
+    test_models = [
+        'gemini-1.5-flash',
+        'gemini-1.5-pro',
+        'gemini-pro',
+        'gemini-1.0-pro'
+    ]
+    for m_name in test_models:
+        try:
+            m = genai.GenerativeModel(m_name)
+            # ทดสอบเรียกสั้นๆ ว่ารันได้ไหม
+            m.generate_content("hi", generation_config={"max_output_tokens": 1})
+            return m
+        except:
+            continue
+    return None
+
+model = get_working_model()
+
+if model is None:
+    st.error("❌ บัญชีของคุณไม่รองรับโมเดล Gemini ตัวใดเลย หรือ API Key ผิดพลาด")
     st.stop()
 
 # -------------------------------------------------------------
@@ -64,16 +78,14 @@ if prompt := st.chat_input("พิมพ์คำถามที่นี่..."
     with st.chat_message("assistant", avatar="🦖"):
         instruction = (
             "คุณคือ 'น้องนนทรี' AI รุ่นพี่ของ มก. ศรีราชา (KU SRC) "
-            "ตอบคำถามโดยอ้างอิงจากข้อมูลที่ให้มาเท่านั้น "
-            "หากถามเรื่องตึก ต้องส่งลิงก์แผนที่เสมอ และตอบอย่างสุภาพ"
+            "ตอบคำถามตามข้อมูลที่ให้มาอย่างสุภาพ "
+            "หากถามเรื่องตึก ต้องส่งลิ้งค์แผนที่จากข้อมูลอ้างอิงเสมอ"
         )
-        full_prompt = f"{instruction}\n\nข้อมูลอ้างอิง: {knowledge_base}\n\nคำถาม: {prompt}"
+        full_prompt = f"{instruction}\n\nข้อมูล: {knowledge_base}\n\nคำถาม: {prompt}"
         
         try:
-            # ใช้การ generate แบบปกติ
             response = model.generate_content(full_prompt)
-            if response.text:
-                st.markdown(response.text)
-                st.session_state.messages.append({"role": "assistant", "content": response.text})
+            st.markdown(response.text)
+            st.session_state.messages.append({"role": "assistant", "content": response.text})
         except Exception as e:
             st.error(f"❌ เกิดข้อผิดพลาด: {e}")
