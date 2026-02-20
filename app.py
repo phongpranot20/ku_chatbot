@@ -1,91 +1,42 @@
 import streamlit as st
 import google.generativeai as genai
-import os
 
-# 1. ตั้งค่าหน้าเว็บ
-st.set_page_config(page_title="KU Sriracha Bot", page_icon="🐢", layout="wide")
+st.set_page_config(page_title="KU Sriracha Bot - Diagnostic", layout="wide")
 
-# 🎨 ธีมสีเขียว KU
-st.markdown("""
-<style>
-    .stApp { background-color: #FFFFFF !important; color: black !important; }
-    [data-testid="stSidebar"] { background-color: #f2f9f6 !important; }
-    h1, h2, h3, p, span, div { color: #00594C; }
-    [data-testid="stChatMessage"] { background-color: #f0f2f6; border-radius: 10px; }
-    .stMarkdown p { color: #333333 !important; }
-</style>
-""", unsafe_allow_html=True)
+st.title("🐢 ระบบตรวจสอบโมเดล (Diagnostic)")
 
-# -------------------------------------------------------------
-# 2. ระบบดึง API Key และเลือกโมเดลอัตโนมัติ
-# -------------------------------------------------------------
+# 1. เช็คคีย์ใน Secrets
 api_key = st.secrets.get("GEMINI_API_KEY")
+
 if not api_key:
-    st.error("❌ ไม่พบ GEMINI_API_KEY ใน Secrets")
+    st.error("❌ ไม่พบคีย์ใน Secrets! ตรวจสอบว่าในหน้า Settings > Secrets พิมพ์คำว่า GEMINI_API_KEY ถูกต้องหรือไม่")
     st.stop()
 
 genai.configure(api_key=api_key)
 
-# ฟังก์ชันเลือกโมเดลที่ใช้งานได้จริงในบัญชีของคุณ
-@st.cache_resource
-def get_working_model():
-    # รายชื่อโมเดลที่เป็นไปได้ทั้งหมด
-    test_models = [
-        'gemini-1.5-flash',
-        'gemini-1.5-pro',
-        'gemini-pro',
-        'gemini-1.0-pro'
-    ]
-    for m_name in test_models:
-        try:
-            m = genai.GenerativeModel(m_name)
-            # ทดสอบเรียกสั้นๆ ว่ารันได้ไหม
-            m.generate_content("hi", generation_config={"max_output_tokens": 1})
-            return m
-        except:
-            continue
-    return None
+st.write("---")
+st.subheader("🔍 รายชื่อโมเดลที่บัญชีของคุณรองรับ:")
 
-model = get_working_model()
-
-if model is None:
-    st.error("❌ บัญชีของคุณไม่รองรับโมเดล Gemini ตัวใดเลย หรือ API Key ผิดพลาด")
-    st.stop()
-
-# -------------------------------------------------------------
-# 3. จัดการข้อมูลและแชท
-# -------------------------------------------------------------
-st.title("🐢 น้องนนทรี (AI Assistant)")
-
-# โหลดข้อมูลจาก ku_data.txt
-if os.path.exists("ku_data.txt"):
-    with open("ku_data.txt", "r", encoding="utf-8") as f:
-        knowledge_base = f.read()
-else:
-    knowledge_base = "ข้อมูลมหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตศรีราชา"
-
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-for message in st.session_state.messages:
-    with st.chat_message(message["role"], avatar="🧑‍🎓" if message["role"] == "user" else "🦖"):
-        st.markdown(message["content"])
-
-if prompt := st.chat_input("พิมพ์คำถามที่นี่..."):
-    st.chat_message("user", avatar="🧑‍🎓").markdown(prompt)
-    st.session_state.messages.append({"role": "user", "content": prompt})
-
-    with st.chat_message("assistant", avatar="🦖"):
-        instruction = (
-            "คุณคือ 'น้องนนทรี' AI รุ่นพี่ของ มก. ศรีราชา (KU SRC) "
-            "ตอบคำถามตามข้อมูลที่ให้มาอย่างสุภาพ "
-            "หากถามเรื่องตึก ต้องส่งลิ้งค์แผนที่จากข้อมูลอ้างอิงเสมอ"
-        )
-        full_prompt = f"{instruction}\n\nข้อมูล: {knowledge_base}\n\nคำถาม: {prompt}"
+try:
+    # ดึงรายชื่อโมเดลทั้งหมดที่คีย์นี้ใช้ได้
+    available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+    
+    if available_models:
+        st.success(f"พบโมเดลที่ใช้งานได้ {len(available_models)} ตัว")
+        selected_model_name = st.selectbox("เลือกโมเดลที่จะใช้:", available_models)
         
-        try:
-            response = model.generate_content(full_prompt)
-            st.markdown(response.text)
-            st.session_state.messages.append({"role": "assistant", "content": response.text})
-        except Exception as e:
-            st.error(f"❌ เกิดข้อผิดพลาด: {e}")
+        # ทดสอบการใช้งาน
+        if st.button("ทดสอบรันโมเดลนี้"):
+            try:
+                test_model = genai.GenerativeModel(selected_model_name)
+                response = test_model.generate_content("สวัสดี")
+                st.write("**AI ตอบกลับ:**", response.text)
+                st.balloons()
+            except Exception as e:
+                st.error(f"รันโมเดลไม่ได้: {e}")
+    else:
+        st.warning("⚠️ คีย์นี้เชื่อมต่อได้ แต่ Google บอกว่าไม่มีโมเดลไหนที่ใช้ generateContent ได้เลย")
+        
+except Exception as e:
+    st.error(f"❌ คีย์นี้ใช้งานไม่ได้หรือมีปัญหาการเชื่อมต่อ: {e}")
+    st.info("แนะนำ: ให้ไปสร้าง API Key อันใหม่ที่ aistudio.google.com แล้วนำมาเปลี่ยนใน Secrets ครับ")
