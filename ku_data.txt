@@ -79,7 +79,7 @@
 * **อาคาร 19 (พักอาศัยบุคลากร 2):
     - พิกัด: https://maps.app.goo.gl/i7qop8ZNozZj5dka8
 * **อาคาร 20 (สระว่ายน้ำ):
-    - พิกัด: https://maps.app.goo.gl/mbfWnsBLzAKzJTw38ำ
+    - พิกัด: https://maps.app.goo.gl/mbfWnsBLzAKzJTw38
 * **อาคาร 21 (สนามฟุตซอล):
     - พิกัด: https://maps.app.goo.gl/pVngJsq87nweQuhU6
 * **อาคาร 22 (อาคารธุรกิจศึกษา):
@@ -122,5 +122,6 @@
     - พิกัด: https://maps.app.goo.gl/FijgUTG39RmtTreK8
 * **พักพิรุณ PAK PI-RUN: 
     - พิกัด: https://maps.app.goo.gl/nRXpt58L3mBEjLMC9
+
 
 
