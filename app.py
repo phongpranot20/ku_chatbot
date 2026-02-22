@@ -8,32 +8,16 @@ st.set_page_config(page_title="KU SRC AI - น้องนนทรี", page_ic
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
-    
     * { font-family: 'Kanit', sans-serif; }
-
-    /* พื้นหลังแบบไล่เฉดสไตล์ Modern */
-    .stApp {
-        background: radial-gradient(circle at top left, #f0fdf4 0%, #ffffff 100%);
-    }
-
-    /* Sidebar แบบพรีเมียม */
-    [data-testid="stSidebar"] {
-        background-color: #004d43 !important;
-        border-right: 1px solid rgba(255,255,255,0.1);
-    }
+    .stApp { background: radial-gradient(circle at top left, #f0fdf4 0%, #ffffff 100%); }
+    [data-testid="stSidebar"] { background-color: #004d43 !important; border-right: 1px solid rgba(255,255,255,0.1); }
     [data-testid="stSidebar"] * { color: #ffffff !important; }
-
-    /* หัวข้อหลักแบบหรูหรา */
     .main-title {
-        font-size: 42px;
-        font-weight: 800;
+        font-size: 42px; font-weight: 800;
         background: linear-gradient(90deg, #00594C, #2D6A4F);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         margin-bottom: 0px;
     }
-
-    /* ตกแต่ง Chat Bubbles สไตล์ Glassmorphism */
     .stChatMessage {
         background: rgba(255, 255, 255, 0.7) !important;
         backdrop-filter: blur(10px);
@@ -43,18 +27,13 @@ st.markdown("""
         margin-bottom: 15px !important;
         padding: 20px !important;
     }
-
-    /* จัดฝั่งข้อความให้ดูง่าย */
     div[data-testid="stChatMessage"]:has(span:contains("🧑‍🎓")) {
         border-bottom-right-radius: 2px !important;
         background: rgba(230, 244, 234, 0.8) !important;
     }
-
     div[data-testid="stChatMessage"]:has(span:contains("🦖")) {
         border-bottom-left-radius: 2px !important;
     }
-
-    /* ปุ่มทางลัด (Quick Reply) สไตล์ Pill Shape */
     div.stButton > button {
         border-radius: 50px !important;
         border: 2px solid #00594C !important;
@@ -63,50 +42,49 @@ st.markdown("""
         font-weight: 600 !important;
         transition: all 0.3s ease !important;
         padding: 10px 25px !important;
+        width: 100%;
     }
     div.stButton > button:hover {
         background-color: #00594C !important;
         color: #ffffff !important;
         box-shadow: 0 4px 15px rgba(0, 89, 76, 0.3);
     }
-
-    /* ช่อง Input ที่ดูทันสมัย */
-    .stChatInputContainer {
-        padding-bottom: 20px !important;
-        background-color: transparent !important;
-    }
-
-    /* Loading Animation แบบ Smooth */
-    .loading-container {
-        display: flex;
-        gap: 5px;
-        padding: 10px;
-    }
-    .dot {
-        width: 10px;
-        height: 10px;
-        background: #00594C;
-        border-radius: 50%;
-        animation: wave 1.3s linear infinite;
-    }
+    .loading-container { display: flex; gap: 5px; padding: 10px; }
+    .dot { width: 10px; height: 10px; background: #00594C; border-radius: 50%; animation: wave 1.3s linear infinite; }
     .dot:nth-child(2) { animation-delay: -1.1s; }
     .dot:nth-child(3) { animation-delay: -0.9s; }
-
-    @keyframes wave {
-        0%, 60%, 100% { transform: translateY(0); }
-        30% { transform: translateY(-10px); }
-    }
+    @keyframes wave { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-10px); } }
 </style>
 """, unsafe_allow_html=True)
 
-# --- APP LOGIC ---
+# --- AUTO-DETECT MODEL LOGIC ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 if not api_key:
-    st.error("❌ Please set GEMINI_API_KEY in Secrets.")
+    st.error("❌ กรุณาตั้งค่า GEMINI_API_KEY ใน Secrets")
     st.stop()
 
 genai.configure(api_key=api_key)
-model = genai.GenerativeModel('gemini-1.5-flash')
+
+@st.cache_resource
+def load_available_model():
+    try:
+        # วนลูปหาชื่อโมเดลที่ใช้งานได้จริงใน Key นี้
+        for m in genai.list_models():
+            if 'generateContent' in m.supported_generation_methods:
+                if "flash" in m.name.lower():
+                    return genai.GenerativeModel(model_name=m.name)
+        # ถ้าไม่มี flash ให้เอาตัวแรกที่เจอ
+        for m in genai.list_models():
+            if 'generateContent' in m.supported_generation_methods:
+                return genai.GenerativeModel(model_name=m.name)
+    except Exception as e:
+        st.error(f"❌ ระบบไม่สามารถดึงข้อมูลโมเดลได้: {e}")
+    return None
+
+model = load_available_model()
+
+if not model:
+    st.stop()
 
 # Sidebar
 with st.sidebar:
@@ -154,14 +132,10 @@ if prompt:
 
     with st.chat_message("assistant", avatar="🦖"):
         status_placeholder = st.empty()
-        # Loading Dots สไตล์ใหม่
         status_placeholder.markdown("""
-            <div class="loading-container">
-                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-            </div>
+            <div class="loading-container"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
         """, unsafe_allow_html=True)
         
-        # Load Data
         kb = ""
         if os.path.exists("ku_data.txt"):
             with open("ku_data.txt", "r", encoding="utf-8") as f: kb = f.read()
@@ -169,7 +143,7 @@ if prompt:
         instruction = (
             "คุณคือ 'น้องนนทรี' AI รุ่นพี่ของ มก. ศรีราชา (KU SRC) "
             "พูดจาสุภาพ เป็นกันเอง แทนตัวเองว่า 'พี่' และเรียกผู้ใช้ว่า 'น้อง' "
-            "จงจำชื่อผู้ใช้หากเขาบอกชื่อมา และใช้ข้อมูลที่ให้มาตอบอย่างอบอุ่นและรวดเร็ว"
+            "จงจำชื่อผู้ใช้หากเขาบอกชื่อมา และใช้ข้อมูลที่ให้มาตอบอย่างอบอุ่น"
         )
         
         history = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages[-10:]])
