@@ -37,14 +37,17 @@ if not api_key:
 
 genai.configure(api_key=api_key)
 
-# ปรับส่วนนี้ให้โหลดโมเดลแบบปกติ ไม่มี Search เพื่อความเร็ว
 @st.cache_resource
 def load_model():
+    # แก้ไข: ลองใช้ชื่อรุ่นแบบเต็มเพื่อให้รองรับ API ทุกเวอร์ชัน
     try:
-        return genai.GenerativeModel(model_name='gemini-1.5-flash')
-    except Exception as e:
-        st.error(f"❌ ไม่สามารถโหลดโมเดลได้: {e}")
-        return None
+        return genai.GenerativeModel(model_name='models/gemini-1.5-flash')
+    except:
+        try:
+            return genai.GenerativeModel(model_name='gemini-1.5-flash-latest')
+        except Exception as e:
+            st.error(f"❌ ไม่สามารถโหลดโมเดลได้: {e}")
+            return None
 
 model = load_model()
 
