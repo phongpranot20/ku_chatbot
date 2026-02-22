@@ -7,12 +7,13 @@ st.set_page_config(page_title="น้องนนทรี AI (KU SRC)", layout=
 st.markdown("""
 <style>
     .stApp { background-color: #FFFFFF; color: #000000; }
-    h1 { color: #1E4D2B !important; font-size: 24px !important; text-align: center; }
+    h1 { color: #1E4D2B !important; font-size: 32px !important; text-align: left !important; margin-left: 0px; }
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-    .stChatMessage { border-radius: 15px; padding: 10px; margin-bottom: 10px; color: #000000; }
-    p, span, div { color: #000000 !important; }
+    .stChatMessage { border-radius: 15px; padding: 15px; margin-bottom: 10px; color: #000000; text-align: left !important; }
+    .stMarkdown p { font-size: 20px !important; text-align: left !important; color: #000000 !important; }
+    div[data-testid="stChatMessageContent"] { text-align: left !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -52,7 +53,8 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 if prompt := st.chat_input("พิมพ์ข้อความ..."):
-    st.chat_message("user", avatar="🧑‍🎓").markdown(prompt)
+    with st.chat_message("user", avatar="🧑‍🎓"):
+        st.markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     with st.chat_message("assistant", avatar="🦖"):
