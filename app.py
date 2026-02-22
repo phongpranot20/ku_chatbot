@@ -23,30 +23,25 @@ genai.configure(api_key=api_key)
 
 @st.cache_resource
 def load_model():
-    # พยายามโหลดโมเดลแบบที่มี Google Search ก่อน
+    # 1. ลองโหลดแบบ google_search (ตัวใหม่ล่าสุด)
     try:
         for m in genai.list_models():
             if 'generateContent' in m.supported_generation_methods:
-                # ลองใช้ google_search (ถ้าเวอร์ชันรองรับ)
-                return genai.GenerativeModel(
-                    model_name=m.name,
-                    tools=[{"google_search": {}}]
-                )
-    except:
-        pass
-    
-    # ถ้าแบบแรกไม่ได้ ลอง google_search_retrieval (สำหรับบางเวอร์ชัน)
-    try:
-        for m in genai.list_models():
-            if 'generateContent' in m.supported_generation_methods:
-                return genai.GenerativeModel(
-                    model_name=m.name,
-                    tools=[{"google_search_retrieval": {}}]
-                )
+                if "1.5" in m.name: # เลือกเฉพาะรุ่นใหม่ที่รองรับ Search
+                    return genai.GenerativeModel(model_name=m.name, tools=[{"google_search": {}}])
     except:
         pass
 
-    # สุดท้าย ถ้าไม่ได้จริงๆ ให้กลับไปใช้โมเดลปกติ (โค้ดเดิมของคุณ) เพื่อให้แอปใช้งานได้
+    # 2. ถ้าแบบแรก Error ให้ลองแบบ google_search_retrieval
+    try:
+        for m in genai.list_models():
+            if 'generateContent' in m.supported_generation_methods:
+                if "1.5" in m.name:
+                    return genai.GenerativeModel(model_name=m.name, tools=[{"google_search_retrieval": {}}])
+    except:
+        pass
+
+    # 3. ถ้าไม่ได้จริงๆ ให้ใช้แบบเดิมของคุณที่รันผ่านแน่นอน (ไม่มี Search)
     for m in genai.list_models():
         if 'generateContent' in m.supported_generation_methods:
             return genai.GenerativeModel(m.name)
@@ -81,7 +76,7 @@ if prompt := st.chat_input("พิมพ์คำถามที่นี่..."
         instruction = (
             "คุณคือ 'น้องนนทรี' AI รุ่นพี่ของ มก. ศรีราชา (KU SRC) "
             "ตอบคำถามตามข้อมูลที่ให้มาอย่างสุภาพ หากถามเรื่องตึก ต้องส่งลิ้งค์แผนที่เสมอ "
-            "และหากถามเรื่องรถติด ให้ใช้ข้อมูลเรียลไทม์มาช่วยตอบ"
+            "และถ้าเป็นไปได้ ให้ช่วยเช็คสภาพจราจรหรือข้อมูลเรียลไทม์มาตอบด้วย"
         )
         full_prompt = f"{instruction}\n\nข้อมูล: {knowledge_base}\n\nคำถาม: {prompt}"
         
@@ -90,4 +85,11 @@ if prompt := st.chat_input("พิมพ์คำถามที่นี่..."
             st.markdown(response.text)
             st.session_state.messages.append({"role": "assistant", "content": response.text})
         except Exception as e:
-            st.error(f"❌ ระบบขัดข้อง: {e}")
+            # ถ้าเกิด Error ตอน generate (เช่น Tool พังระหว่างทาง) ให้ลองเรียกแบบไม่มี Tool แทน
+            try:
+                base_model = genai.GenerativeModel(model.model_name)
+                response = base_model.generate_content(full_prompt)
+                st.markdown(response.text)
+                st.session_state.messages.append({"role": "assistant", "content": response.text})
+            except Exception as e2:
+                st.error(f"❌ ระบบขัดข้อง: {e2}")
