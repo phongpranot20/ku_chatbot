@@ -1,6 +1,7 @@
 import streamlit as st
 import google.generativeai as genai
 import os
+import time  # เพิ่มมาเพื่อใช้ทำ animation
 
 st.set_page_config(page_title="KU Sriracha Bot", page_icon="🐢", layout="wide")
 
@@ -30,7 +31,6 @@ def load_model():
                     return genai.GenerativeModel(model_name=m.name, tools=[{"google_search": {}}])
     except:
         pass
-
     try:
         for m in genai.list_models():
             if 'generateContent' in m.supported_generation_methods:
@@ -38,7 +38,6 @@ def load_model():
                     return genai.GenerativeModel(model_name=m.name, tools=[{"google_search_retrieval": {}}])
     except:
         pass
-
     for m in genai.list_models():
         if 'generateContent' in m.supported_generation_methods:
             return genai.GenerativeModel(m.name)
@@ -70,9 +69,7 @@ if prompt := st.chat_input("พิมพ์คำถามที่นี่..."
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     with st.chat_message("assistant", avatar="🦖"):
-        # สร้าง placeholder สำหรับแสดงสถานะกำลังคิด
         status_placeholder = st.empty()
-        status_placeholder.markdown("...") 
         
         instruction = (
             "คุณคือ 'น้องนนทรี' AI รุ่นพี่ของ มก. ศรีราชา (KU SRC) "
@@ -84,9 +81,15 @@ if prompt := st.chat_input("พิมพ์คำถามที่นี่..."
         history_text = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages[-10:]])
         full_prompt = f"{instruction}\n\nข้อมูล: {knowledge_base}\n\nประวัติการคุย:\n{history_text}\n\nคำถามล่าสุด: {prompt}"
         
+        # ส่วนแสดง Animation ระหว่างรอ AI
+        # เราจะใช้การวนลูปสั้นๆ ระหว่างที่ฟังก์ชันทำงาน (ในที่นี้จะโชว์ 3 รอบ)
+        for _ in range(3):
+            for dots in [".", "..", "..."]:
+                status_placeholder.markdown(dots)
+                time.sleep(0.2)
+        
         try:
             response = model.generate_content(full_prompt)
-            # เมื่อได้คำตอบแล้ว ให้แทนที่จุดด้วยข้อความจริง
             status_placeholder.markdown(response.text)
             st.session_state.messages.append({"role": "assistant", "content": response.text})
         except Exception as e:
@@ -96,5 +99,5 @@ if prompt := st.chat_input("พิมพ์คำถามที่นี่..."
                 status_placeholder.markdown(response.text)
                 st.session_state.messages.append({"role": "assistant", "content": response.text})
             except Exception as e2:
-                status_placeholder.empty() # ลบจุดออกถ้าเกิด Error
+                status_placeholder.empty()
                 st.error(f"❌ ระบบขัดข้อง: {e2}")
