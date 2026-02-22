@@ -2,10 +2,10 @@ import streamlit as st
 import google.generativeai as genai
 import os
 
-# 1. ตั้งค่าหน้าเว็บ
+
 st.set_page_config(page_title="KU Sriracha Bot", page_icon="🐢", layout="wide")
 
-# 🎨 ธีมสีเขียว KU
+
 st.markdown("""
 <style>
     .stApp { background-color: #FFFFFF !important; color: black !important; }
@@ -17,7 +17,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# 2. ระบบดึง API Key และเลือกโมเดลอัตโนมัติ
+
 # -------------------------------------------------------------
 api_key = st.secrets.get("GEMINI_API_KEY")
 if not api_key:
@@ -29,10 +29,10 @@ genai.configure(api_key=api_key)
 @st.cache_resource
 def load_model():
     try:
-        # ค้นหาโมเดลที่รองรับการ generateContent จริงๆ ในบัญชีของคุณ
+        
         for m in genai.list_models():
             if 'generateContent' in m.supported_generation_methods:
-                # เลือกตัวแรกที่เจอ (มักจะเป็น gemini-1.5-flash หรือตัวที่เสถียรที่สุด)
+               
                 return genai.GenerativeModel(m.name)
     except Exception as e:
         st.error(f"เกิดข้อผิดพลาดในการดึงรายชื่อโมเดล: {e}")
@@ -45,7 +45,7 @@ if not model:
     st.stop()
 
 # -------------------------------------------------------------
-# 3. จัดการข้อมูลและแชท
+#
 # -------------------------------------------------------------
 st.title("AI TEST")
 
@@ -79,3 +79,4 @@ if prompt := st.chat_input("พิมพ์คำถามที่นี่..."
             st.session_state.messages.append({"role": "assistant", "content": response.text})
         except Exception as e:
             st.error(f"❌ ระบบขัดข้อง: {e}")
+
