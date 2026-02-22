@@ -35,7 +35,7 @@ def load_model():
 
 model = load_model()
 
-st.title("🦖 น้องนนทรี AI (KU SRC)")
+st.title("AI TEST")
 
 if os.path.exists("ku_data.txt"):
     with open("ku_data.txt", "r", encoding="utf-8") as f:
