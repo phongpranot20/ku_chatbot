@@ -70,6 +70,10 @@ if prompt := st.chat_input("พิมพ์คำถามที่นี่..."
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     with st.chat_message("assistant", avatar="🦖"):
+        # สร้าง placeholder สำหรับแสดงสถานะกำลังคิด
+        status_placeholder = st.empty()
+        status_placeholder.markdown("...") 
+        
         instruction = (
             "คุณคือ 'น้องนนทรี' AI รุ่นพี่ของ มก. ศรีราชา (KU SRC) "
             "ภารกิจ: จงจำชื่อผู้ใช้และสิ่งที่คุยกันก่อนหน้าจากประวัติการสนทนา "
@@ -77,20 +81,20 @@ if prompt := st.chat_input("พิมพ์คำถามที่นี่..."
             "และถ้าเป็นไปได้ ให้ช่วยเช็คสภาพจราจรหรือข้อมูลเรียลไทม์มาตอบด้วย"
         )
         
-        # --- ส่วนที่เพิ่มเข้ามาเพื่อให้บอทจำชื่อได้ ---
         history_text = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages[-10:]])
         full_prompt = f"{instruction}\n\nข้อมูล: {knowledge_base}\n\nประวัติการคุย:\n{history_text}\n\nคำถามล่าสุด: {prompt}"
-        # ---------------------------------------
         
         try:
             response = model.generate_content(full_prompt)
-            st.markdown(response.text)
+            # เมื่อได้คำตอบแล้ว ให้แทนที่จุดด้วยข้อความจริง
+            status_placeholder.markdown(response.text)
             st.session_state.messages.append({"role": "assistant", "content": response.text})
         except Exception as e:
             try:
                 base_model = genai.GenerativeModel(model.model_name)
                 response = base_model.generate_content(full_prompt)
-                st.markdown(response.text)
+                status_placeholder.markdown(response.text)
                 st.session_state.messages.append({"role": "assistant", "content": response.text})
             except Exception as e2:
+                status_placeholder.empty() # ลบจุดออกถ้าเกิด Error
                 st.error(f"❌ ระบบขัดข้อง: {e2}")
