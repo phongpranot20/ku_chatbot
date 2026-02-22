@@ -20,11 +20,18 @@ genai.configure(api_key=api_key)
 @st.cache_resource
 def load_model():
     try:
-        for m in genai.list_models():
-            if 'generateContent' in m.supported_generation_methods:
-                return genai.GenerativeModel(m.name)
-    except Exception as e:
-        st.error(f"Error: {e}")
+        model = genai.GenerativeModel(
+            model_name='gemini-1.5-flash',
+            tools=[{"google_search": {}}]
+        )
+        return model
+    except:
+        try:
+            for m in genai.list_models():
+                if 'generateContent' in m.supported_generation_methods:
+                    return genai.GenerativeModel(m.name)
+        except Exception as e:
+            st.error(f"Error: {e}")
     return None
 
 model = load_model()
@@ -53,7 +60,13 @@ if prompt := st.chat_input("พิมพ์ข้อความ..."):
         status_placeholder = st.empty()
         status_placeholder.markdown("...")
         
-        instruction = "คุณคือ 'น้องนนทรี' AI รุ่นพี่ของ มก. ศรีราชา (KU SRC) ตอบคำถามตามข้อมูลที่ให้มาอย่างสุภาพ"
+        instruction = (
+            "คุณคือ 'น้องนนทรี' AI รุ่นพี่ของ มก. ศรีราชา (KU SRC) "
+            "1. ตอบคำถามตามข้อมูลที่ให้มาอย่างสุภาพ "
+            "2. หากถามเรื่องตึกหรือแบบฟอร์ม ให้ใช้ข้อมูลจากไฟล์และส่งลิงก์เสมอ "
+            "3. หากถามเรื่องรถติดหรือสภาพจราจร ให้ใช้ Google Search สรุปคำตอบและระยะทางเป็นกิโลเมตร "
+            "4. ห้ามแสดงเลขพิกัด GPS หรือ Latitude/Longitude ในคำตอบเด็ดขาด"
+        )
         full_prompt = f"{instruction}\n\nข้อมูล: {knowledge_base}\n\nคำถาม: {prompt}"
         
         try:
@@ -62,4 +75,7 @@ if prompt := st.chat_input("พิมพ์ข้อความ..."):
             st.session_state.messages.append({"role": "assistant", "content": response.text})
         except Exception as e:
             status_placeholder.empty()
-            st.error(f"Error: {e}")
+            if "429" in str(e):
+                st.error("⚠️ โควตาเต็ม (Quota Exceeded) กรุณารอสัก 1 นาทีแล้วลองใหม่นะ")
+            else:
+                st.error(f"Error: {e}")
