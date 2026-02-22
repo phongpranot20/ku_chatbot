@@ -32,13 +32,24 @@ st.markdown("""
 
 api_key = st.secrets.get("GEMINI_API_KEY")
 if not api_key:
-    st.error("❌ ไม่พบ GEMINI_API_KEY")
+    st.error("❌ ไม่พบ GEMINI_API_KEY ในหน้า Settings > Secrets")
     st.stop()
 
 genai.configure(api_key=api_key)
 
-# เรียกใช้ Model ตรงๆ ไม่ต้องผ่านฟังก์ชัน load_model
-model = genai.GenerativeModel('gemini-1.5-flash')
+# ปรับส่วนนี้ให้โหลดโมเดลแบบปกติ ไม่มี Search เพื่อความเร็ว
+@st.cache_resource
+def load_model():
+    try:
+        return genai.GenerativeModel(model_name='gemini-1.5-flash')
+    except Exception as e:
+        st.error(f"❌ ไม่สามารถโหลดโมเดลได้: {e}")
+        return None
+
+model = load_model()
+
+if not model:
+    st.stop()
 
 st.title("AI TEST")
 
@@ -66,8 +77,7 @@ if prompt := st.chat_input("พิมพ์คำถามที่นี่..."
         instruction = (
             "คุณคือ 'น้องนนทรี' AI รุ่นพี่ของ มก. ศรีราชา (KU SRC) "
             "ภารกิจ: จงจำชื่อผู้ใช้และสิ่งที่คุยกันก่อนหน้าจากประวัติการสนทนา "
-            "ตอบคำถามตามข้อมูลที่ให้มาอย่างสุภาพ หากถามเรื่องตึก ต้องส่งลิงก์แผนที่เสมอ "
-            "เน้นการตอบที่รวดเร็วและกระชับ"
+            "ตอบคำถามตามข้อมูลที่ให้มาอย่างสุภาพ หากถามเรื่องตึก ต้องส่งลิงก์แผนที่เสมอ"
         )
         
         history_text = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages[-10:]])
