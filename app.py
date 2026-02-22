@@ -2,8 +2,10 @@ import streamlit as st
 import google.generativeai as genai
 import os
 
+# 1. ตั้งค่าหน้าเว็บ
 st.set_page_config(page_title="KU Sriracha Bot", page_icon="🐢", layout="wide")
 
+# 🎨 ธีมสีเขียว KU
 st.markdown("""
 <style>
     .stApp { background-color: #FFFFFF !important; color: black !important; }
@@ -14,9 +16,12 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# -------------------------------------------------------------
+# 2. ระบบดึง API Key และเลือกโมเดลอัตโนมัติ
+# -------------------------------------------------------------
 api_key = st.secrets.get("GEMINI_API_KEY")
 if not api_key:
-    st.error("❌ ไม่พบ GEMINI_API_KEY")
+    st.error("❌ ไม่พบ GEMINI_API_KEY ในหน้า Settings > Secrets")
     st.stop()
 
 genai.configure(api_key=api_key)
@@ -24,27 +29,31 @@ genai.configure(api_key=api_key)
 @st.cache_resource
 def load_model():
     try:
-        tools = [{"google_search_retrieval": {}}]
-        return genai.GenerativeModel(
-            model_name='gemini-1.5-flash',
-            tools=tools
-        )
+        # ค้นหาโมเดลที่รองรับการ generateContent จริงๆ ในบัญชีของคุณ
+        for m in genai.list_models():
+            if 'generateContent' in m.supported_generation_methods:
+                # เลือกตัวแรกที่เจอ (มักจะเป็น gemini-1.5-flash หรือตัวที่เสถียรที่สุด)
+                return genai.GenerativeModel(m.name)
     except Exception as e:
-        st.error(f"Error: {e}")
+        st.error(f"เกิดข้อผิดพลาดในการดึงรายชื่อโมเดล: {e}")
     return None
 
 model = load_model()
 
 if not model:
+    st.error("❌ ไม่พบโมเดลที่ใช้งานได้ในบัญชีนี้ กรุณาตรวจสอบ API Key อีกครั้ง")
     st.stop()
 
-st.title("AI TEST ")
+# -------------------------------------------------------------
+# 3. จัดการข้อมูลและแชท
+# -------------------------------------------------------------
+st.title("AI TEST")
 
 if os.path.exists("ku_data.txt"):
     with open("ku_data.txt", "r", encoding="utf-8") as f:
         knowledge_base = f.read()
 else:
-    knowledge_base = ""
+    knowledge_base = "ข้อมูลมหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตศรีราชา"
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -60,18 +69,13 @@ if prompt := st.chat_input("พิมพ์คำถามที่นี่..."
     with st.chat_message("assistant", avatar="🦖"):
         instruction = (
             "คุณคือ 'น้องนนทรี' AI รุ่นพี่ของ มก. ศรีราชา (KU SRC) "
-            "1. ตอบคำถามอย่างสุภาพ "
-            "2. หากถามเรื่องตึกหรือแบบฟอร์ม ให้ใช้ข้อมูลจาก 'ความรู้ในไฟล์' และส่งลิงก์เสมอ "
-            "3. หากถามเรื่องรถติด สภาพจราจร หรือข้อมูลปัจจุบัน ให้ใช้ Google Search เพื่อสรุปคำตอบ "
-            "4. ห้ามตอบแค่ลิงก์ Google Maps ให้สรุปสภาพจราจรจากข้อมูลที่ค้นหาได้ด้วย"
+            "ตอบคำถามตามข้อมูลที่ให้มาอย่างสุภาพ หากถามเรื่องตึก ต้องส่งลิ้งค์แผนที่เสมอ"
         )
-        
-        full_prompt = f"{instruction}\n\nความรู้ในไฟล์: {knowledge_base}\n\nคำถาม: {prompt}"
+        full_prompt = f"{instruction}\n\nข้อมูล: {knowledge_base}\n\nคำถาม: {prompt}"
         
         try:
             response = model.generate_content(full_prompt)
-            res_text = response.text if response.text else "ขออภัย พี่ไม่พบข้อมูลครับ"
-            st.markdown(res_text)
-            st.session_state.messages.append({"role": "assistant", "content": res_text})
+            st.markdown(response.text)
+            st.session_state.messages.append({"role": "assistant", "content": response.text})
         except Exception as e:
             st.error(f"❌ ระบบขัดข้อง: {e}")
