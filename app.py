@@ -4,7 +4,6 @@ import os
 
 st.set_page_config(page_title="KU Sriracha Bot", page_icon="🐢", layout="wide")
 
-# เพิ่ม CSS สำหรับจุดโหลดใบใหญ่และขยับได้
 st.markdown("""
 <style>
     .stApp { background-color: #FFFFFF !important; color: black !important; }
@@ -13,7 +12,6 @@ st.markdown("""
     [data-testid="stChatMessage"] { background-color: #f0f2f6; border-radius: 10px; }
     .stMarkdown p { color: #333333 !important; }
 
-    /* Animation สำหรับจุด Loading */
     .loading-dots {
         font-size: 30px;
         font-weight: bold;
@@ -41,29 +39,16 @@ genai.configure(api_key=api_key)
 
 @st.cache_resource
 def load_model():
+    # ปรับให้โหลดโมเดลแบบปกติ (ไม่มี tools) เพื่อความรวดเร็ว
     try:
-        for m in genai.list_models():
-            if 'generateContent' in m.supported_generation_methods:
-                if "1.5" in m.name:
-                    return genai.GenerativeModel(model_name=m.name, tools=[{"google_search": {}}])
-    except:
-        pass
-    try:
-        for m in genai.list_models():
-            if 'generateContent' in m.supported_generation_methods:
-                if "1.5" in m.name:
-                    return genai.GenerativeModel(model_name=m.name, tools=[{"google_search_retrieval": {}}])
-    except:
-        pass
-    for m in genai.list_models():
-        if 'generateContent' in m.supported_generation_methods:
-            return genai.GenerativeModel(m.name)
-    return None
+        return genai.GenerativeModel(model_name='gemini-1.5-flash')
+    except Exception as e:
+        st.error(f"❌ ไม่สามารถโหลดโมเดลได้: {e}")
+        return None
 
 model = load_model()
 
 if not model:
-    st.error("❌ ไม่พบโมเดลที่ใช้งานได้")
     st.stop()
 
 st.title("AI TEST")
@@ -86,7 +71,6 @@ if prompt := st.chat_input("พิมพ์คำถามที่นี่..."
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     with st.chat_message("assistant", avatar="🦖"):
-        # แสดงจุดขนาดใหญ่ที่ขยับได้ด้วย CSS
         status_placeholder = st.empty()
         status_placeholder.markdown('<div class="loading-dots"></div>', unsafe_allow_html=True)
         
@@ -94,25 +78,16 @@ if prompt := st.chat_input("พิมพ์คำถามที่นี่..."
             "คุณคือ 'น้องนนทรี' AI รุ่นพี่ของ มก. ศรีราชา (KU SRC) "
             "ภารกิจ: จงจำชื่อผู้ใช้และสิ่งที่คุยกันก่อนหน้าจากประวัติการสนทนา "
             "ตอบคำถามตามข้อมูลที่ให้มาอย่างสุภาพ หากถามเรื่องตึก ต้องส่งลิงก์แผนที่เสมอ "
-            "และถ้าเป็นไปได้ ให้ช่วยเช็คสภาพจราจรหรือข้อมูลเรียลไทม์มาตอบด้วย"
+            "เน้นการตอบที่รวดเร็วและกระชับ"
         )
         
         history_text = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages[-10:]])
         full_prompt = f"{instruction}\n\nข้อมูล: {knowledge_base}\n\nประวัติการคุย:\n{history_text}\n\nคำถามล่าสุด: {prompt}"
         
         try:
-            # AI กำลังประมวลผล (จุดจะขยับไปเรื่อยๆ ในระหว่างที่รอตรงนี้)
             response = model.generate_content(full_prompt)
-            
-            # เมื่อได้คำตอบแล้ว ให้ลบจุดออกและแสดงข้อความ
             status_placeholder.markdown(response.text)
             st.session_state.messages.append({"role": "assistant", "content": response.text})
         except Exception as e:
-            try:
-                base_model = genai.GenerativeModel(model.model_name)
-                response = base_model.generate_content(full_prompt)
-                status_placeholder.markdown(response.text)
-                st.session_state.messages.append({"role": "assistant", "content": response.text})
-            except Exception as e2:
-                status_placeholder.empty()
-                st.error(f"❌ ระบบขัดข้อง: {e2}")
+            status_placeholder.empty()
+            st.error(f"❌ เกิดข้อผิดพลาด: {e}")
