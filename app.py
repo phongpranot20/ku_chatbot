@@ -71,7 +71,7 @@ model = load_model()
 if not model:
     st.stop()
 
-st.title("🦖 น้องนนทรี AI (KU SRC)")
+st.title("AI TEST")
 
 # --- ระบบปุ่มทางลัด (Quick Reply) ---
 st.write("💡 คำถามที่พบบ่อย:")
