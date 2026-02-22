@@ -2,11 +2,17 @@ import streamlit as st
 import google.generativeai as genai
 import os
 
-st.set_page_config(page_title="AI TEST", layout="centered")
+st.set_page_config(page_title="น้องนนทรี AI (KU SRC)", layout="centered")
 
 st.markdown("""
 <style>
-    .stApp { background-color: #FFFFFF; }
+    .stApp { background-color: #FFFFFF; color: #000000; }
+    h1 { color: #1E4D2B !important; font-size: 24px !important; text-align: center; }
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    .stChatMessage { border-radius: 15px; padding: 10px; margin-bottom: 10px; color: #000000; }
+    p, span, div { color: #000000 !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -20,23 +26,16 @@ genai.configure(api_key=api_key)
 @st.cache_resource
 def load_model():
     try:
-        model = genai.GenerativeModel(
+        return genai.GenerativeModel(
             model_name='gemini-1.5-flash',
             tools=[{"google_search": {}}]
         )
-        return model
     except:
-        try:
-            for m in genai.list_models():
-                if 'generateContent' in m.supported_generation_methods:
-                    return genai.GenerativeModel(m.name)
-        except Exception as e:
-            st.error(f"Error: {e}")
-    return None
+        return genai.GenerativeModel('gemini-1.5-flash')
 
 model = load_model()
 
-st.title("AI TEST")
+st.title("🦖 น้องนนทรี AI (KU SRC)")
 
 if os.path.exists("ku_data.txt"):
     with open("ku_data.txt", "r", encoding="utf-8") as f:
@@ -64,18 +63,19 @@ if prompt := st.chat_input("พิมพ์ข้อความ..."):
             "คุณคือ 'น้องนนทรี' AI รุ่นพี่ของ มก. ศรีราชา (KU SRC) "
             "1. ตอบคำถามตามข้อมูลที่ให้มาอย่างสุภาพ "
             "2. หากถามเรื่องตึกหรือแบบฟอร์ม ให้ใช้ข้อมูลจากไฟล์และส่งลิงก์เสมอ "
-            "3. หากถามเรื่องรถติดหรือสภาพจราจร ให้ใช้ Google Search สรุปคำตอบและระยะทางเป็นกิโลเมตร "
+            "3. หากถามเรื่องรถติดหรือสภาพจราจร ให้ใช้ Google Search สรุปคำตอบ "
             "4. ห้ามแสดงเลขพิกัด GPS หรือ Latitude/Longitude ในคำตอบเด็ดขาด"
         )
         full_prompt = f"{instruction}\n\nข้อมูล: {knowledge_base}\n\nคำถาม: {prompt}"
         
         try:
             response = model.generate_content(full_prompt)
-            status_placeholder.markdown(response.text)
-            st.session_state.messages.append({"role": "assistant", "content": response.text})
+            res_text = response.text if response.text else "ขออภัย ไม่พบข้อมูลครับ"
+            status_placeholder.markdown(res_text)
+            st.session_state.messages.append({"role": "assistant", "content": res_text})
         except Exception as e:
             status_placeholder.empty()
             if "429" in str(e):
-                st.error("⚠️ โควตาเต็ม (Quota Exceeded) กรุณารอสัก 1 นาทีแล้วลองใหม่นะ")
+                st.error("⚠️ โควตาเต็ม กรุณารอสักครู่")
             else:
                 st.error(f"Error: {e}")
