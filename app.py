@@ -28,7 +28,7 @@ def load_model():
             if 'generateContent' in m.supported_generation_methods:
                 return genai.GenerativeModel(
                     model_name=m.name,
-                    tools=[{"google_search_retrieval": {}}]
+                    tools=[{"google_search": {}}]
                 )
     except Exception as e:
         st.error(f"เกิดข้อผิดพลาดในการดึงรายชื่อโมเดล: {e}")
