@@ -3,16 +3,12 @@ import google.generativeai as genai
 import os
 
 
-st.set_page_config(page_title="KU Sriracha Bot", page_icon="🐢", layout="wide")
+st.set_page_config(page_title="AI TEST", layout="centered")
 
 
 st.markdown("""
 <style>
-    .stApp { background-color: #FFFFFF !important; color: black !important; }
-    [data-testid="stSidebar"] { background-color: #f2f9f6 !important; }
-    h1, h2, h3, p, span, div { color: #00594C; }
-    [data-testid="stChatMessage"] { background-color: #f0f2f6; border-radius: 10px; }
-    .stMarkdown p { color: #333333 !important; }
+    .stApp { background-color: #FFFFFF; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -21,7 +17,7 @@ st.markdown("""
 # -------------------------------------------------------------
 api_key = st.secrets.get("GEMINI_API_KEY")
 if not api_key:
-    st.error("❌ ไม่พบ GEMINI_API_KEY ในหน้า Settings > Secrets")
+    st.error("❌ API Key not found")
     st.stop()
 
 genai.configure(api_key=api_key)
@@ -29,48 +25,45 @@ genai.configure(api_key=api_key)
 @st.cache_resource
 def load_model():
     try:
-        
         for m in genai.list_models():
             if 'generateContent' in m.supported_generation_methods:
-               
                 return genai.GenerativeModel(m.name)
     except Exception as e:
-        st.error(f"เกิดข้อผิดพลาดในการดึงรายชื่อโมเดล: {e}")
+        st.error(f"Error: {e}")
     return None
 
 model = load_model()
 
-if not model:
-    st.error("❌ ไม่พบโมเดลที่ใช้งานได้ในบัญชีนี้ กรุณาตรวจสอบ API Key อีกครั้ง")
-    st.stop()
+# -------------------------------------------------------------
 
 # -------------------------------------------------------------
-#
-# -------------------------------------------------------------
 st.title("AI TEST")
+
 
 if os.path.exists("ku_data.txt"):
     with open("ku_data.txt", "r", encoding="utf-8") as f:
         knowledge_base = f.read()
 else:
-    knowledge_base = "ข้อมูลมหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตศรีราชา"
+    knowledge_base = ""
+
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+
 for message in st.session_state.messages:
-    with st.chat_message(message["role"], avatar="🧑‍🎓" if message["role"] == "user" else "🦖"):
+    with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-if prompt := st.chat_input("พิมพ์คำถามที่นี่..."):
-    st.chat_message("user", avatar="🧑‍🎓").markdown(prompt)
+
+if prompt := st.chat_input("พิมพ์ข้อความ..."):
+    
+    st.chat_message("user").markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
-    with st.chat_message("assistant", avatar="🦖"):
-        instruction = (
-            "คุณคือ 'น้องนนทรี' AI รุ่นพี่ของ มก. ศรีราชา (KU SRC) "
-            "ตอบคำถามตามข้อมูลที่ให้มาอย่างสุภาพ หากถามเรื่องตึก ต้องส่งลิ้งค์แผนที่เสมอ"
-        )
+  
+    with st.chat_message("assistant"):
+        instruction = "ตอบคำถามตามข้อมูลที่ให้มาอย่างสุภาพ"
         full_prompt = f"{instruction}\n\nข้อมูล: {knowledge_base}\n\nคำถาม: {prompt}"
         
         try:
@@ -78,5 +71,4 @@ if prompt := st.chat_input("พิมพ์คำถามที่นี่..."
             st.markdown(response.text)
             st.session_state.messages.append({"role": "assistant", "content": response.text})
         except Exception as e:
-            st.error(f"❌ ระบบขัดข้อง: {e}")
-
+            st.error(f"Error: {e}")
