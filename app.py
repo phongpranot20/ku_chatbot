@@ -27,7 +27,7 @@ def load_model():
         for m in genai.list_models():
             if 'generateContent' in m.supported_generation_methods:
                 return genai.GenerativeModel(
-                    model_name=m.name,
+                    model_name=m.name, 
                     tools=[{"google_search": {}}]
                 )
     except Exception as e:
@@ -63,7 +63,7 @@ if prompt := st.chat_input("พิมพ์คำถามที่นี่..."
         instruction = (
             "คุณคือ 'น้องนนทรี' AI รุ่นพี่ของ มก. ศรีราชา (KU SRC) "
             "ตอบคำถามตามข้อมูลที่ให้มาอย่างสุภาพ หากถามเรื่องตึก ต้องส่งลิ้งค์แผนที่เสมอ "
-            "และหากถามเรื่องสภาพจราจรหรือข้อมูลเรียลไทม์ ให้ใช้ Google Search สรุปคำตอบให้ผู้ใช้ด้วย"
+            "หากถูกถามเรื่องสภาพจราจรหรือข้อมูลเรียลไทม์ ให้ใช้ Google Search เพื่อสรุปข้อมูลสภาพจราจรล่าสุดมาตอบ ห้ามส่งแค่ลิ้งค์อย่างเดียว"
         )
         full_prompt = f"{instruction}\n\nข้อมูล: {knowledge_base}\n\nคำถาม: {prompt}"
         
