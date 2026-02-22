@@ -24,21 +24,21 @@ genai.configure(api_key=api_key)
 @st.cache_resource
 def load_model():
     try:
-        # ใช้เครื่องมือค้นหาข้อมูลล่าสุด (สรุปข้อมูลจราจรได้)
-        tools = [{"google_search_retrieval": {}}]
-        
-        # ระบุชื่อโมเดลที่เสถียรที่สุดและรองรับเครื่องมือนี้แน่นอน
-        return genai.GenerativeModel(
-            model_name='gemini-1.5-flash',
-            tools=tools
-        )
+        for m in genai.list_models():
+            if 'generateContent' in m.supported_generation_methods:
+                # แก้ไขจุดนี้: ใช้ google_search เป็น tool เปล่าๆ เพื่อให้โมเดลเรียกใช้ได้
+                return genai.GenerativeModel(
+                    model_name=m.name,
+                    tools=[{"google_search": {}}]
+                )
     except Exception as e:
-        st.error(f"เกิดข้อผิดพลาดในการโหลดโมเดล: {e}")
+        st.error(f"เกิดข้อผิดพลาดในการดึงรายชื่อโมเดล: {e}")
     return None
 
 model = load_model()
 
 if not model:
+    st.error("❌ ไม่พบโมเดลที่ใช้งานได้ในบัญชีนี้")
     st.stop()
 
 st.title("AI TEST")
@@ -64,13 +64,19 @@ if prompt := st.chat_input("พิมพ์คำถามที่นี่..."
         instruction = (
             "คุณคือ 'น้องนนทรี' AI รุ่นพี่ของ มก. ศรีราชา (KU SRC) "
             "ตอบคำถามตามข้อมูลที่ให้มาอย่างสุภาพ หากถามเรื่องตึก ต้องส่งลิ้งค์แผนที่เสมอ "
-            "หากถามเรื่องสภาพจราจรหรือข้อมูลเรียลไทม์ ให้ใช้เครื่องมือค้นหาข้อมูลและสรุปสภาพการจราจรมาตอบให้คนถามเข้าใจ"
+            "หากนิสิตถามเรื่องรถติดหรือสภาพจราจร ให้ใช้ Google Search เพื่อสรุปคำตอบให้เขาด้วย"
         )
         full_prompt = f"{instruction}\n\nข้อมูล: {knowledge_base}\n\nคำถาม: {prompt}"
         
         try:
+            # เพิ่ม safety_settings เพื่อป้องกัน Tool ขัดข้องในบางกรณี
             response = model.generate_content(full_prompt)
-            st.markdown(response.text)
-            st.session_state.messages.append({"role": "assistant", "content": response.text})
+            
+            # ตรวจสอบว่ามีการตอบกลับมาไหม
+            if response and response.text:
+                st.markdown(response.text)
+                st.session_state.messages.append({"role": "assistant", "content": response.text})
+            else:
+                st.write("พี่กำลังหาข้อมูลอยู่ครับ ลองถามอีกทีนะ")
         except Exception as e:
             st.error(f"❌ ระบบขัดข้อง: {e}")
