@@ -39,19 +39,25 @@ genai.configure(api_key=api_key)
 
 @st.cache_resource
 def load_model():
-    # แก้ไข: ลองใช้ชื่อรุ่นแบบเต็มเพื่อให้รองรับ API ทุกเวอร์ชัน
+    # ใช้การ List หาโมเดลที่ใช้งานได้จริงใน Key นี้ (วิธีที่ชัวร์ที่สุด)
     try:
-        return genai.GenerativeModel(model_name='models/gemini-1.5-flash')
-    except:
-        try:
-            return genai.GenerativeModel(model_name='gemini-1.5-flash-latest')
-        except Exception as e:
-            st.error(f"❌ ไม่สามารถโหลดโมเดลได้: {e}")
-            return None
+        for m in genai.list_models():
+            if 'generateContent' in m.supported_generation_methods:
+                # เลือกตัวที่เป็น Flash ก่อนเพื่อความเร็ว
+                if "flash" in m.name.lower():
+                    return genai.GenerativeModel(model_name=m.name)
+        # ถ้าหา Flash ไม่เจอ เอาตัวไหนก็ได้ที่ส่งคำถามได้
+        for m in genai.list_models():
+            if 'generateContent' in m.supported_generation_methods:
+                return genai.GenerativeModel(model_name=m.name)
+    except Exception as e:
+        st.error(f"❌ ระบบไม่สามารถดึงรายชื่อโมเดลได้: {e}")
+    return None
 
 model = load_model()
 
 if not model:
+    st.error("❌ ไม่พบโมเดลที่ใช้งานได้ใน API Key นี้")
     st.stop()
 
 st.title("AI TEST")
