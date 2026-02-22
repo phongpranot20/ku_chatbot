@@ -2,143 +2,139 @@ import streamlit as st
 import google.generativeai as genai
 import os
 
-st.set_page_config(page_title="KU Sriracha AI Bot", page_icon="🦖", layout="wide")
+st.set_page_config(page_title="KU SRC AI - น้องนนทรี", page_icon="🦖", layout="wide")
 
-# --- UI Customization (KU Green Premium Theme) ---
+# --- CUSTOM CSS: ULTIMATE DESIGN ---
 st.markdown("""
 <style>
-    /* พื้นหลังแบบไล่เฉดสีนวลตา */
+    @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
+    
+    * { font-family: 'Kanit', sans-serif; }
+
+    /* พื้นหลังแบบไล่เฉดสไตล์ Modern */
     .stApp {
-        background: linear-gradient(135deg, #f5fcf8 0%, #ffffff 100%);
+        background: radial-gradient(circle at top left, #f0fdf4 0%, #ffffff 100%);
     }
 
-    /*Sidebar - สไตล์เข้มแบบพรีเมียม */
+    /* Sidebar แบบพรีเมียม */
     [data-testid="stSidebar"] {
         background-color: #004d43 !important;
-        box-shadow: 2px 0px 10px rgba(0,0,0,0.1);
+        border-right: 1px solid rgba(255,255,255,0.1);
     }
     [data-testid="stSidebar"] * { color: #ffffff !important; }
-    
-    /* ปุ่มใน Sidebar */
-    .stSidebar [button] {
-        border-radius: 10px;
-        border: 1px solid rgba(255,255,255,0.2);
-        background-color: rgba(255,255,255,0.1);
+
+    /* หัวข้อหลักแบบหรูหรา */
+    .main-title {
+        font-size: 42px;
+        font-weight: 800;
+        background: linear-gradient(90deg, #00594C, #2D6A4F);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0px;
     }
 
-    /* หัวข้อหลัก */
-    h1 {
-        color: #00594C !important;
-        font-family: 'Kanit', sans-serif;
-        font-weight: 700;
-        letter-spacing: -1px;
-    }
-
-    /* การตกแต่งกล่องข้อความแชท (Glassmorphism) */
+    /* ตกแต่ง Chat Bubbles สไตล์ Glassmorphism */
     .stChatMessage {
-        border-radius: 20px !important;
-        margin-bottom: 1rem !important;
-        padding: 1.5rem !important;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.03) !important;
+        background: rgba(255, 255, 255, 0.7) !important;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 25px !important;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05) !important;
+        margin-bottom: 15px !important;
+        padding: 20px !important;
     }
-    
-    /* ผู้ใช้ (User) - ชิดขวา เขียวอ่อน */
+
+    /* จัดฝั่งข้อความให้ดูง่าย */
     div[data-testid="stChatMessage"]:has(span:contains("🧑‍🎓")) {
-        background-color: #e8f5e9 !important;
-        border: 1px solid #c8e6c9 !important;
-        margin-left: 15% !important;
+        border-bottom-right-radius: 2px !important;
+        background: rgba(230, 244, 234, 0.8) !important;
     }
 
-    /* บอท (Assistant) - ชิดซ้าย ขาวสะอาด */
     div[data-testid="stChatMessage"]:has(span:contains("🦖")) {
-        background-color: #ffffff !important;
-        border: 1px solid #f0f0f0 !important;
-        margin-right: 15% !important;
+        border-bottom-left-radius: 2px !important;
     }
 
-    /* ปุ่มทางลัด (Quick Reply) - ทรงมนสวยงาม */
+    /* ปุ่มทางลัด (Quick Reply) สไตล์ Pill Shape */
     div.stButton > button {
-        border-radius: 30px !important;
-        border: 1px solid #00594C !important;
+        border-radius: 50px !important;
+        border: 2px solid #00594C !important;
+        background-color: transparent !important;
         color: #00594C !important;
-        background-color: #ffffff !important;
-        font-weight: 500 !important;
-        padding: 0.5rem 1rem !important;
+        font-weight: 600 !important;
         transition: all 0.3s ease !important;
+        padding: 10px 25px !important;
     }
     div.stButton > button:hover {
         background-color: #00594C !important;
         color: #ffffff !important;
-        transform: scale(1.05);
+        box-shadow: 0 4px 15px rgba(0, 89, 76, 0.3);
     }
 
-    /* จุด Loading ใหญ่และมีสีสัน */
-    .loading-dots {
-        font-size: 30px;
-        color: #00594C;
-        letter-spacing: 5px;
+    /* ช่อง Input ที่ดูทันสมัย */
+    .stChatInputContainer {
+        padding-bottom: 20px !important;
+        background-color: transparent !important;
     }
-    .loading-dots:after {
-        content: '.';
-        animation: dots 1.5s infinite;
+
+    /* Loading Animation แบบ Smooth */
+    .loading-container {
+        display: flex;
+        gap: 5px;
+        padding: 10px;
     }
-    @keyframes dots {
-        0%, 20% { content: '.'; }
-        40% { content: '..'; }
-        60% { content: '...'; }
-        80%, 100% { content: ''; }
+    .dot {
+        width: 10px;
+        height: 10px;
+        background: #00594C;
+        border-radius: 50%;
+        animation: wave 1.3s linear infinite;
+    }
+    .dot:nth-child(2) { animation-delay: -1.1s; }
+    .dot:nth-child(3) { animation-delay: -0.9s; }
+
+    @keyframes wave {
+        0%, 60%, 100% { transform: translateY(0); }
+        30% { transform: translateY(-10px); }
     }
 </style>
 """, unsafe_allow_html=True)
 
-# --- Logic & API Setup ---
+# --- APP LOGIC ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 if not api_key:
-    st.error("❌ ไม่พบ API Key")
+    st.error("❌ Please set GEMINI_API_KEY in Secrets.")
     st.stop()
 
 genai.configure(api_key=api_key)
+model = genai.GenerativeModel('gemini-1.5-flash')
 
-@st.cache_resource
-def load_model():
-    try:
-        for m in genai.list_models():
-            if 'generateContent' in m.supported_generation_methods:
-                if "flash" in m.name.lower():
-                    return genai.GenerativeModel(model_name=m.name)
-        return genai.GenerativeModel(model_name='gemini-1.5-flash')
-    except: return None
-
-model = load_model()
-
-# --- Sidebar ---
+# Sidebar
 with st.sidebar:
-    st.markdown("<h2 style='text-align: center;'>KU SRC AI</h2>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align:center;'>🦖</h1>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align:center;'>KU SRC AI</h3>", unsafe_allow_html=True)
     st.markdown("---")
-    if st.button("🔄 เริ่มการสนทนาใหม่"):
+    if st.button("✨ เริ่มบทสนทนาใหม่"):
         st.session_state.messages = []
         st.rerun()
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    st.caption("เวอร์ชัน 1.5 - จำชื่อผู้ใช้และตอบไวพิเศษ")
 
-# --- Main Page ---
-st.title("🦖 น้องนนทรี AI")
-st.markdown("<p style='color: #666;'>รุ่นพี่พร้อมตอบคำถามน้องๆ มก. ศรีราชา แล้วครับ!</p>", unsafe_allow_html=True)
+# Header
+st.markdown("<h1 class='main-title'>น้องนนทรี AI</h1>", unsafe_allow_html=True)
+st.markdown("<p style='color: #4A5568;'>รุ่นพี่ AI พร้อมช่วยเหลือดูแลน้องๆ มก. ศรีราชา แล้วครับผม!</p>", unsafe_allow_html=True)
 
 # Quick Reply Buttons
-st.markdown("---")
-btn_prompt = None
+st.markdown("<br>", unsafe_allow_html=True)
 c1, c2, c3, c4 = st.columns(4)
+btn_prompt = None
 with c1:
     if st.button("🏢 พิกัดตึกเรียน"): btn_prompt = "ขอพิกัดตึกเรียนสำคัญใน มก. ศรีราชา"
 with c2:
-    if st.button("🍜 แนะนำของกิน"): btn_prompt = "แถวมอมีอะไรอร่อยบ้าง แนะนำหน่อยครับ"
+    if st.button("🍜 ของกินรอบมอ"): btn_prompt = "รอบ มก. ศรีราชา มีอะไรอร่อยบ้าง แนะนำหน่อยครับ"
 with c3:
-    if st.button("📑 ติดต่อทะเบียน"): btn_prompt = "อยากติดต่อเรื่องเอกสารการเรียนต้องไปที่ไหน"
+    if st.button("📑 ติดต่อฝ่ายทะเบียน"): btn_prompt = "อยากติดต่อเรื่องเอกสารการเรียนต้องไปที่ไหน"
 with c4:
-    if st.button("🚐 ตารางรถตะไล"): btn_prompt = "ขอเส้นทางและเวลาเดินรถตะไลครับ"
+    if st.button("🚐 ข้อมูลรถตะไล"): btn_prompt = "ขอเส้นทางและเวลาเดินรถตะไลครับ"
 
-# Message History
+# Chat History
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -147,8 +143,8 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"], avatar=avatar):
         st.markdown(message["content"])
 
-# Chat Input Logic
-chat_input = st.chat_input("คุยกับพี่นนทรี...")
+# Input
+chat_input = st.chat_input("พิมพ์ข้อความคุยกับพี่นนทรี...")
 prompt = chat_input if chat_input else btn_prompt
 
 if prompt:
@@ -158,23 +154,26 @@ if prompt:
 
     with st.chat_message("assistant", avatar="🦖"):
         status_placeholder = st.empty()
-        status_placeholder.markdown('<div class="loading-dots"></div>', unsafe_allow_html=True)
+        # Loading Dots สไตล์ใหม่
+        status_placeholder.markdown("""
+            <div class="loading-container">
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+            </div>
+        """, unsafe_allow_html=True)
         
-        # Load Knowledge Base
+        # Load Data
         kb = ""
         if os.path.exists("ku_data.txt"):
-            with open("ku_data.txt", "r", encoding="utf-8") as f:
-                kb = f.read()
+            with open("ku_data.txt", "r", encoding="utf-8") as f: kb = f.read()
 
         instruction = (
-            "คุณคือ 'น้องนนทรี' AI รุ่นพี่สุดเท่แห่ง มก. ศรีราชา (KU SRC) "
+            "คุณคือ 'น้องนนทรี' AI รุ่นพี่ของ มก. ศรีราชา (KU SRC) "
             "พูดจาสุภาพ เป็นกันเอง แทนตัวเองว่า 'พี่' และเรียกผู้ใช้ว่า 'น้อง' "
-            "จงจำชื่อผู้ใช้หากเขาบอกชื่อมา และใช้ชื่อเขาในการคุยเสมอ "
-            "ใช้ข้อมูลมหาวิทยาลัยที่ให้มาตอบอย่างรวดเร็วและเป็นมิตร"
+            "จงจำชื่อผู้ใช้หากเขาบอกชื่อมา และใช้ข้อมูลที่ให้มาตอบอย่างอบอุ่นและรวดเร็ว"
         )
         
         history = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages[-10:]])
-        full_p = f"{instruction}\n\nข้อมูล: {kb}\n\nประวัติการคุย:\n{history}\n\nคำถาม: {prompt}"
+        full_p = f"{instruction}\n\nข้อมูล: {kb}\n\nประวัติ: {history}\n\nคำถาม: {prompt}"
         
         try:
             response = model.generate_content(full_p)
@@ -182,4 +181,4 @@ if prompt:
             st.session_state.messages.append({"role": "assistant", "content": response.text})
         except Exception as e:
             status_placeholder.empty()
-            st.error(f"ขอโทษทีครับน้อง พี่เกิดข้อผิดพลาดนิดหน่อย: {e}")
+            st.error(f"ขอโทษครับน้อง พี่ขัดข้องนิดหน่อย: {e}")
