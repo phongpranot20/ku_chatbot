@@ -1,101 +1,154 @@
 import streamlit as st
 import google.generativeai as genai
 import os
+import random
+from datetime import date
 
-st.set_page_config(page_title="KU Sriracha Bot", page_icon="🐢", layout="wide")
+# 1. Page Configuration
+st.set_page_config(page_title="KU SRC AI - พี่นนทรี", page_icon="🦖", layout="wide")
 
+# 2. Premium CSS (Glassmorphism + KU Theme)
 st.markdown("""
 <style>
-    .stApp { background-color: #FFFFFF !important; color: black !important; }
-    [data-testid="stSidebar"] { background-color: #f2f9f6 !important; }
-    h1, h2, h3, p, span, div { color: #00594C; }
-    [data-testid="stChatMessage"] { background-color: #f0f2f6; border-radius: 10px; }
-    .stMarkdown p { color: #333333 !important; }
+    @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
+    * { font-family: 'Kanit', sans-serif; }
+    .stApp { background: radial-gradient(circle at top left, #f0fdf4 0%, #ffffff 100%); }
+    
+    /* Sidebar */
+    [data-testid="stSidebar"] { background-color: #004d43 !important; }
+    [data-testid="stSidebar"] * { color: #ffffff !important; }
 
-    .loading-dots {
-        font-size: 30px;
-        font-weight: bold;
-        display: inline-block;
+    /* Glass Chat Bubbles */
+    .stChatMessage {
+        background: rgba(255, 255, 255, 0.7) !important;
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 20px !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
     }
-    .loading-dots:after {
-        content: '.';
-        animation: dots 1.5s steps(5, end) infinite;
+
+    /* Quick Action Buttons */
+    div.stButton > button {
+        border-radius: 20px !important;
+        border: 1px solid #00594C !important;
+        transition: all 0.3s ease;
+        width: 100%;
     }
-    @keyframes dots {
-        0%, 20% { content: '.'; }
-        40% { content: '..'; }
-        60% { content: '...'; }
-        80%, 100% { content: ''; }
+    div.stButton > button:hover {
+        background-color: #00594C !important;
+        color: white !important;
+        transform: translateY(-2px);
+    }
+
+    /* Header Styling */
+    .main-title {
+        font-size: 38px; font-weight: 800;
+        background: linear-gradient(90deg, #00594C, #2D6A4F);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
 </style>
 """, unsafe_allow_html=True)
 
+# 3. Model Logic (Auto-Detect)
 api_key = st.secrets.get("GEMINI_API_KEY")
 if not api_key:
-    st.error("❌ ไม่พบ GEMINI_API_KEY ในหน้า Settings > Secrets")
+    st.error("❌ ลืมตั้งค่า GEMINI_API_KEY ใน Secrets ครับฮอน")
     st.stop()
 
 genai.configure(api_key=api_key)
 
 @st.cache_resource
-def load_model():
-    # ใช้การ List หาโมเดลที่ใช้งานได้จริงใน Key นี้ (วิธีที่ชัวร์ที่สุด)
+def load_ai_model():
     try:
-        for m in genai.list_models():
-            if 'generateContent' in m.supported_generation_methods:
-                # เลือกตัวที่เป็น Flash ก่อนเพื่อความเร็ว
-                if "flash" in m.name.lower():
-                    return genai.GenerativeModel(model_name=m.name)
-        # ถ้าหา Flash ไม่เจอ เอาตัวไหนก็ได้ที่ส่งคำถามได้
-        for m in genai.list_models():
-            if 'generateContent' in m.supported_generation_methods:
-                return genai.GenerativeModel(model_name=m.name)
-    except Exception as e:
-        st.error(f"❌ ระบบไม่สามารถดึงรายชื่อโมเดลได้: {e}")
-    return None
+        # ใช้รุ่นที่รองรับทั้งข้อความและรูปภาพ
+        return genai.GenerativeModel('gemini-1.5-flash')
+    except:
+        return None
 
-model = load_model()
+model = load_ai_model()
 
-if not model:
-    st.error("❌ ไม่พบโมเดลที่ใช้งานได้ใน API Key นี้")
-    st.stop()
+# 4. Sidebar Content (Function 3 & 4)
+with st.sidebar:
+    st.markdown("<h1 style='text-align:center;'>🦖</h1>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align:center;'>พี่นนทรี Digital Assistant</h3>", unsafe_allow_html=True)
+    
+    # Event Countdown (Function 3)
+    exam_date = date(2026, 3, 2) # สมมติวันสอบ
+    days_left = (exam_date - date.today()).days
+    st.info(f"📅 อีก {days_left} วันจะถึงวันสอบไฟนอล!")
+    
+    if st.button("✨ ล้างการสนทนา"):
+        st.session_state.messages = []
+        st.rerun()
+    
+    st.markdown("---")
+    # Multi-modal Input (Function 1)
+    st.markdown("📷 **ส่งรูปให้พี่ช่วยดูได้นะ**")
+    uploaded_file = st.file_uploader("เช่น ตารางเรียน หรือเมนูอาหาร", type=['png', 'jpg', 'jpeg'])
 
-st.title("AI TEST")
+# 5. Main UI
+st.markdown("<h1 class='main-title'>🦖 น้องนนทรี AI (KU SRC)</h1>", unsafe_allow_html=True)
 
-if os.path.exists("ku_data.txt"):
-    with open("ku_data.txt", "r", encoding="utf-8") as f:
-        knowledge_base = f.read()
-else:
-    knowledge_base = "ข้อมูลมหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตศรีราชา"
+# Quick Reply & Utility (Function 3 & 5)
+col1, col2, col3, col4 = st.columns(4)
+btn_prompt = None
+with col1:
+    if st.button("📍 พิกัดตึกเรียน"): btn_prompt = "ขอพิกัดตึกเรียนสำคัญใน มก. ศรีราชา พร้อมคำแนะนำการเดินทาง"
+with col2:
+    if st.button("🎲 สุ่มเมนูอาหาร"):
+        menus = ["ข้าวมันไก่โรง 1", "ก๋วยเตี๋ยวข้างมอ", "สเต็กเด็กแนว", "ส้มตำป้าแดง"]
+        choice = random.choice(menus)
+        btn_prompt = f"พี่สุ่มได้ '{choice}' ครับ น้องว่าร้านนี้โอเคไหม?"
+with col3:
+    if st.button("📚 ที่อ่านหนังสือ"): btn_prompt = "แนะนำที่อ่านหนังสือเงียบๆ ในมอหน่อยพี่"
+with col4:
+    if st.button("🚌 รถตะไลสายไหน?"): btn_prompt = "จะไปหน้ามอ ต้องขึ้นรถตะไลสายไหนครับ"
 
+# 6. Chat Logic
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-for message in st.session_state.messages:
-    with st.chat_message(message["role"], avatar="🧑‍🎓" if message["role"] == "user" else "🦖"):
-        st.markdown(message["content"])
+for m in st.session_state.messages:
+    with st.chat_message(m["role"], avatar="🧑‍🎓" if m["role"] == "user" else "🦖"):
+        st.markdown(m["content"])
 
-if prompt := st.chat_input("พิมพ์คำถามที่นี่..."):
-    st.chat_message("user", avatar="🧑‍🎓").markdown(prompt)
+# Input Handling
+chat_input = st.chat_input("คุยกับพี่นนทรีได้เลย...")
+prompt = chat_input if chat_input else btn_prompt
+
+if prompt:
+    # แสดงข้อความฝั่ง User
+    with st.chat_message("user", avatar="🧑‍🎓"):
+        st.markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
+    # ฝั่ง AI ตอบกลับ
     with st.chat_message("assistant", avatar="🦖"):
-        status_placeholder = st.empty()
-        status_placeholder.markdown('<div class="loading-dots"></div>', unsafe_allow_html=True)
-        
+        status = st.empty()
+        status.markdown("กำลังคิดแป๊บนึงนะน้อง...")
+
+        # ระบบ Knowledge Base เชิงลึก (Function 5)
         instruction = (
-            "คุณคือ 'น้องนนทรี' AI รุ่นพี่ของ มก. ศรีราชา (KU SRC) "
-            "ภารกิจ: จงจำชื่อผู้ใช้และสิ่งที่คุยกันก่อนหน้าจากประวัติการสนทนา "
-            "ตอบคำถามตามข้อมูลที่ให้มาอย่างสุภาพ หากถามเรื่องตึก ต้องส่งลิงก์แผนที่เสมอ"
+            "คุณคือ 'พี่นนทรี' รุ่นพี่ใจดีแห่ง มก. ศรีราชา "
+            "ตอบแบบสนิทสนม แทนตัวเองว่าพี่ เรียกผู้ใช้ว่าน้อง "
+            "ต้องให้ข้อมูลที่เป็น 'Inside' เช่น ร้านไหนรอนาน ตึกไหนแอร์หนาว "
+            "ถ้ามีการอัปโหลดรูป ให้วิเคราะห์รูปนั้นอย่างละเอียดในบริบทนิสิต"
         )
         
-        history_text = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages[-10:]])
-        full_prompt = f"{instruction}\n\nข้อมูล: {knowledge_base}\n\nประวัติการคุย:\n{history_text}\n\nคำถามล่าสุด: {prompt}"
+        # เตรียมเนื้อหาสำหรับส่งให้ Model
+        content_to_send = [f"{instruction}\n\nคำถาม: {prompt}"]
         
+        # ถ้ามีการอัปโหลดรูป (Function 1)
+        if uploaded_file:
+            import PIL.Image
+            img = PIL.Image.open(uploaded_file)
+            content_to_send.append(img)
+            content_to_send.append("ช่วยวิเคราะห์รูปนี้ในฐานะรุ่นพี่ มก. หน่อยครับ")
+
         try:
-            response = model.generate_content(full_prompt)
-            status_placeholder.markdown(response.text)
+            response = model.generate_content(content_to_send)
+            status.markdown(response.text)
             st.session_state.messages.append({"role": "assistant", "content": response.text})
         except Exception as e:
-            status_placeholder.empty()
-            st.error(f"❌ เกิดข้อผิดพลาด: {e}")
+            status.empty()
+            st.error(f"พี่ขัดข้องนิดหน่อย: {e}")
