@@ -1,10 +1,10 @@
 import streamlit as st
 import google.generativeai as genai
 import os
-import time  # เพิ่มมาเพื่อใช้ทำ animation
 
 st.set_page_config(page_title="KU Sriracha Bot", page_icon="🐢", layout="wide")
 
+# เพิ่ม CSS สำหรับจุดโหลดใบใหญ่และขยับได้
 st.markdown("""
 <style>
     .stApp { background-color: #FFFFFF !important; color: black !important; }
@@ -12,6 +12,23 @@ st.markdown("""
     h1, h2, h3, p, span, div { color: #00594C; }
     [data-testid="stChatMessage"] { background-color: #f0f2f6; border-radius: 10px; }
     .stMarkdown p { color: #333333 !important; }
+
+    /* Animation สำหรับจุด Loading */
+    .loading-dots {
+        font-size: 30px;
+        font-weight: bold;
+        display: inline-block;
+    }
+    .loading-dots:after {
+        content: '.';
+        animation: dots 1.5s steps(5, end) infinite;
+    }
+    @keyframes dots {
+        0%, 20% { content: '.'; }
+        40% { content: '..'; }
+        60% { content: '...'; }
+        80%, 100% { content: ''; }
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -69,7 +86,9 @@ if prompt := st.chat_input("พิมพ์คำถามที่นี่..."
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     with st.chat_message("assistant", avatar="🦖"):
+        # แสดงจุดขนาดใหญ่ที่ขยับได้ด้วย CSS
         status_placeholder = st.empty()
+        status_placeholder.markdown('<div class="loading-dots"></div>', unsafe_allow_html=True)
         
         instruction = (
             "คุณคือ 'น้องนนทรี' AI รุ่นพี่ของ มก. ศรีราชา (KU SRC) "
@@ -81,15 +100,11 @@ if prompt := st.chat_input("พิมพ์คำถามที่นี่..."
         history_text = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages[-10:]])
         full_prompt = f"{instruction}\n\nข้อมูล: {knowledge_base}\n\nประวัติการคุย:\n{history_text}\n\nคำถามล่าสุด: {prompt}"
         
-        # ส่วนแสดง Animation ระหว่างรอ AI
-        # เราจะใช้การวนลูปสั้นๆ ระหว่างที่ฟังก์ชันทำงาน (ในที่นี้จะโชว์ 3 รอบ)
-        for _ in range(3):
-            for dots in [".", "..", "..."]:
-                status_placeholder.markdown(dots)
-                time.sleep(0.2)
-        
         try:
+            # AI กำลังประมวลผล (จุดจะขยับไปเรื่อยๆ ในระหว่างที่รอตรงนี้)
             response = model.generate_content(full_prompt)
+            
+            # เมื่อได้คำตอบแล้ว ให้ลบจุดออกและแสดงข้อความ
             status_placeholder.markdown(response.text)
             st.session_state.messages.append({"role": "assistant", "content": response.text})
         except Exception as e:
