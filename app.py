@@ -23,16 +23,14 @@ genai.configure(api_key=api_key)
 
 @st.cache_resource
 def load_model():
-    # 1. ลองโหลดแบบ google_search (ตัวใหม่ล่าสุด)
     try:
         for m in genai.list_models():
             if 'generateContent' in m.supported_generation_methods:
-                if "1.5" in m.name: # เลือกเฉพาะรุ่นใหม่ที่รองรับ Search
+                if "1.5" in m.name:
                     return genai.GenerativeModel(model_name=m.name, tools=[{"google_search": {}}])
     except:
         pass
 
-    # 2. ถ้าแบบแรก Error ให้ลองแบบ google_search_retrieval
     try:
         for m in genai.list_models():
             if 'generateContent' in m.supported_generation_methods:
@@ -41,7 +39,6 @@ def load_model():
     except:
         pass
 
-    # 3. ถ้าไม่ได้จริงๆ ให้ใช้แบบเดิมของคุณที่รันผ่านแน่นอน (ไม่มี Search)
     for m in genai.list_models():
         if 'generateContent' in m.supported_generation_methods:
             return genai.GenerativeModel(m.name)
@@ -75,17 +72,21 @@ if prompt := st.chat_input("พิมพ์คำถามที่นี่..."
     with st.chat_message("assistant", avatar="🦖"):
         instruction = (
             "คุณคือ 'น้องนนทรี' AI รุ่นพี่ของ มก. ศรีราชา (KU SRC) "
-            "ตอบคำถามตามข้อมูลที่ให้มาอย่างสุภาพ หากถามเรื่องตึก ต้องส่งลิ้งค์แผนที่เสมอ "
+            "ภารกิจ: จงจำชื่อผู้ใช้และสิ่งที่คุยกันก่อนหน้าจากประวัติการสนทนา "
+            "ตอบคำถามตามข้อมูลที่ให้มาอย่างสุภาพ หากถามเรื่องตึก ต้องส่งลิงก์แผนที่เสมอ "
             "และถ้าเป็นไปได้ ให้ช่วยเช็คสภาพจราจรหรือข้อมูลเรียลไทม์มาตอบด้วย"
         )
-        full_prompt = f"{instruction}\n\nข้อมูล: {knowledge_base}\n\nคำถาม: {prompt}"
+        
+        # --- ส่วนที่เพิ่มเข้ามาเพื่อให้บอทจำชื่อได้ ---
+        history_text = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages[-10:]])
+        full_prompt = f"{instruction}\n\nข้อมูล: {knowledge_base}\n\nประวัติการคุย:\n{history_text}\n\nคำถามล่าสุด: {prompt}"
+        # ---------------------------------------
         
         try:
             response = model.generate_content(full_prompt)
             st.markdown(response.text)
             st.session_state.messages.append({"role": "assistant", "content": response.text})
         except Exception as e:
-            # ถ้าเกิด Error ตอน generate (เช่น Tool พังระหว่างทาง) ให้ลองเรียกแบบไม่มี Tool แทน
             try:
                 base_model = genai.GenerativeModel(model.model_name)
                 response = base_model.generate_content(full_prompt)
