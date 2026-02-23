@@ -4,42 +4,51 @@ import os
 import uuid
 import json
 
-# --- 1. CSS ปรับปรุง: New Chat เขียวอ่อน + ขีดน้ำเงินค้างที่ประวัติ ---
+# --- 1. CSS ขั้นสุด (บังคับขีดน้ำเงิน และ New Chat สีขาว) ---
 st.set_page_config(page_title="AI TEST", layout="wide")
 
 st.markdown("""
 <style>
-    [data-testid="stSidebar"] { background-color: #f8f9fa !important; }
+    /* ตั้งค่า Sidebar ให้พื้นหลังคลีนๆ */
+    [data-testid="stSidebar"] { background-color: #ffffff !important; border-right: 1px solid #eee; }
     
-    /* สไตล์ปุ่มประวัติทรงเหลี่ยม */
+    /* สไตล์ปุ่มประวัติทั่วไป (สีขาว ไม่มีขอบ) */
     div.stButton > button {
         width: 100% !important;
         border: none !important;
-        background-color: transparent !important;
+        background-color: #ffffff !important;
         padding: 15px 10px !important;
         text-align: left !important;
         border-radius: 0px !important;
-        border-bottom: 1px solid #eee !important;
+        border-bottom: 1px solid #f0f0f0 !important;
         color: #444 !important;
         display: block !important;
+        transition: 0.2s;
     }
 
-    /* บังคับขีดน้ำเงินด้านซ้ายสำหรับห้องที่เลือก (Active) */
+    /* บังคับขีดสีน้ำเงินด้านซ้ายสำหรับห้องที่เลือก (Active) */
+    /* ใช้ !important ทุกจุดเพื่อให้สีไม่โดนล้าง */
     div[data-testid="stSidebar"] button[kind="primary"] {
-        background-color: #e9ecef !important;
-        border-left: 6px solid #007bff !important; /* ขีดน้ำเงินตามรูปที่ฮอนอยากได้ */
-        color: #111 !important;
+        background-color: #f8f9fa !important; /* สีเทาอ่อนมากๆ ให้รู้ว่ากดอยู่ */
+        border-left: 6px solid #007bff !important; /* ขีดน้ำเงินหนาๆ ด้านซ้าย */
+        color: #007bff !important;
         font-weight: 600 !important;
     }
 
-    /* ปุ่ม New Chat: สีเขียวอ่อนที่สุด */
+    /* ปุ่ม New Chat: สีขาวสะอาดตามสั่ง */
     .stSidebar [data-testid="stVerticalBlock"] > div:nth-child(2) button {
-        background-color: #e8f5e9 !important; /* เขียวอ่อนที่สุด */
-        color: #2e7d32 !important;
-        border-radius: 10px !important;
+        background-color: #ffffff !important;
+        color: #333 !important;
+        border-radius: 8px !important;
         text-align: center !important;
-        border: 1px solid #c8e6c9 !important;
+        border: 1px solid #ddd !important; /* ใส่ขอบบางๆ ให้เห็นว่าเป็นปุ่ม */
         margin-bottom: 20px !important;
+        border-left: none !important; /* ไม่มีขีดซ้าย */
+    }
+    
+    .stSidebar [data-testid="stVerticalBlock"] > div:nth-child(2) button:hover {
+        border-color: #00594C !important;
+        color: #00594C !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -85,7 +94,7 @@ current_chat = st.session_state.chat_sessions[current_id]
 # --- 5. Sidebar ---
 with st.sidebar:
     st.header("เมนูควบคุม")
-    # เปลี่ยนชื่อเป็น New Chat และสีเขียวอ่อน
+    # ปุ่ม New Chat สีขาวสะอาด
     if st.button("New Chat", use_container_width=True):
         if len(current_chat["messages"]) > 0:
             new_id = str(uuid.uuid4())
@@ -97,11 +106,12 @@ with st.sidebar:
     st.write("---")
     st.subheader("ประวัติการคุย")
     
+    # วนลูปสร้างปุ่มประวัติ
     for chat_id, chat_data in reversed(list(st.session_state.chat_sessions.items())):
         if len(chat_data["messages"]) > 0:
             is_active = (chat_id == current_id)
             
-            # บังคับใช้ type="primary" เพื่อให้ CSS ขีดซ้ายทำงาน
+            # บังคับใช้ type="primary" เพื่อให้ขีดน้ำเงินแสดงผล
             if st.button(
                 chat_data["title"], 
                 key=chat_id, 
