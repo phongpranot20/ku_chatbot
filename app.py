@@ -2,129 +2,86 @@ import streamlit as st
 import google.generativeai as genai
 import os
 
-st.set_page_config(page_title="KU SRC AI - น้องนนทรี", page_icon="🦖", layout="wide")
+# ตั้งค่าหน้าจอเบื้องต้น
+st.set_page_config(page_title="AI TEST", layout="wide")
 
-# --- CUSTOM CSS: ULTIMATE DESIGN WITH SIDEBAR STYLE ---
-st.markdown("""
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
-    * { font-family: 'Kanit', sans-serif; }
-    .stApp { background: radial-gradient(circle at top left, #f0fdf4 0%, #ffffff 100%); }
-    
-    /*Sidebar - สไตล์พรีเมียมเข้ม */
-    [data-testid="stSidebar"] {
-        background-color: #004d43 !important;
-        border-right: 1px solid rgba(255,255,255,0.1);
-        color: white !important;
-    }
-    [data-testid="stSidebar"] * { color: white !important; }
-    
-    /* หัวข้อใน Sidebar */
-    .sidebar-title {
-        font-size: 20px;
-        font-weight: 600;
-        text-align: center;
-        margin-bottom: 20px;
-    }
+# ส่วนหัวข้อหลักตามที่ต้องการ
+st.title("AI TEST")
 
-    /* ตกแต่ง Chat Bubbles */
-    .stChatMessage {
-        background: rgba(255, 255, 255, 0.7) !important;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.4);
-        border-radius: 20px !important;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
-        margin-bottom: 10px !important;
-    }
-
-    /* จุด Loading */
-    .loading-container { display: flex; gap: 5px; padding: 10px; }
-    .dot { width: 10px; height: 10px; background: #00594C; border-radius: 50%; animation: wave 1.3s linear infinite; }
-    .dot:nth-child(2) { animation-delay: -1.1s; }
-    .dot:nth-child(3) { animation-delay: -0.9s; }
-    @keyframes wave { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-10px); } }
-</style>
-""", unsafe_allow_html=True)
-
-# --- AI SETUP ---
+# --- การตั้งค่า API และ Model ---
 api_key = st.secrets.get("GEMINI_API_KEY")
+if not api_key:
+    st.error("กรุณาใส่ API Key ใน Secrets")
+    st.stop()
+
 genai.configure(api_key=api_key)
 
 @st.cache_resource
-def load_ai():
+def load_model():
+    # ระบบค้นหาชื่อโมเดลที่ใช้งานได้อัตโนมัติ (ป้องกัน Error 404)
     try:
-        # ระบบหาโมเดลอัตโนมัติเพื่อให้ไม่พัง
         for m in genai.list_models():
             if 'generateContent' in m.supported_generation_methods:
-                if "flash" in m.name.lower(): return genai.GenerativeModel(m.name)
-        return genai.GenerativeModel('gemini-1.5-flash')
-    except: return None
+                if "flash" in m.name.lower():
+                    return genai.GenerativeModel(model_name=m.name)
+        return genai.GenerativeModel(model_name='gemini-1.5-flash')
+    except:
+        return None
 
-model = load_ai()
+model = load_model()
 
-# --- SIDEBAR: CHAT HISTORY & INFO ---
-with st.sidebar:
-    st.markdown("<div class='sidebar-title'>🦖 พี่นนทรี History</div>", unsafe_allow_html=True)
-    
-    # ส่วนแสดงประวัติย่อ (ดึงคำถามล่าสุดมาโชว์)
-    if "messages" in st.session_state and len(st.session_state.messages) > 0:
-        st.markdown("💬 **บทสนทนาล่าสุด:**")
-        # ดึงมาโชว์เฉพาะคำถามจาก User 5 อันล่าสุด
-        user_msgs = [m["content"] for m in st.session_state.messages if m["role"] == "user"]
-        for msg in user_msgs[-5:]:
-            st.caption(f"• {msg[:30]}..." if len(msg) > 30 else f"• {msg}")
-    else:
-        st.caption("ยังไม่มีประวัติการคุยในเซสชันนี้")
-
-    st.markdown("---")
-    
-    # ปุ่มล้างแชทแบบสวยๆ
-    if st.button("✨ ล้างประวัติการแชท", use_container_width=True):
-        st.session_state.messages = []
-        st.rerun()
-
-# --- MAIN CONTENT ---
-st.title("🦖 น้องนนทรี AI (KU SRC)")
-
+# --- ระบบจัดการ Session State (ประวัติการแชท) ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# แสดงข้อความแชททั้งหมด (ประวัติการแชทในหน้าหลัก)
+# --- แถบด้านข้าง (Sidebar) ---
+with st.sidebar:
+    st.header("เมนูควบคุม")
+    
+    # ฟังก์ชัน: กดคุยแชทใหม่ (เริ่มใหม่หมด)
+    if st.button("คุยแชทใหม่ (Clear Chat)"):
+        st.session_state.messages = []
+        st.rerun()
+    
+    st.write("---")
+    st.subheader("ประวัติการคุยล่าสุด")
+    # แสดงหัวข้อคำถามย้อนหลังใน Sidebar
+    if st.session_state.messages:
+        for msg in st.session_state.messages:
+            if msg["role"] == "user":
+                st.caption(f"Q: {msg['content'][:20]}...")
+    else:
+        st.write("ยังไม่มีประวัติ")
+
+# --- ส่วนแสดงผลแชทในหน้าหลัก ---
 for message in st.session_state.messages:
-    avatar = "🧑‍🎓" if message["role"] == "user" else "🦖"
-    with st.chat_message(message["role"], avatar=avatar):
+    with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# รับ Input
-if prompt := st.chat_input("พิมพ์ข้อความคุยกับพี่นนทรี..."):
-    with st.chat_message("user", avatar="🧑‍🎓"):
+# --- ส่วนรับข้อมูลจากผู้ใช้ ---
+if prompt := st.chat_input("พิมพ์ข้อความที่นี่..."):
+    # 1. แสดงข้อความผู้ใช้
+    with st.chat_message("user"):
         st.markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
-    with st.chat_message("assistant", avatar="🦖"):
-        status = st.empty()
-        status.markdown('<div class="loading-container"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>', unsafe_allow_html=True)
+    # 2. เรียกใช้งาน AI
+    with st.chat_message("assistant"):
+        placeholder = st.empty()
+        placeholder.write("กำลังประมวลผล...")
         
-        # Load Knowledge Base
-        kb = ""
-        if os.path.exists("ku_data.txt"):
-            with open("ku_data.txt", "r", encoding="utf-8") as f: kb = f.read()
-
-        instruction = (
-            "คุณคือ 'พี่นนทรี' รุ่นพี่ของ มก. ศรีราชา "
-            "ตอบแบบสุภาพเป็นกันเอง แทนตัวเองว่าพี่ และจำชื่อน้องให้ได้เสมอ"
-        )
-        
-        # ส่งประวัติย้อนหลัง 10 ข้อความเพื่อให้บอทจำได้ (Memory)
+        # ดึงความจำย้อนหลัง (History)
         history = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages[-10:]])
-        full_p = f"{instruction}\n\nข้อมูล: {kb}\n\nประวัติ: {history}\n\nคำถาม: {prompt}"
+        
+        # จัดเตรียมคำสั่งพื้นฐาน (Instruction)
+        instruction = "คุณคือ 'น้องนนทรี' AI รุ่นพี่ มก. ศรีราชา ตอบคำถามอย่างเป็นกันเองและจำชื่อผู้ใช้ได้เสมอ"
+        full_prompt = f"{instruction}\n\nประวัติ:\n{history}\n\nคำถาม: {prompt}"
         
         try:
-            response = model.generate_content(full_p)
-            status.markdown(response.text)
+            response = model.generate_content(full_prompt)
+            placeholder.markdown(response.text)
             st.session_state.messages.append({"role": "assistant", "content": response.text})
-            # สั่ง rerun เพื่ออัปเดตประวัติใน Sidebar ทันที
+            # สั่งรีเฟรชเพื่อให้ Sidebar อัปเดตประวัติทันที
             st.rerun()
         except Exception as e:
-            status.empty()
-            st.error(f"พี่ขัดข้องนิดหน่อย: {e}")
+            st.error(f"เกิดข้อผิดพลาด: {e}")
