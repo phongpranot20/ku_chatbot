@@ -112,7 +112,7 @@ with st.sidebar:
             is_active = (chat_id == st.session_state.current_chat_id)
             
             # ตกแต่งชื่อปุ่มให้มี วันเวลา ต่อท้าย (เลียนแบบในรูป)
-            display_text = f"{chat_data['title']}\n{chat_data['time']}"
+            
             
             if st.button(
                 display_text, 
