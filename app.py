@@ -50,9 +50,10 @@ if api_key:
 @st.cache_resource
 def load_working_model():
     try:
+        # บังคับใช้ชื่อรุ่นมาตรฐานเพื่อแก้ Error 404
         return genai.GenerativeModel('gemini-1.5-flash')
-    except:
-        return None
+    except Exception as e:
+        return e
 
 model = load_working_model()
 
@@ -110,11 +111,13 @@ if prompt := st.chat_input("พิมพ์ข้อความที่นี�
         placeholder = st.empty()
         history = "\n".join([f"{msg['role']}: {msg['content']}" for msg in current_chat["messages"][-2:]])
         try:
-            if model:
+            if isinstance(model, genai.GenerativeModel):
                 response = model.generate_content(f"คุณคือพี่นนทรี\n\nประวัติ:\n{history}\n\nคำถาม: {prompt}")
                 placeholder.markdown(response.text)
                 current_chat["messages"].append({"role": "assistant", "content": response.text})
                 st.rerun()
+            else:
+                st.error(f"Model Error: {str(model)}")
         except Exception as e:
-            # แสดง Error จริงที่ระบบแจ้งมาในกล่องแดง
-            st.error(f"Error: {str(e)}")
+            # พ่น Error จริงออกมาตามที่คุณต้องการ
+            st.error(f"Execution Error: {str(e)}")
