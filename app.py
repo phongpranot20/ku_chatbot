@@ -4,6 +4,7 @@ import os
 
 st.set_page_config(page_title="KU Sriracha Bot", page_icon="🐢", layout="wide")
 
+# CSS หน้าตาเดิมของฮอน
 st.markdown("""
 <style>
     .stApp { background-color: #FFFFFF !important; color: black !important; }
@@ -37,31 +38,26 @@ if not api_key:
 
 genai.configure(api_key=api_key)
 
+# ปรับปรุง: เรียก List Models แค่ครั้งเดียวและ Cache ไว้
 @st.cache_resource
 def load_model():
-    # ใช้การ List หาโมเดลที่ใช้งานได้จริงใน Key นี้ (วิธีที่ชัวร์ที่สุด)
     try:
-        for m in genai.list_models():
-            if 'generateContent' in m.supported_generation_methods:
-                # เลือกตัวที่เป็น Flash ก่อนเพื่อความเร็ว
-                if "flash" in m.name.lower():
-                    return genai.GenerativeModel(model_name=m.name)
-        # ถ้าหา Flash ไม่เจอ เอาตัวไหนก็ได้ที่ส่งคำถามได้
-        for m in genai.list_models():
-            if 'generateContent' in m.supported_generation_methods:
-                return genai.GenerativeModel(model_name=m.name)
+        models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+        # เลือก flash ตัวแรกที่เจอ
+        selected = next((m for m in models if "flash" in m), models[0])
+        return genai.GenerativeModel(model_name=selected)
     except Exception as e:
-        st.error(f"❌ ระบบไม่สามารถดึงรายชื่อโมเดลได้: {e}")
-    return None
+        return None
 
 model = load_model()
 
 if not model:
-    st.error("❌ ไม่พบโมเดลที่ใช้งานได้ใน API Key นี้")
+    st.error("❌ ไม่พบโมเดลที่ใช้งานได้")
     st.stop()
 
 st.title("AI TEST")
 
+# โหลดข้อมูล Knowledge Base
 if os.path.exists("ku_data.txt"):
     with open("ku_data.txt", "r", encoding="utf-8") as f:
         knowledge_base = f.read()
@@ -71,6 +67,7 @@ else:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+# แสดงประวัติการคุย
 for message in st.session_state.messages:
     with st.chat_message(message["role"], avatar="🧑‍🎓" if message["role"] == "user" else "🦖"):
         st.markdown(message["content"])
@@ -80,22 +77,29 @@ if prompt := st.chat_input("พิมพ์คำถามที่นี่..."
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     with st.chat_message("assistant", avatar="🦖"):
-        status_placeholder = st.empty()
-        status_placeholder.markdown('<div class="loading-dots"></div>', unsafe_allow_html=True)
+        placeholder = st.empty()
+        # แสดงจุดขยับตอนรอคำตอบ
+        placeholder.markdown('<div class="loading-dots"></div>', unsafe_allow_html=True)
         
         instruction = (
-            "คุณคือ 'น้องนนทรี' AI รุ่นพี่ของ มก. ศรีราชา (KU SRC) "
-            "ภารกิจ: จงจำชื่อผู้ใช้และสิ่งที่คุยกันก่อนหน้าจากประวัติการสนทนา "
-            "ตอบคำถามตามข้อมูลที่ให้มาอย่างสุภาพ หากถามเรื่องตึก ต้องส่งลิงก์แผนที่เสมอ"
+            "คุณคือ 'น้องนนทรี' AI รุ่นพี่ มก. ศรีราชา "
+            "ตอบคำถามตามข้อมูลที่ให้มาอย่างสุภาพ"
         )
         
-        history_text = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages[-10:]])
-        full_prompt = f"{instruction}\n\nข้อมูล: {knowledge_base}\n\nประวัติการคุย:\n{history_text}\n\nคำถามล่าสุด: {prompt}"
+        # ปรับปรุง: ส่งประวัติแค่ 3 ข้อความล่าสุดเพื่อประหยัด Token และความเร็ว
+        history_text = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages[-3:]])
+        full_prompt = f"{instruction}\n\nข้อมูล: {knowledge_base}\n\nประวัติ:\n{history_text}\n\nคำถามล่าสุด: {prompt}"
         
         try:
-            response = model.generate_content(full_prompt)
-            status_placeholder.markdown(response.text)
-            st.session_state.messages.append({"role": "assistant", "content": response.text})
+            # ปรับปรุง: ใช้ stream=True เพื่อให้พ่นคำออกมาทีละนิด (แก้ปัญหาคิดนาน)
+            response = model.generate_content(full_prompt, stream=True)
+            full_response = ""
+            for chunk in response:
+                full_response += chunk.text
+                placeholder.markdown(full_response + "▌")
+            
+            placeholder.markdown(full_response)
+            st.session_state.messages.append({"role": "assistant", "content": full_response})
         except Exception as e:
-            status_placeholder.empty()
-            st.error(f"❌ เกิดข้อผิดพลาด: {e}")
+            placeholder.empty()
+            st.error(f"Error: {str(e)}")
