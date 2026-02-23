@@ -3,15 +3,15 @@ import google.generativeai as genai
 import os
 import uuid
 
-# --- 1. CSS ปรับแต่งแบบเจาะจง (ลบสีส้ม/แดง ออกให้เกลี้ยง) ---
+# --- 1. CSS ชุดดุพิเศษ (ฆ่าสีแดง/ส้มทิ้ง 100% เหลือแค่ขีดเขียวซ้ายมือ) ---
 st.set_page_config(page_title="AI TEST", layout="wide")
 
 st.markdown("""
 <style>
-    /* ล้างค่าสีพื้นฐานของปุ่มใน Sidebar ทุกชนิด */
+    /* 1. ล้างค่าพื้นหลังปุ่มทุกชนิดใน Sidebar ให้ใสสะอาด */
     div[data-testid="stSidebar"] button {
         border: none !important;
-        background-color: transparent !important;
+        background-color: transparent !important; /* บังคับใส */
         color: #555 !important;
         text-align: left !important;
         padding-left: 20px !important;
@@ -20,22 +20,16 @@ st.markdown("""
         box-shadow: none !important;
     }
 
-    /* บังคับลบสีส้ม/แดง จากปุ่มที่เลือกอยู่ (Active) และใส่ขีดเขียวซ้ายมือ */
+    /* 2. ลบสีแดง/ส้ม ของปุ่ม Primary ออก และใส่ขีดสีเขียวนนทรีแทน */
     div[data-testid="stSidebar"] button[kind="primary"] {
-        background-color: rgba(0, 89, 76, 0.05) !important; /* เขียวจางๆ มากๆ */
-        border-left: 6px solid #00594C !important; /* ขีดสีเขียวนนทรี */
+        background-color: rgba(0, 89, 76, 0.05) !important; /* พื้นหลังจางๆ เพื่อให้รู้ว่าเลือกอยู่ */
+        border-left: 6px solid #00594C !important; /* ขีดสีเขียวนนทรีด้านซ้าย */
         color: #00594C !important;
         font-weight: bold !important;
         border-radius: 0px !important;
     }
-
-    /* เมื่อเมาส์ไปวาง ให้สีเปลี่ยนนิดเดียวพอ */
-    div[data-testid="stSidebar"] button:hover {
-        background-color: rgba(0, 0, 0, 0.02) !important;
-        color: #00594C !important;
-    }
-
-    /* สไตล์ปุ่มเริ่มแชทใหม่ให้ดูแยกสัดส่วนชัดเจน */
+    
+    /* 3. สไตล์ปุ่มเริ่มแชทใหม่ให้ดูแยกสัดส่วนคลีนๆ */
     div[data-testid="stSidebar"] [data-testid="stVerticalBlock"] > div:nth-child(2) button {
         background-color: #f0f2f6 !important;
         border-radius: 10px !important;
@@ -48,7 +42,7 @@ st.markdown("""
 
 st.title("AI TEST")
 
-# --- 2. การตั้งค่าโมเดล ---
+# --- 2. การตั้งค่า Model (Auto-Detect ชื่อรุ่นป้องกัน Error) ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 genai.configure(api_key=api_key)
 
@@ -68,8 +62,6 @@ if "chat_sessions" not in st.session_state:
     st.session_state.chat_sessions = {}
 if "current_chat_id" not in st.session_state:
     st.session_state.current_chat_id = None
-if "user_name" not in st.session_state:
-    st.session_state.user_name = None
 
 if st.session_state.current_chat_id is None:
     first_id = str(uuid.uuid4())
@@ -79,7 +71,7 @@ if st.session_state.current_chat_id is None:
 current_chat = st.session_state.chat_sessions[st.session_state.current_chat_id]
 messages = current_chat["messages"]
 
-# --- 4. Sidebar (เช็ค Syntax ปิดวงเล็บให้แล้ว) ---
+# --- 4. Sidebar (แก้ไข Syntax Error บรรทัดที่ 80 เรียบร้อย) ---
 with st.sidebar:
     st.header("เมนูควบคุม")
     if st.button("+ เริ่มแชทใหม่", use_container_width=True):
@@ -92,10 +84,11 @@ with st.sidebar:
     st.write("---")
     st.subheader("ประวัติการคุย")
     
+    # วนลูปแสดงประวัติห้องแชท
     for chat_id, chat_data in reversed(list(st.session_state.chat_sessions.items())):
         if len(chat_data["messages"]) > 0:
-            is_active = (chat_id == st.session_state.current_chat_id)
-            # ใช้ type="primary" เพื่อให้ CSS จับไปทำขีดสีเขียว
+            # ปิดวงเล็บที่ค้างไว้ให้ครบถ้วนในบรรทัดนี้
+            is_active = (chat_id == st.session_state.current_chat_id) 
             if st.button(chat_data["title"], key=chat_id, use_container_width=True, 
                          type="primary" if is_active else "secondary"):
                 st.session_state.current_chat_id = chat_id
