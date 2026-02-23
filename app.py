@@ -3,24 +3,34 @@ import google.generativeai as genai
 import os
 import uuid
 
-# --- 1. การตั้งค่าหน้าจอและ CSS (เน้นเฉพาะส่วนแถบสีปุ่ม) ---
+# --- 1. การตั้งค่าหน้าจอและ CSS (เน้นแถบสีเขียวเล็กๆ ด้านซ้าย) ---
 st.set_page_config(page_title="AI TEST", layout="wide")
 
 st.markdown("""
 <style>
-    /* สไตล์ปุ่มที่ถูกเลือกใน Sidebar (Active State) */
+    /* สไตล์ปุ่มทั่วไปใน Sidebar */
+    div[data-testid="stSidebar"] button {
+        border: none !important;
+        background-color: transparent !important;
+        text-align: left !important;
+        padding-left: 15px !important;
+        color: #555 !important;
+    }
+
+    /* สไตล์ปุ่มที่ถูกเลือก (Active State) - ใส่แถบสีเขียวเล็กๆ ด้านซ้าย */
     div[data-testid="stSidebar"] button[kind="primary"] {
-        background-color: #00594C !important; /* สีเขียวนนทรี */
-        color: white !important;
-        border: none;
-        font-weight: bold;
+        border-left: 5px solid #00594C !important; /* แถบสีเขียวนนทรีด้านซ้าย */
+        background-color: rgba(0, 89, 76, 0.05) !important; /* พื้นหลังเขียวอ่อนจางๆ */
+        color: #00594C !important;
+        font-weight: bold !important;
+        border-radius: 0px 10px 10px 0px !important; /* มนแค่ฝั่งขวา */
     }
     
-    /* สไตล์ปุ่มทั่วไปใน Sidebar */
-    div[data-testid="stSidebar"] button[kind="secondary"] {
-        background-color: transparent;
-        border: 1px solid #e0e0e0;
-        color: #333;
+    /* สไตล์ปุ่มแชทใหม่ให้ดูเด่นขึ้นนิดนึง */
+    div[data-testid="stSidebar"] .stButton:first-child button {
+        background-color: #f0f2f6 !important;
+        border-radius: 10px !important;
+        margin-bottom: 10px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -53,7 +63,7 @@ if "chat_sessions" not in st.session_state:
 if "current_chat_id" not in st.session_state:
     st.session_state.current_chat_id = None
 
-# ตรวจสอบว่ามีห้องแชทหรือยัง ถ้าไม่มีให้สร้างอันแรกขึ้นมา
+# ตรวจสอบสถานะแชทเริ่มต้น
 if st.session_state.current_chat_id is None:
     first_id = str(uuid.uuid4())
     st.session_state.chat_sessions[first_id] = {"title": "แชทใหม่", "messages": []}
@@ -67,7 +77,7 @@ messages = current_chat["messages"]
 with st.sidebar:
     st.header("เมนูควบคุม")
     
-    # ปุ่มเริ่มแชทใหม่ (จะสร้างใหม่เฉพาะเมื่อห้องปัจจุบันมีการคุยแล้วเท่านั้น)
+    # ปุ่มเริ่มแชทใหม่
     if st.button("+ เริ่มแชทใหม่", use_container_width=True):
         if len(messages) > 0:
             new_id = str(uuid.uuid4())
@@ -78,12 +88,12 @@ with st.sidebar:
     st.write("---")
     st.subheader("ประวัติการคุย")
     
-    # แสดงเฉพาะห้องที่มีข้อความ (messages > 0)
+    # แสดงประวัติเฉพาะที่มีข้อความ
     for chat_id, chat_data in reversed(list(st.session_state.chat_sessions.items())):
         if len(chat_data["messages"]) > 0:
-            # เช็คว่าเป็นห้องปัจจุบันไหมเพื่อเปลี่ยนสีแถบ
             is_active = (chat_id == current_chat_id)
             
+            # ใช้ type="primary" เพื่อให้ CSS จับไปทำแถบสีซ้ายมือ
             if st.button(
                 chat_data["title"], 
                 key=chat_id, 
@@ -99,7 +109,7 @@ for message in messages:
         st.markdown(message["content"])
 
 if prompt := st.chat_input("พิมพ์ข้อความที่นี่..."):
-    # ระบบจดจำชื่อแบบง่ายเข้า Global Memory
+    # บันทึกชื่อเข้า Global Memory
     if any(keyword in prompt for keyword in ["เราชื่อ", "ผมชื่อ", "ชื่อ"]):
         parts = prompt.split("ชื่อ")
         if len(parts) > 1:
@@ -109,7 +119,6 @@ if prompt := st.chat_input("พิมพ์ข้อความที่นี�
         st.markdown(prompt)
     messages.append({"role": "user", "content": prompt})
     
-    # ตั้งหัวข้อห้องแชทอัตโนมัติ
     if len(messages) == 1:
         current_chat["title"] = prompt[:20] + "..."
 
