@@ -4,7 +4,7 @@ import os
 import uuid
 import json
 
-# --- 1. CSS ปรับแต่งแถบประวัติทรงเหลี่ยม (ลบสีส้ม/แดง 100%) ---
+# --- 1. CSS ปรับปรุง: New Chat เขียวอ่อน + ขีดน้ำเงินค้างที่ประวัติ ---
 st.set_page_config(page_title="AI TEST", layout="wide")
 
 st.markdown("""
@@ -20,30 +20,33 @@ st.markdown("""
         text-align: left !important;
         border-radius: 0px !important;
         border-bottom: 1px solid #eee !important;
+        color: #444 !important;
+        display: block !important;
     }
 
-    /* แถบสีน้ำเงินด้านซ้ายสำหรับแชทที่เลือก */
+    /* บังคับขีดน้ำเงินด้านซ้ายสำหรับห้องที่เลือก (Active) */
     div[data-testid="stSidebar"] button[kind="primary"] {
         background-color: #e9ecef !important;
-        border-left: 5px solid #007bff !important;
+        border-left: 6px solid #007bff !important; /* ขีดน้ำเงินตามรูปที่ฮอนอยากได้ */
         color: #111 !important;
         font-weight: 600 !important;
     }
 
-    /* ปุ่ม New Chat ด้านบน */
+    /* ปุ่ม New Chat: สีเขียวอ่อนที่สุด */
     .stSidebar [data-testid="stVerticalBlock"] > div:nth-child(2) button {
-        background-color: #00594C !important;
-        color: white !important;
-        border-radius: 8px !important;
+        background-color: #e8f5e9 !important; /* เขียวอ่อนที่สุด */
+        color: #2e7d32 !important;
+        border-radius: 10px !important;
         text-align: center !important;
-        border-left: none !important;
+        border: 1px solid #c8e6c9 !important;
+        margin-bottom: 20px !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
 st.title("AI TEST")
 
-# --- 2. ระบบเซฟข้อมูลลงไฟล์ (เพื่อให้ประวัติไม่หาย) ---
+# --- 2. ระบบ Database (JSON) ---
 DB_FILE = "chat_history_db.json"
 
 def save_to_db(data):
@@ -56,7 +59,7 @@ def load_from_db():
             return json.load(f)
     return {}
 
-# --- 3. การตั้งค่า Model ---
+# --- 3. Setup Model ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 genai.configure(api_key=api_key)
 model = genai.GenerativeModel('gemini-1.5-flash')
@@ -69,24 +72,24 @@ if "current_chat_id" not in st.session_state:
     st.session_state.current_chat_id = None
 
 if st.session_state.current_chat_id is None:
-    # ถ้าไม่มีแชทเลย ให้สร้างใหม่ หรือดึงอันล่าสุดมา
     if st.session_state.chat_sessions:
         st.session_state.current_chat_id = list(st.session_state.chat_sessions.keys())[-1]
     else:
         new_id = str(uuid.uuid4())
-        st.session_state.chat_sessions[new_id] = {"title": "แชทใหม่", "messages": []}
+        st.session_state.chat_sessions[new_id] = {"title": "New Chat", "messages": []}
         st.session_state.current_chat_id = new_id
 
 current_id = st.session_state.current_chat_id
 current_chat = st.session_state.chat_sessions[current_id]
 
-# --- 5. Sidebar (ลบส่วนวันที่ออกแล้ว) ---
+# --- 5. Sidebar ---
 with st.sidebar:
     st.header("เมนูควบคุม")
-    if st.button("+ เริ่มแชทใหม่", use_container_width=True):
+    # เปลี่ยนชื่อเป็น New Chat และสีเขียวอ่อน
+    if st.button("New Chat", use_container_width=True):
         if len(current_chat["messages"]) > 0:
             new_id = str(uuid.uuid4())
-            st.session_state.chat_sessions[new_id] = {"title": "แชทใหม่", "messages": []}
+            st.session_state.chat_sessions[new_id] = {"title": "New Chat", "messages": []}
             st.session_state.current_chat_id = new_id
             save_to_db(st.session_state.chat_sessions)
             st.rerun()
@@ -97,9 +100,14 @@ with st.sidebar:
     for chat_id, chat_data in reversed(list(st.session_state.chat_sessions.items())):
         if len(chat_data["messages"]) > 0:
             is_active = (chat_id == current_id)
-            # แสดงเฉพาะชื่อแชท (ไม่มีวันที่ตามที่สั่ง)
-            if st.button(chat_data["title"], key=chat_id, use_container_width=True,
-                         type="primary" if is_active else "secondary"):
+            
+            # บังคับใช้ type="primary" เพื่อให้ CSS ขีดซ้ายทำงาน
+            if st.button(
+                chat_data["title"], 
+                key=chat_id, 
+                use_container_width=True,
+                type="primary" if is_active else "secondary"
+            ):
                 st.session_state.current_chat_id = chat_id
                 st.rerun()
 
@@ -117,14 +125,13 @@ if prompt := st.chat_input("พิมพ์ข้อความที่นี�
     if len(current_chat["messages"]) == 1:
         current_chat["title"] = prompt[:25]
     
-    # เซฟลงไฟล์ทันทีที่พิมพ์
     save_to_db(st.session_state.chat_sessions)
 
     with st.chat_message("assistant", avatar="🦖"):
         placeholder = st.empty()
         history = "\n".join([f"{m['role']}: {m['content']}" for m in current_chat["messages"][-10:]])
         try:
-            response = model.generate_content(f"คุณคือพี่นนทรี\n\nประวัติ:\n{history}\n\nคำถาม: {prompt}")
+            response = model.generate_content(f"คุณคือพี่นนทรี AI มก.ศรีราชา\n\nประวัติ:\n{history}\n\nคำถาม: {prompt}")
             placeholder.markdown(response.text)
             current_chat["messages"].append({"role": "assistant", "content": response.text})
             save_to_db(st.session_state.chat_sessions)
