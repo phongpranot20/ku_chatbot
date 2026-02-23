@@ -3,12 +3,12 @@ import google.generativeai as genai
 import os
 import uuid
 
-# --- 1. CSS ปรับแต่งปุ่มให้มีแค่ขีดเขียว (ลบสีแดง/ส้มออก 100%) ---
+# --- 1. CSS ปรับแต่งแบบเจาะจง (ลบสีส้ม/แดง ออกให้เกลี้ยง) ---
 st.set_page_config(page_title="AI TEST", layout="wide")
 
 st.markdown("""
 <style>
-    /* ล้างสไตล์ปุ่มมาตรฐานของ Streamlit ใน Sidebar */
+    /* ล้างค่าสีพื้นฐานของปุ่มใน Sidebar ทุกชนิด */
     div[data-testid="stSidebar"] button {
         border: none !important;
         background-color: transparent !important;
@@ -20,16 +20,22 @@ st.markdown("""
         box-shadow: none !important;
     }
 
-    /* สไตล์ปุ่มที่เลือก (Active) - บังคับใสและมีขีดเขียวด้านซ้าย */
+    /* บังคับลบสีส้ม/แดง จากปุ่มที่เลือกอยู่ (Active) และใส่ขีดเขียวซ้ายมือ */
     div[data-testid="stSidebar"] button[kind="primary"] {
-        background-color: rgba(0, 89, 76, 0.05) !important;
+        background-color: rgba(0, 89, 76, 0.05) !important; /* เขียวจางๆ มากๆ */
         border-left: 6px solid #00594C !important; /* ขีดสีเขียวนนทรี */
         color: #00594C !important;
         font-weight: bold !important;
         border-radius: 0px !important;
     }
-    
-    /* ปุ่มเริ่มแชทใหม่ให้ดูเด่นสไตล์คลีน */
+
+    /* เมื่อเมาส์ไปวาง ให้สีเปลี่ยนนิดเดียวพอ */
+    div[data-testid="stSidebar"] button:hover {
+        background-color: rgba(0, 0, 0, 0.02) !important;
+        color: #00594C !important;
+    }
+
+    /* สไตล์ปุ่มเริ่มแชทใหม่ให้ดูแยกสัดส่วนชัดเจน */
     div[data-testid="stSidebar"] [data-testid="stVerticalBlock"] > div:nth-child(2) button {
         background-color: #f0f2f6 !important;
         border-radius: 10px !important;
@@ -42,14 +48,13 @@ st.markdown("""
 
 st.title("AI TEST")
 
-# --- 2. การตั้งค่าโมเดล (ใช้ระบบเช็คชื่อรุ่นอัตโนมัติ) ---
+# --- 2. การตั้งค่าโมเดล ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 genai.configure(api_key=api_key)
 
 @st.cache_resource
 def get_model():
     try:
-        # ดึงรายชื่อโมเดลที่ใช้งานได้มาเช็ค
         models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
         selected = next((m for m in models if "flash" in m), models[0])
         return genai.GenerativeModel(selected)
@@ -66,7 +71,6 @@ if "current_chat_id" not in st.session_state:
 if "user_name" not in st.session_state:
     st.session_state.user_name = None
 
-# สร้างแชทแรกถ้ายังไม่มี
 if st.session_state.current_chat_id is None:
     first_id = str(uuid.uuid4())
     st.session_state.chat_sessions[first_id] = {"title": "แชทใหม่", "messages": []}
@@ -75,7 +79,7 @@ if st.session_state.current_chat_id is None:
 current_chat = st.session_state.chat_sessions[st.session_state.current_chat_id]
 messages = current_chat["messages"]
 
-# --- 4. Sidebar (แก้ไข Syntax Error บรรทัดที่ 80) ---
+# --- 4. Sidebar (เช็ค Syntax ปิดวงเล็บให้แล้ว) ---
 with st.sidebar:
     st.header("เมนูควบคุม")
     if st.button("+ เริ่มแชทใหม่", use_container_width=True):
@@ -90,8 +94,8 @@ with st.sidebar:
     
     for chat_id, chat_data in reversed(list(st.session_state.chat_sessions.items())):
         if len(chat_data["messages"]) > 0:
-            # แก้ไข Syntax Error ตรงนี้ (ปิดวงเล็บให้ครบ)
             is_active = (chat_id == st.session_state.current_chat_id)
+            # ใช้ type="primary" เพื่อให้ CSS จับไปทำขีดสีเขียว
             if st.button(chat_data["title"], key=chat_id, use_container_width=True, 
                          type="primary" if is_active else "secondary"):
                 st.session_state.current_chat_id = chat_id
@@ -108,7 +112,6 @@ if prompt := st.chat_input("พิมพ์ข้อความที่นี�
         st.markdown(prompt)
     messages.append({"role": "user", "content": prompt})
     
-    # ตั้งชื่อห้องจากคำถามแรก
     if len(messages) == 1:
         current_chat["title"] = prompt[:20] + "..."
 
