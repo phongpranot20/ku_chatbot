@@ -13,14 +13,6 @@ st.markdown("""
     [data-testid="stChatMessage"] { background-color: #f0f2f6; border-radius: 10px; }
     .stMarkdown p { color: #333333 !important; }
 
-    /* ตกแต่ง Sidebar */
-    .sidebar-history {
-        font-size: 14px;
-        color: #4F4F4F;
-        padding: 5px;
-        border-bottom: 1px solid #ddd;
-    }
-
     .loading-dots {
         font-size: 30px;
         font-weight: bold;
@@ -66,29 +58,12 @@ if not model:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# --- ส่วน Sidebar: ประวัติการแชท ---
+# --- ส่วน Sidebar: แก้ไขให้เหลือแต่แถบว่างๆ ---
 with st.sidebar:
-    st.title("📜 ประวัติการคุย")
-    
-    # ปุ่มล้างแชท
-    if st.button("🗑️ ล้างประวัติการสนทนา"):
-        st.session_state.messages = []
-        st.rerun()
-    
-    st.divider()
-    
-    # แสดงรายการคำถามที่เคยถามใน Sidebar
-    if not st.session_state.messages:
-        st.write("ยังไม่มีประวัติการคุย")
-    else:
-        for i, msg in enumerate(st.session_state.messages):
-            if msg["role"] == "user":
-                # ตัดคำให้สั้นลงถ้าประโยคยาวเกินไป
-                display_text = (msg["content"][:30] + '..') if len(msg["content"]) > 30 else msg["content"]
-                st.markdown(f"**{i//2 + 1}.** {display_text}")
+    st.empty() # ใช้ empty เพื่อรักษาโครงสร้างแถบสีเขียวไว้โดยไม่มีข้อความ
 
 # --- หน้าจอหลัก ---
-st.title("AI TEST - น้องนนทรี 🦖")
+st.title("AI TEST")
 
 # โหลดข้อมูล Knowledge Base
 if os.path.exists("ku_data.txt"):
@@ -130,7 +105,7 @@ if prompt := st.chat_input("พิมพ์คำถามที่นี่..."
             placeholder.markdown(full_response)
             st.session_state.messages.append({"role": "assistant", "content": full_response})
             
-            # สั่ง rerun เพื่อให้ Sidebar อัปเดตข้อมูลล่าสุดทันที
+            # สั่ง rerun เพื่ออัปเดตสถานะหน้าจอ
             st.rerun()
             
         except Exception as e:
