@@ -2,100 +2,129 @@ import streamlit as st
 import google.generativeai as genai
 import os
 
-st.set_page_config(page_title="KU Sriracha Bot", page_icon="🐢", layout="wide")
+st.set_page_config(page_title="KU SRC AI - น้องนนทรี", page_icon="🦖", layout="wide")
 
+# --- CUSTOM CSS: ULTIMATE DESIGN WITH SIDEBAR STYLE ---
 st.markdown("""
 <style>
-    .stApp { background-color: #FFFFFF !important; color: black !important; }
-    [data-testid="stSidebar"] { background-color: #f2f9f6 !important; }
-    h1, h2, h3, p, span, div { color: #00594C; }
-    [data-testid="stChatMessage"] { background-color: #f0f2f6; border-radius: 10px; }
-    .stMarkdown p { color: #333333 !important; }
+    @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
+    * { font-family: 'Kanit', sans-serif; }
+    .stApp { background: radial-gradient(circle at top left, #f0fdf4 0%, #ffffff 100%); }
+    
+    /*Sidebar - สไตล์พรีเมียมเข้ม */
+    [data-testid="stSidebar"] {
+        background-color: #004d43 !important;
+        border-right: 1px solid rgba(255,255,255,0.1);
+        color: white !important;
+    }
+    [data-testid="stSidebar"] * { color: white !important; }
+    
+    /* หัวข้อใน Sidebar */
+    .sidebar-title {
+        font-size: 20px;
+        font-weight: 600;
+        text-align: center;
+        margin-bottom: 20px;
+    }
 
-    .loading-dots {
-        font-size: 30px;
-        font-weight: bold;
-        display: inline-block;
+    /* ตกแต่ง Chat Bubbles */
+    .stChatMessage {
+        background: rgba(255, 255, 255, 0.7) !important;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 20px !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
+        margin-bottom: 10px !important;
     }
-    .loading-dots:after {
-        content: '.';
-        animation: dots 1.5s steps(5, end) infinite;
-    }
-    @keyframes dots {
-        0%, 20% { content: '.'; }
-        40% { content: '..'; }
-        60% { content: '...'; }
-        80%, 100% { content: ''; }
-    }
+
+    /* จุด Loading */
+    .loading-container { display: flex; gap: 5px; padding: 10px; }
+    .dot { width: 10px; height: 10px; background: #00594C; border-radius: 50%; animation: wave 1.3s linear infinite; }
+    .dot:nth-child(2) { animation-delay: -1.1s; }
+    .dot:nth-child(3) { animation-delay: -0.9s; }
+    @keyframes wave { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-10px); } }
 </style>
 """, unsafe_allow_html=True)
 
+# --- AI SETUP ---
 api_key = st.secrets.get("GEMINI_API_KEY")
-if not api_key:
-    st.error("❌ ไม่พบ GEMINI_API_KEY ในหน้า Settings > Secrets")
-    st.stop()
-
 genai.configure(api_key=api_key)
 
 @st.cache_resource
-def load_model():
-    # ใช้การ List หาโมเดลที่ใช้งานได้จริงใน Key นี้ (วิธีที่ชัวร์ที่สุด)
+def load_ai():
     try:
+        # ระบบหาโมเดลอัตโนมัติเพื่อให้ไม่พัง
         for m in genai.list_models():
             if 'generateContent' in m.supported_generation_methods:
-                # เลือกตัวที่เป็น Flash ก่อนเพื่อความเร็ว
-                if "flash" in m.name.lower():
-                    return genai.GenerativeModel(model_name=m.name)
-        # ถ้าหา Flash ไม่เจอ เอาตัวไหนก็ได้ที่ส่งคำถามได้
-        for m in genai.list_models():
-            if 'generateContent' in m.supported_generation_methods:
-                return genai.GenerativeModel(model_name=m.name)
-    except Exception as e:
-        st.error(f"❌ ระบบไม่สามารถดึงรายชื่อโมเดลได้: {e}")
-    return None
+                if "flash" in m.name.lower(): return genai.GenerativeModel(m.name)
+        return genai.GenerativeModel('gemini-1.5-flash')
+    except: return None
 
-model = load_model()
+model = load_ai()
 
-if not model:
-    st.error("❌ ไม่พบโมเดลที่ใช้งานได้ใน API Key นี้")
-    st.stop()
+# --- SIDEBAR: CHAT HISTORY & INFO ---
+with st.sidebar:
+    st.markdown("<div class='sidebar-title'>🦖 พี่นนทรี History</div>", unsafe_allow_html=True)
+    
+    # ส่วนแสดงประวัติย่อ (ดึงคำถามล่าสุดมาโชว์)
+    if "messages" in st.session_state and len(st.session_state.messages) > 0:
+        st.markdown("💬 **บทสนทนาล่าสุด:**")
+        # ดึงมาโชว์เฉพาะคำถามจาก User 5 อันล่าสุด
+        user_msgs = [m["content"] for m in st.session_state.messages if m["role"] == "user"]
+        for msg in user_msgs[-5:]:
+            st.caption(f"• {msg[:30]}..." if len(msg) > 30 else f"• {msg}")
+    else:
+        st.caption("ยังไม่มีประวัติการคุยในเซสชันนี้")
 
-st.title("AI TEST")
+    st.markdown("---")
+    
+    # ปุ่มล้างแชทแบบสวยๆ
+    if st.button("✨ ล้างประวัติการแชท", use_container_width=True):
+        st.session_state.messages = []
+        st.rerun()
 
-if os.path.exists("ku_data.txt"):
-    with open("ku_data.txt", "r", encoding="utf-8") as f:
-        knowledge_base = f.read()
-else:
-    knowledge_base = "ข้อมูลมหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตศรีราชา"
+# --- MAIN CONTENT ---
+st.title("🦖 น้องนนทรี AI (KU SRC)")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+# แสดงข้อความแชททั้งหมด (ประวัติการแชทในหน้าหลัก)
 for message in st.session_state.messages:
-    with st.chat_message(message["role"], avatar="🧑‍🎓" if message["role"] == "user" else "🦖"):
+    avatar = "🧑‍🎓" if message["role"] == "user" else "🦖"
+    with st.chat_message(message["role"], avatar=avatar):
         st.markdown(message["content"])
 
-if prompt := st.chat_input("พิมพ์คำถามที่นี่..."):
-    st.chat_message("user", avatar="🧑‍🎓").markdown(prompt)
+# รับ Input
+if prompt := st.chat_input("พิมพ์ข้อความคุยกับพี่นนทรี..."):
+    with st.chat_message("user", avatar="🧑‍🎓"):
+        st.markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     with st.chat_message("assistant", avatar="🦖"):
-        status_placeholder = st.empty()
-        status_placeholder.markdown('<div class="loading-dots"></div>', unsafe_allow_html=True)
+        status = st.empty()
+        status.markdown('<div class="loading-container"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>', unsafe_allow_html=True)
         
+        # Load Knowledge Base
+        kb = ""
+        if os.path.exists("ku_data.txt"):
+            with open("ku_data.txt", "r", encoding="utf-8") as f: kb = f.read()
+
         instruction = (
-            "คุณคือ 'น้องนนทรี' AI รุ่นพี่ของ มก. ศรีราชา (KU SRC) "
-            "ภารกิจ: จงจำชื่อผู้ใช้และสิ่งที่คุยกันก่อนหน้าจากประวัติการสนทนา "
-            "ตอบคำถามตามข้อมูลที่ให้มาอย่างสุภาพ หากถามเรื่องตึก ต้องส่งลิงก์แผนที่เสมอ"
+            "คุณคือ 'พี่นนทรี' รุ่นพี่ของ มก. ศรีราชา "
+            "ตอบแบบสุภาพเป็นกันเอง แทนตัวเองว่าพี่ และจำชื่อน้องให้ได้เสมอ"
         )
         
-        history_text = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages[-10:]])
-        full_prompt = f"{instruction}\n\nข้อมูล: {knowledge_base}\n\nประวัติการคุย:\n{history_text}\n\nคำถามล่าสุด: {prompt}"
+        # ส่งประวัติย้อนหลัง 10 ข้อความเพื่อให้บอทจำได้ (Memory)
+        history = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages[-10:]])
+        full_p = f"{instruction}\n\nข้อมูล: {kb}\n\nประวัติ: {history}\n\nคำถาม: {prompt}"
         
         try:
-            response = model.generate_content(full_prompt)
-            status_placeholder.markdown(response.text)
+            response = model.generate_content(full_p)
+            status.markdown(response.text)
             st.session_state.messages.append({"role": "assistant", "content": response.text})
+            # สั่ง rerun เพื่ออัปเดตประวัติใน Sidebar ทันที
+            st.rerun()
         except Exception as e:
-            status_placeholder.empty()
-            st.error(f"❌ เกิดข้อผิดพลาด: {e}")
+            status.empty()
+            st.error(f"พี่ขัดข้องนิดหน่อย: {e}")
