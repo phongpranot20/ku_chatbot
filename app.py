@@ -1,7 +1,6 @@
 import streamlit as st
 import google.generativeai as genai
 import uuid
-import time
 
 st.set_page_config(page_title="AI TEST", layout="wide")
 
@@ -48,10 +47,6 @@ def load_working_model():
     except Exception as e: return e
 
 model = load_working_model()
-
-# --- 1. ระบบจำชื่อ (Global Memory) ---
-if "user_name" not in st.session_state:
-    st.session_state.user_name = "ฮอน" # ตั้งค่าเริ่มต้นเป็นชื่อของคุณ
 
 if "chat_sessions" not in st.session_state:
     st.session_state.chat_sessions = {}
@@ -101,11 +96,9 @@ if prompt := st.chat_input("พิมพ์ข้อความที่นี�
         placeholder = st.empty()
         with st.spinner("กำลังคิด..."):
             history = "\n".join([f"{msg['role']}: {msg['content']}" for msg in current_chat["messages"][-2:]])
-            # --- 2. ใส่ชื่อผู้ใช้เข้าไปใน System Prompt ---
-            system_instruction = f"คุณคือพี่นนทรี AI มก.ศรีราชา กำลังคุยกับคุณ '{st.session_state.user_name}'"
             try:
                 if isinstance(model, genai.GenerativeModel):
-                    response = model.generate_content(f"{system_instruction}\n\nประวัติ:\n{history}\n\nคำถาม: {prompt}", stream=True)
+                    response = model.generate_content(f"คุณคือพี่นนทรี\n\nประวัติ:\n{history}\n\nคำถาม: {prompt}", stream=True)
                     full_response = ""
                     for chunk in response:
                         full_response += chunk.text
