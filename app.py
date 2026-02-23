@@ -85,4 +85,31 @@ for m in current_chat["messages"]:
         st.markdown(m["content"])
 
 if prompt := st.chat_input("พิมพ์ข้อความที่นี่..."):
-    with st.chat_message("user",
+    with st.chat_message("user", avatar="🧑‍🎓"):
+        st.markdown(prompt)
+    current_chat["messages"].append({"role": "user", "content": prompt})
+    
+    if len(current_chat["messages"]) == 1:
+        current_chat["title"] = prompt[:25]
+
+    with st.chat_message("assistant", avatar="🦖"):
+        placeholder = st.empty()
+        with st.spinner(" "): # จุดขยับตอนกำลังคิด
+            try:
+                if isinstance(model, genai.GenerativeModel):
+                    history = "\n".join([f"{msg['role']}: {msg['content']}" for msg in current_chat["messages"][-2:]])
+                    # ใช้ stream=True เพื่อให้ตอบไวขึ้น
+                    response = model.generate_content(f"คุณคือพี่นนทรี\n\nประวัติ:\n{history}\n\nคำถาม: {prompt}", stream=True)
+                    
+                    full_response = ""
+                    for chunk in response:
+                        full_response += chunk.text
+                        placeholder.markdown(full_response + "▌")
+                    
+                    placeholder.markdown(full_response)
+                    current_chat["messages"].append({"role": "assistant", "content": full_response})
+                    st.rerun()
+                else:
+                    st.error(f"Model Error: {str(model)}")
+            except Exception as e:
+                st.error(f"Execution Error: {str(e)}")
