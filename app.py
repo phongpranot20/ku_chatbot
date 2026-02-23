@@ -3,80 +3,64 @@ import google.generativeai as genai
 import os
 import uuid
 
-# --- 1. การตั้งค่าหน้าจอและ CSS (ปรับปรุงตามรีเควสฮอน) ---
+# --- 1. การตั้งค่าหน้าจอและ CSS (ล้างสีแดง/ส้มออก และทำขีดเขียวด้านซ้าย) ---
 st.set_page_config(page_title="AI TEST", layout="wide")
 
 st.markdown("""
 <style>
-    /* ล้างค่าสีส้มของ Streamlit ออกให้หมด */
+    /* ล้างสีพื้นหลังและขอบของปุ่มทุกชนิดใน Sidebar */
     div[data-testid="stSidebar"] button {
         border: none !important;
-        background-color: transparent !important; /* ทำให้พื้นหลังใส ไม่ส้ม */
-        text-align: left !important;
-        padding-left: 20px !important;
+        background-color: transparent !important;
         color: #555 !important;
-        width: 100%;
-        display: block;
+        text-align: left !important;
+        padding-left: 15px !important;
+        width: 100% !important;
+        display: block !important;
+        box-shadow: none !important;
     }
 
-    /* ปุ่มที่เลือกอยู่ (Active) - ให้มีแค่ขีดเขียวด้านซ้ายนิดเดียว */
+    /* ปุ่มที่กำลังใช้งาน (Active) - บังคับให้พื้นหลังใสและมีขีดเขียวซ้ายมือ */
     div[data-testid="stSidebar"] button[kind="primary"] {
-        border-left: 5px solid #00594C !important; /* ขีดสีเขียวนนทรี */
-        background-color: rgba(0, 89, 76, 0.05) !important; /* พื้นหลังเขียวจางๆ */
+        background-color: rgba(0, 89, 76, 0.05) !important; /* พื้นหลังเขียวจางๆ มากๆ */
+        border-left: 6px solid #00594C !important; /* ขีดสีเขียวนนทรีด้านซ้าย */
         color: #00594C !important;
-        font-weight: 600 !important;
+        font-weight: bold !important;
         border-radius: 0px !important;
     }
     
-    /* ปุ่มเริ่มแชทใหม่ (ทำให้ดูเป็นปุ่มแยก) */
-    div[data-testid="stSidebar"] [data-testid="stVerticalBlock"] > div:nth-child(2) button {
-        background-color: #f0f2f6 !important;
-        border-radius: 10px !important;
-        text-align: center !important;
-        padding-left: 0px !important;
-        margin-bottom: 15px;
+    /* แก้ไขสีตัวหนังสือตอนเอาเมาส์ไปวาง (Hover) */
+    div[data-testid="stSidebar"] button:hover {
+        color: #00594C !important;
+        background-color: rgba(0, 89, 76, 0.02) !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
 st.title("AI TEST")
 
-# --- 2. การตั้งค่า API และ Model ---
+# --- 2. การตั้งค่า API (ใช้ข้อมูลจากคุณ ฮอน) ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 genai.configure(api_key=api_key)
-
-@st.cache_resource
-def load_model():
-    try:
-        for m in genai.list_models():
-            if 'generateContent' in m.supported_generation_methods:
-                if "flash" in m.name.lower():
-                    return genai.GenerativeModel(model_name=m.name)
-        return genai.GenerativeModel(model_name='gemini-1.5-flash')
-    except: return None
-
-model = load_model()
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 # --- 3. ระบบจัดการ Session ---
-if "user_name" not in st.session_state:
-    st.session_state.user_name = None
-
 if "chat_sessions" not in st.session_state:
     st.session_state.chat_sessions = {}
-
 if "current_chat_id" not in st.session_state:
     st.session_state.current_chat_id = None
+if "user_name" not in st.session_state:
+    st.session_state.user_name = None
 
 if st.session_state.current_chat_id is None:
     first_id = str(uuid.uuid4())
     st.session_state.chat_sessions[first_id] = {"title": "แชทใหม่", "messages": []}
     st.session_state.current_chat_id = first_id
 
-current_chat_id = st.session_state.current_chat_id
-current_chat = st.session_state.chat_sessions[current_chat_id]
+current_chat = st.session_state.chat_sessions[st.session_state.current_chat_id]
 messages = current_chat["messages"]
 
-# --- 4. Sidebar ---
+# --- 4. Sidebar (ประวัติการคุย) ---
 with st.sidebar:
     st.header("เมนูควบคุม")
     
@@ -93,7 +77,8 @@ with st.sidebar:
     
     for chat_id, chat_data in reversed(list(st.session_state.chat_sessions.items())):
         if len(chat_data["messages"]) > 0:
-            is_active = (chat_id == current_chat_id)
+            # ใช้ type="primary" เพื่อให้ CSS จับไปทำขีดสีเขียว
+            is_active = (chat_id == st.session_state.current_chat_id)
             if st.button(
                 chat_data["title"], 
                 key=chat_id, 
@@ -103,19 +88,13 @@ with st.sidebar:
                 st.session_state.current_chat_id = chat_id
                 st.rerun()
 
-# --- 5. การแสดงผล (เปลี่ยน Avatar ตามสั่ง) ---
-for message in messages:
-    # ผู้ใช้เป็น บัณฑิต (🧑‍🎓), AI เป็น ไดโนเสาร์ (🦖)
-    avatar = "🧑‍🎓" if message["role"] == "user" else "🦖"
-    with st.chat_message(message["role"], avatar=avatar):
-        st.markdown(message["content"])
+# --- 5. แสดงผลแชท (🧑‍🎓 บัณฑิต / 🦖 ไดโนเสาร์) ---
+for m in messages:
+    avatar = "🧑‍🎓" if m["role"] == "user" else "🦖"
+    with st.chat_message(m["role"], avatar=avatar):
+        st.markdown(m["content"])
 
 if prompt := st.chat_input("พิมพ์ข้อความที่นี่..."):
-    if any(k in prompt for k in ["ชื่อ", "ผมชื่อ", "เราชื่อ"]):
-        parts = prompt.split("ชื่อ")
-        if len(parts) > 1:
-            st.session_state.user_name = parts[1].strip().split()[0]
-
     with st.chat_message("user", avatar="🧑‍🎓"):
         st.markdown(prompt)
     messages.append({"role": "user", "content": prompt})
@@ -128,16 +107,12 @@ if prompt := st.chat_input("พิมพ์ข้อความที่นี�
         placeholder.write("...")
         
         history = "\n".join([f"{m['role']}: {m['content']}" for m in messages[-10:]])
-        user_info = f"คนคุยชื่อคุณ {st.session_state.user_name}" if st.session_state.user_name else "ยังไม่รู้ชื่อ"
-        
-        instruction = f"คุณคือ 'น้องนนทรี' AI รุ่นพี่ มก. ศรีราชา {user_info}. ตอบอย่างสุภาพ"
-        full_prompt = f"{instruction}\n\nประวัติห้องนี้:\n{history}\n\nคำถาม: {prompt}"
+        full_p = f"คุณคือ 'น้องนนทรี' AI รุ่นพี่ มก. ศรีราชา\n\nประวัติ:\n{history}\n\nคำถาม: {prompt}"
         
         try:
-            response = model.generate_content(full_prompt)
-            res_text = response.text
-            placeholder.markdown(res_text)
-            messages.append({"role": "assistant", "content": res_text})
+            response = model.generate_content(full_p)
+            placeholder.markdown(response.text)
+            messages.append({"role": "assistant", "content": response.text})
             st.rerun() 
         except Exception as e:
             st.error(f"เกิดข้อผิดพลาด: {e}")
