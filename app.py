@@ -6,10 +6,7 @@ st.set_page_config(page_title="AI TEST", layout="wide")
 
 st.markdown("""
 <style>
-    [data-testid="stSidebar"] { 
-        background-color: #ffffff !important; 
-        border-right: 1px solid #eee; 
-    }
+    [data-testid="stSidebar"] { background-color: #ffffff !important; border-right: 1px solid #eee; }
     div.stButton > button {
         width: 100% !important; border: none !important;
         background-color: #ffffff !important; padding: 15px 10px !important;
@@ -17,8 +14,7 @@ st.markdown("""
         border-bottom: 1px solid #f0f0f0 !important; color: #444 !important;
     }
     div[data-testid="stSidebar"] .stButton button[kind="primary"] {
-        background-color: #f8f9fa !important; 
-        border-left: 6px solid #007bff !important;
+        background-color: #f8f9fa !important; border-left: 6px solid #007bff !important;
         color: #007bff !important; font-weight: 600 !important;
     }
     .stSidebar [data-testid="stVerticalBlock"] > div:nth-child(2) button {
@@ -38,13 +34,10 @@ if api_key:
 @st.cache_resource
 def load_working_model():
     try:
-        available_models = [m.name for m in genai.list_models() 
-                            if 'generateContent' in m.supported_generation_methods]
-        selected = next((m for m in available_models if "flash-latest" in m),
-                   next((m for m in available_models if "flash" in m),
-                   next((m for m in available_models if "pro" in m), available_models[0])))
-        return genai.GenerativeModel(selected)
-    except Exception as e: return e
+        # ใช้รุ่น flash-latest เพราะปกติจะตอบสนองไวกว่ารุ่นระบุเลขเวอร์ชัน
+        return genai.GenerativeModel('gemini-1.5-flash-latest')
+    except:
+        return None
 
 model = load_working_model()
 
@@ -94,17 +87,21 @@ if prompt := st.chat_input("พิมพ์ข้อความที่นี�
 
     with st.chat_message("assistant", avatar="🦖"):
         placeholder = st.empty()
-        with st.spinner("กำลังคิด..."):
-            history = "\n".join([f"{msg['role']}: {msg['content']}" for msg in current_chat["messages"][-2:]])
+        # ใช้ Spinner บอกสถานะการโหลด
+        with st.spinner(" "):
             try:
-                if isinstance(model, genai.GenerativeModel):
+                if model:
+                    # ส่งประวัติย้อนหลังแค่ 2 อันเพื่อความเร็วสูงสุด
+                    history = "\n".join([f"{msg['role']}: {msg['content']}" for msg in current_chat["messages"][-2:]])
                     response = model.generate_content(f"คุณคือพี่นนทรี\n\nประวัติ:\n{history}\n\nคำถาม: {prompt}", stream=True)
+                    
                     full_response = ""
                     for chunk in response:
                         full_response += chunk.text
                         placeholder.markdown(full_response + "▌")
+                    
                     placeholder.markdown(full_response)
                     current_chat["messages"].append({"role": "assistant", "content": full_response})
                     st.rerun()
-                else: st.error(f"Model Error: {str(model)}")
-            except Exception as e: st.error(f"Execution Error: {str(e)}")
+            except Exception as e:
+                st.error(f"Error: {str(e)}")
