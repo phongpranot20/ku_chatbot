@@ -2,31 +2,49 @@ import streamlit as st
 import google.generativeai as genai
 import uuid
 
-# --- 1. CSS ขั้นสูงสุด (ขีดน้ำเงินติดหนึบ + New Chat สีขาว) ---
+# --- 1. CSS ขั้นสูงสุด (บังคับแถบน้ำเงิน + New Chat สีขาว) ---
 st.set_page_config(page_title="AI TEST", layout="wide")
 
 st.markdown("""
 <style>
-    [data-testid="stSidebar"] { background-color: #ffffff !important; border-right: 1px solid #eee; }
-    div.stButton > button {
-        width: 100% !important; border: none !important;
-        background-color: #ffffff !important; padding: 15px 10px !important;
-        text-align: left !important; border-radius: 0px !important;
-        border-bottom: 1px solid #f0f0f0 !important; color: #444 !important;
-        display: block !important;
+    /* สไตล์ Sidebar สีขาวคลีน */
+    [data-testid="stSidebar"] { 
+        background-color: #ffffff !important; 
+        border-right: 1px solid #eee; 
     }
-    /* ขีดสีน้ำเงินด้านซ้ายสำหรับ Active แชท */
+    
+    /* สไตล์ปุ่มประวัติทั่วไป (สีขาว ไม่มีขอบ) */
+    div.stButton > button {
+        width: 100% !important;
+        border: none !important;
+        background-color: #ffffff !important;
+        padding: 15px 10px !important;
+        text-align: left !important;
+        border-radius: 0px !important;
+        border-bottom: 1px solid #f0f0f0 !important;
+        color: #444 !important;
+        display: block !important;
+        transition: 0.1s;
+    }
+
+    /* บังคับขีดสีน้ำเงินด้านซ้ายสำหรับห้องที่เลือก (Active) */
+    /* แก้ปัญหาที่ฮอนเจอ: ล้างสีส้มออก และใส่ขีดน้ำเงินแทน */
     div[data-testid="stSidebar"] .stButton button[kind="primary"] {
         background-color: #f8f9fa !important; 
-        border-left: 6px solid #007bff !important; 
+        border-left: 6px solid #007bff !important; /* ขีดน้ำเงินที่ฮอนต้องการ */
         color: #007bff !important;
         font-weight: 600 !important;
+        box-shadow: none !important;
     }
-    /* New Chat สีขาวขอบบาง */
+
+    /* ปุ่ม New Chat: สีขาวสะอาดขอบบาง (ลบสีเขียวออกแล้ว) */
     .stSidebar [data-testid="stVerticalBlock"] > div:nth-child(2) button {
-        background-color: #ffffff !important; color: #333 !important;
-        border-radius: 8px !important; text-align: center !important;
-        border: 1px solid #ddd !important; margin-bottom: 20px !important;
+        background-color: #ffffff !important;
+        color: #333 !important;
+        border-radius: 8px !important;
+        text-align: center !important;
+        border: 1px solid #ddd !important;
+        margin-bottom: 20px !important;
         border-left: none !important;
     }
 </style>
@@ -34,7 +52,7 @@ st.markdown("""
 
 st.title("AI TEST")
 
-# --- 2. Setup Model (Auto-Detect เพื่อลด Error 404/429) ---
+# --- 2. Setup Model (Auto-Detect ป้องกัน 404 และลด 429) ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 if api_key:
     genai.configure(api_key=api_key)
@@ -42,19 +60,21 @@ if api_key:
 @st.cache_resource
 def load_working_model():
     try:
-        # พยายามดึงรุ่นที่เสถียรที่สุดมาใช้
+        # ใช้รุ่นที่เสถียรที่สุดสำหรับ Free Tier
         return genai.GenerativeModel('gemini-1.5-flash')
     except:
         return None
 
 model = load_working_model()
 
-# --- 3. Initialization (Temporary Memory) ---
+# --- 3. Initialization (ชั่วคราว: รีหน้าเว็บแล้วหาย) ---
 if "chat_sessions" not in st.session_state:
     st.session_state.chat_sessions = {}
+
 if "current_chat_id" not in st.session_state:
     st.session_state.current_chat_id = None
 
+# สร้างแชทเริ่มต้นถ้ายังไม่มี
 if st.session_state.current_chat_id is None:
     new_id = str(uuid.uuid4())
     st.session_state.chat_sessions[new_id] = {"title": "New Chat", "messages": []}
@@ -63,9 +83,10 @@ if st.session_state.current_chat_id is None:
 current_id = st.session_state.current_chat_id
 current_chat = st.session_state.chat_sessions[current_id]
 
-# --- 4. Sidebar ---
+# --- 4. Sidebar (แถบประวัติ) ---
 with st.sidebar:
     st.header("เมนูควบคุม")
+    # ปุ่ม New Chat สีขาว
     if st.button("New Chat", use_container_width=True):
         if len(current_chat["messages"]) > 0:
             new_id = str(uuid.uuid4())
@@ -75,11 +96,20 @@ with st.sidebar:
     
     st.write("---")
     st.subheader("ประวัติการคุย")
+    
+    # วนลูปสร้างปุ่มประวัติแชท
     for chat_id, chat_data in reversed(list(st.session_state.chat_sessions.items())):
         if len(chat_data["messages"]) > 0:
+            # แก้ Syntax Error บรรทัดที่ 80 (ปิดวงเล็บให้ครบ)
             is_active = (chat_id == current_id)
-            if st.button(chat_data["title"], key=chat_id, use_container_width=True,
-                         type="primary" if is_active else "secondary"):
+            
+            # ใช้ type="primary" เพื่อให้ CSS ขีดซ้ายทำงาน
+            if st.button(
+                chat_data["title"], 
+                key=chat_id, 
+                use_container_width=True,
+                type="primary" if is_active else "secondary"
+            ):
                 st.session_state.current_chat_id = chat_id
                 st.rerun()
 
@@ -94,19 +124,19 @@ if prompt := st.chat_input("พิมพ์ข้อความที่นี�
         st.markdown(prompt)
     current_chat["messages"].append({"role": "user", "content": prompt})
     
+    # ตั้งชื่อหัวข้อจากคำถามแรก
     if len(current_chat["messages"]) == 1:
         current_chat["title"] = prompt[:25]
 
     with st.chat_message("assistant", avatar="🦖"):
         placeholder = st.empty()
-        # ส่งประวัติแบบจำกัดจำนวนเพื่อประหยัด Token/Quota
-        history = "\n".join([f"{m['role']}: {m['content']}" for m in current_chat["messages"][-5:]])
+        # ส่งประวัติย้อนหลังสั้นๆ เพื่อเลี่ยงปัญหา Quota
+        history = "\n".join([f"{msg['role']}: {msg['content']}" for msg in current_chat["messages"][-5:]])
         try:
             if model:
-                response = model.generate_content(f"คุณคือพี่นนทรี\n\nประวัติ:\n{history}\n\nคำถาม: {prompt}")
+                response = model.generate_content(f"คุณคือพี่นนทรี AI มก.ศรีราชา\n\nประวัติ:\n{history}\n\nคำถาม: {prompt}")
                 placeholder.markdown(response.text)
                 current_chat["messages"].append({"role": "assistant", "content": response.text})
                 st.rerun()
         except Exception as e:
-            # ถ้าโควตาเต็ม ให้แสดงปุ่มลองใหม่แทนการพังไปเลย
             st.error("ขออภัย โควตาเต็มชั่วคราว กรุณารอสัก 10-20 วินาทีแล้วลองใหม่นะครับ")
