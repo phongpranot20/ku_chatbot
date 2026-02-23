@@ -34,10 +34,17 @@ if api_key:
 @st.cache_resource
 def load_working_model():
     try:
-        # ใช้รุ่น flash-latest เพราะปกติจะตอบสนองไวกว่ารุ่นระบุเลขเวอร์ชัน
-        return genai.GenerativeModel('gemini-1.5-flash-latest')
-    except:
-        return None
+        # ดึงรายชื่อโมเดลที่ Key นี้ใช้ได้จริงออกมาดู
+        available_models = [m.name for m in genai.list_models() 
+                            if 'generateContent' in m.supported_generation_methods]
+        
+        # เลือกตัวที่เหมาะสมที่สุดจากรายชื่อที่มีอยู่จริง (แก้ปัญหา 404)
+        selected = next((m for m in available_models if "flash-latest" in m),
+                   next((m for m in available_models if "flash" in m),
+                   next((m for m in available_models if "pro" in m), available_models[0])))
+        return genai.GenerativeModel(selected)
+    except Exception as e:
+        return e
 
 model = load_working_model()
 
@@ -78,30 +85,4 @@ for m in current_chat["messages"]:
         st.markdown(m["content"])
 
 if prompt := st.chat_input("พิมพ์ข้อความที่นี่..."):
-    with st.chat_message("user", avatar="🧑‍🎓"):
-        st.markdown(prompt)
-    current_chat["messages"].append({"role": "user", "content": prompt})
-    
-    if len(current_chat["messages"]) == 1:
-        current_chat["title"] = prompt[:25]
-
-    with st.chat_message("assistant", avatar="🦖"):
-        placeholder = st.empty()
-        # ใช้ Spinner บอกสถานะการโหลด
-        with st.spinner(" "):
-            try:
-                if model:
-                    # ส่งประวัติย้อนหลังแค่ 2 อันเพื่อความเร็วสูงสุด
-                    history = "\n".join([f"{msg['role']}: {msg['content']}" for msg in current_chat["messages"][-2:]])
-                    response = model.generate_content(f"คุณคือพี่นนทรี\n\nประวัติ:\n{history}\n\nคำถาม: {prompt}", stream=True)
-                    
-                    full_response = ""
-                    for chunk in response:
-                        full_response += chunk.text
-                        placeholder.markdown(full_response + "▌")
-                    
-                    placeholder.markdown(full_response)
-                    current_chat["messages"].append({"role": "assistant", "content": full_response})
-                    st.rerun()
-            except Exception as e:
-                st.error(f"Error: {str(e)}")
+    with st.chat_message("user",
