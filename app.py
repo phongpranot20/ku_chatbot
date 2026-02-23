@@ -28,10 +28,9 @@ st.markdown("""
     }
 
     /* บังคับขีดสีน้ำเงินด้านซ้ายสำหรับห้องที่เลือก (Active) */
-    /* ใช้ CSS selector ที่เจาะจงระดับสูงสุดเพื่อให้แถบสีแสดงผล */
     div[data-testid="stSidebar"] .stButton button[kind="primary"] {
         background-color: #f8f9fa !important; 
-        border-left: 6px solid #007bff !important; /* ขีดน้ำเงินที่ฮอนต้องการ */
+        border-left: 6px solid #007bff !important; /* ขีดน้ำเงินที่คุณต้องการ */
         color: #007bff !important;
         font-weight: 600 !important;
     }
@@ -44,19 +43,33 @@ st.markdown("""
         text-align: center !important;
         border: 1px solid #ddd !important;
         margin-bottom: 20px !important;
-        border-left: none !important; /* ไม่มีขีดซ้าย */
+        border-left: none !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
 st.title("AI TEST")
 
-# --- 2. Setup Model ---
+# --- 2. Setup Model (แก้ไข Error 404 ด้วย Auto-Detect) ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 genai.configure(api_key=api_key)
-model = genai.GenerativeModel('gemini-1.5-flash')
 
-# --- 3. Initialization (ใช้แค่ Session State ไม่มีการเซฟลงไฟล์) ---
+@st.cache_resource
+def load_working_model():
+    try:
+        # ดึงรายชื่อโมเดลที่รองรับ generateContent ใน Key นี้
+        available_models = [m.name for m in genai.list_models() 
+                            if 'generateContent' in m.supported_generation_methods]
+        # เลือกตัวที่เป็น flash ก่อน ถ้าไม่มีให้เลือกตัวแรกที่เจอ
+        selected = next((m for m in available_models if "flash" in m), available_models[0])
+        return genai.GenerativeModel(selected)
+    except Exception as e:
+        st.error(f"Error loading model: {e}")
+        return None
+
+model = load_working_model()
+
+# --- 3. Initialization (ชั่วคราว: รีเฟรชหน้าเว็บแล้วหาย) ---
 if "chat_sessions" not in st.session_state:
     st.session_state.chat_sessions = {}
 
@@ -75,7 +88,7 @@ current_chat = st.session_state.chat_sessions[current_id]
 # --- 4. Sidebar ---
 with st.sidebar:
     st.header("เมนูควบคุม")
-    # ปุ่ม New Chat (สีขาว)
+    # ปุ่ม New Chat
     if st.button("New Chat", use_container_width=True):
         if len(current_chat["messages"]) > 0:
             new_id = str(uuid.uuid4())
@@ -86,12 +99,9 @@ with st.sidebar:
     st.write("---")
     st.subheader("ประวัติการคุย")
     
-    # วนลูปสร้างปุ่มประวัติแชท
     for chat_id, chat_data in reversed(list(st.session_state.chat_sessions.items())):
         if len(chat_data["messages"]) > 0:
             is_active = (chat_id == current_id)
-            
-            # ใช้ type="primary" เพื่อให้ CSS ขีดซ้ายทำงาน
             if st.button(
                 chat_data["title"], 
                 key=chat_id, 
@@ -101,7 +111,7 @@ with st.sidebar:
                 st.session_state.current_chat_id = chat_id
                 st.rerun()
 
-# --- 5. แสดงผลแชท (🧑‍🎓 บัณฑิต / 🦖 ไดโนเสาร์) ---
+# --- 5. การแสดงผล (🧑‍🎓 บัณฑิต / 🦖 ไดโนเสาร์) ---
 for m in current_chat["messages"]:
     avatar = "🧑‍🎓" if m["role"] == "user" else "🦖"
     with st.chat_message(m["role"], avatar=avatar):
@@ -119,9 +129,10 @@ if prompt := st.chat_input("พิมพ์ข้อความที่นี�
         placeholder = st.empty()
         history = "\n".join([f"{m['role']}: {m['content']}" for m in current_chat["messages"][-10:]])
         try:
-            response = model.generate_content(f"คุณคือพี่นนทรี AI\n\nประวัติ:\n{history}\n\nคำถาม: {prompt}")
-            placeholder.markdown(response.text)
-            current_chat["messages"].append({"role": "assistant", "content": response.text})
-            st.rerun()
+            if model:
+                response = model.generate_content(f"คุณคือพี่นนทรี\n\nประวัติ:\n{history}\n\nคำถาม: {prompt}")
+                placeholder.markdown(response.text)
+                current_chat["messages"].append({"role": "assistant", "content": response.text})
+                st.rerun()
         except Exception as e:
             st.error(f"Error: {e}")
