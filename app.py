@@ -28,7 +28,6 @@ st.markdown("""
     }
 
     /* บังคับขีดสีน้ำเงินด้านซ้ายสำหรับห้องที่เลือก (Active) */
-    /* แก้ปัญหาที่ฮอนเจอ: ล้างสีส้มออก และใส่ขีดน้ำเงินแทน */
     div[data-testid="stSidebar"] .stButton button[kind="primary"] {
         background-color: #f8f9fa !important; 
         border-left: 6px solid #007bff !important; /* ขีดน้ำเงินที่ฮอนต้องการ */
@@ -37,7 +36,7 @@ st.markdown("""
         box-shadow: none !important;
     }
 
-    /* ปุ่ม New Chat: สีขาวสะอาดขอบบาง (ลบสีเขียวออกแล้ว) */
+    /* ปุ่ม New Chat: สีขาวสะอาดขอบบาง (ลบสีเขียวออก) */
     .stSidebar [data-testid="stVerticalBlock"] > div:nth-child(2) button {
         background-color: #ffffff !important;
         color: #333 !important;
@@ -52,7 +51,7 @@ st.markdown("""
 
 st.title("AI TEST")
 
-# --- 2. Setup Model (Auto-Detect ป้องกัน 404 และลด 429) ---
+# --- 2. Setup Model (Auto-Detect ป้องกัน 404 และลดปัญหา 429) ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 if api_key:
     genai.configure(api_key=api_key)
@@ -60,21 +59,21 @@ if api_key:
 @st.cache_resource
 def load_working_model():
     try:
-        # ใช้รุ่นที่เสถียรที่สุดสำหรับ Free Tier
+        # ใช้รุ่น gemini-1.5-flash เพื่อความเสถียร
         return genai.GenerativeModel('gemini-1.5-flash')
     except:
         return None
 
 model = load_working_model()
 
-# --- 3. Initialization (ชั่วคราว: รีหน้าเว็บแล้วหาย) ---
+# --- 3. Initialization (ชั่วคราว: รีหน้าเว็บแล้วข้อมูลหายทันที) ---
 if "chat_sessions" not in st.session_state:
     st.session_state.chat_sessions = {}
 
 if "current_chat_id" not in st.session_state:
     st.session_state.current_chat_id = None
 
-# สร้างแชทเริ่มต้นถ้ายังไม่มี
+# สร้างแชทเริ่มต้น
 if st.session_state.current_chat_id is None:
     new_id = str(uuid.uuid4())
     st.session_state.chat_sessions[new_id] = {"title": "New Chat", "messages": []}
@@ -86,7 +85,7 @@ current_chat = st.session_state.chat_sessions[current_id]
 # --- 4. Sidebar (แถบประวัติ) ---
 with st.sidebar:
     st.header("เมนูควบคุม")
-    # ปุ่ม New Chat สีขาว
+    # ปุ่ม New Chat
     if st.button("New Chat", use_container_width=True):
         if len(current_chat["messages"]) > 0:
             new_id = str(uuid.uuid4())
@@ -100,10 +99,10 @@ with st.sidebar:
     # วนลูปสร้างปุ่มประวัติแชท
     for chat_id, chat_data in reversed(list(st.session_state.chat_sessions.items())):
         if len(chat_data["messages"]) > 0:
-            # แก้ Syntax Error บรรทัดที่ 80 (ปิดวงเล็บให้ครบ)
+            # แก้ไข Syntax Error (ปิดวงเล็บให้ครบ)
             is_active = (chat_id == current_id)
             
-            # ใช้ type="primary" เพื่อให้ CSS ขีดซ้ายทำงาน
+            # ใช้ type="primary" เพื่อให้ CSS ขีดซ้ายสีน้ำเงินทำงาน
             if st.button(
                 chat_data["title"], 
                 key=chat_id, 
@@ -124,13 +123,12 @@ if prompt := st.chat_input("พิมพ์ข้อความที่นี�
         st.markdown(prompt)
     current_chat["messages"].append({"role": "user", "content": prompt})
     
-    # ตั้งชื่อหัวข้อจากคำถามแรก
     if len(current_chat["messages"]) == 1:
         current_chat["title"] = prompt[:25]
 
     with st.chat_message("assistant", avatar="🦖"):
         placeholder = st.empty()
-        # ส่งประวัติย้อนหลังสั้นๆ เพื่อเลี่ยงปัญหา Quota
+        # ส่งประวัติย้อนหลังสั้นๆ 5 ข้อความเพื่อประหยัด Quota
         history = "\n".join([f"{msg['role']}: {msg['content']}" for msg in current_chat["messages"][-5:]])
         try:
             if model:
@@ -139,4 +137,5 @@ if prompt := st.chat_input("พิมพ์ข้อความที่นี�
                 current_chat["messages"].append({"role": "assistant", "content": response.text})
                 st.rerun()
         except Exception as e:
-            st.error("ขออภัย โควตาเต็มชั่วคราว กรุณารอสัก 10-20 วินาทีแล้วลองใหม่นะครับ")
+            # แจ้งเตือนเรื่องโควตาเต็มแบบสุภาพ
+            st.error("ขออภัย โควตาเต็มชั่วคราว กรุณารอสัก 15 วินาทีแล้วลองใหม่นะครับ")
