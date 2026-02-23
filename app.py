@@ -1,10 +1,11 @@
 import streamlit as st
 import google.generativeai as genai
 import os
+import uuid # ใช้สำหรับสร้าง ID ให้แต่ละแชท
 
 st.set_page_config(page_title="KU Sriracha Bot", page_icon="🐢", layout="wide")
 
-# --- CSS คงเดิมและเพิ่มสไตล์ Sidebar ---
+# --- CSS เดิมของคุณ ---
 st.markdown("""
 <style>
     .stApp { background-color: #FFFFFF !important; color: black !important; }
@@ -12,37 +13,13 @@ st.markdown("""
     h1, h2, h3, p, span, div { color: #00594C; }
     [data-testid="stChatMessage"] { background-color: #f0f2f6; border-radius: 10px; }
     .stMarkdown p { color: #333333 !important; }
-
-    /* ตกแต่ง Sidebar */
-    .sidebar-history {
-        font-size: 14px;
-        color: #4F4F4F;
-        padding: 5px;
-        border-bottom: 1px solid #ddd;
-    }
-
-    .loading-dots {
-        font-size: 30px;
-        font-weight: bold;
-        display: inline-block;
-    }
-    .loading-dots:after {
-        content: '.';
-        animation: dots 1.5s steps(5, end) infinite;
-    }
-    @keyframes dots {
-        0%, 20% { content: '.'; }
-        40% { content: '..'; }
-        60% { content: '...'; }
-        80%, 100% { content: ''; }
-    }
 </style>
 """, unsafe_allow_html=True)
 
-# --- ส่วนจัดการ API และ Model ---
+# --- ตั้งค่า Gemini API ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 if not api_key:
-    st.error("❌ ไม่พบ GEMINI_API_KEY ในหน้า Settings > Secrets")
+    st.error("❌ ไม่พบ API Key")
     st.stop()
 
 genai.configure(api_key=api_key)
@@ -50,75 +27,87 @@ genai.configure(api_key=api_key)
 @st.cache_resource
 def load_model():
     try:
-        models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-        selected = next((m for m in models if "flash" in m), models[0])
-        return genai.GenerativeModel(model_name=selected)
-    except Exception as e:
+        return genai.GenerativeModel(model_name="gemini-1.5-flash")
+    except:
         return None
 
 model = load_model()
 
-if not model:
-    st.error("❌ ไม่พบโมเดลที่ใช้งานได้")
-    st.stop()
+# --- ส่วนจัดการ Session State สำหรับ Multi-Chat ---
+# 1. เก็บรายการแชททั้งหมด
+if "chat_history_dict" not in st.session_state:
+    st.session_state.chat_history_dict = {} # {chat_id: {"title": str, "messages": list}}
 
-# --- ส่วนจัดการ Session State ---
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+# 2. เก็บ ID ของแชทที่กำลังเปิดอยู่
+if "current_chat_id" not in st.session_state:
+    st.session_state.current_chat_id = None
 
-# --- ส่วน Sidebar: ประวัติการแชท ---
+# ฟังก์ชันสำหรับเริ่มแชทใหม่
+def start_new_chat():
+    new_id = str(uuid.uuid4())
+    st.session_state.chat_history_dict[new_id] = {"title": "แชทใหม่", "messages": []}
+    st.session_state.current_chat_id = new_id
+
+# ถ้าเปิดมาครั้งแรกแล้วยังไม่มีแชท ให้สร้างแ chat ใหม่ทันที
+if st.session_state.current_chat_id is None:
+    start_new_chat()
+
+# --- Sidebar: รายการแชทเก่า ---
 with st.sidebar:
-    st.title("📜 ประวัติการคุย")
+    st.title("KU Sriracha Bot")
     
-    # ปุ่มล้างแชท
-    if st.button("🗑️ ล้างประวัติการสนทนา"):
-        st.session_state.messages = []
+    # ปุ่มแชทใหม่
+    if st.button("➕ แชทใหม่", use_container_width=True):
+        start_new_chat()
         st.rerun()
     
     st.divider()
+    st.subheader("แชทล่าสุด")
     
-    # แสดงรายการคำถามที่เคยถามใน Sidebar
-    if not st.session_state.messages:
-        st.write("ยังไม่มีประวัติการคุย")
-    else:
-        for i, msg in enumerate(st.session_state.messages):
-            if msg["role"] == "user":
-                # ตัดคำให้สั้นลงถ้าประโยคยาวเกินไป
-                display_text = (msg["content"][:30] + '..') if len(msg["content"]) > 30 else msg["content"]
-                st.markdown(f"**{i//2 + 1}.** {display_text}")
+    # แสดงรายการแชทที่มีอยู่
+    for chat_id in reversed(list(st.session_state.chat_history_dict.keys())):
+        title = st.session_state.chat_history_dict[chat_id]["title"]
+        # ปุ่มเลือกแชท
+        if st.button(title, key=chat_id, use_container_width=True):
+            st.session_state.current_chat_id = chat_id
+            st.rerun()
 
-# --- หน้าจอหลัก ---
-st.title("AI TEST - น้องนนทรี 🦖")
+# --- หน้าจอแชทหลัก ---
+current_chat = st.session_state.chat_history_dict[st.session_state.current_chat_id]
 
-# โหลดข้อมูล Knowledge Base
+st.title(current_chat["title"])
+
+# โหลด Knowledge Base
 if os.path.exists("ku_data.txt"):
     with open("ku_data.txt", "r", encoding="utf-8") as f:
         knowledge_base = f.read()
 else:
-    knowledge_base = "ข้อมูลมหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตศรีราชา"
+    knowledge_base = "ข้อมูล มก. ศรีราชา"
 
-# แสดงประวัติการคุยในหน้า Chat
-for message in st.session_state.messages:
+# แสดงข้อความในแชทปัจจุบัน
+for message in current_chat["messages"]:
     with st.chat_message(message["role"], avatar="🧑‍🎓" if message["role"] == "user" else "🦖"):
         st.markdown(message["content"])
 
-# ส่วนรับคำถาม
+# ส่วนรับ Input
 if prompt := st.chat_input("พิมพ์คำถามที่นี่..."):
-    st.chat_message("user", avatar="🧑‍🎓").markdown(prompt)
-    st.session_state.messages.append({"role": "user", "content": prompt})
+    # เพิ่มข้อความ user
+    current_chat["messages"].append({"role": "user", "content": prompt})
+    
+    # ถ้าเป็นประโยคแรก ให้ตั้งชื่อแชทตามคำถามแรก
+    if current_chat["title"] == "แชทใหม่":
+        current_chat["title"] = prompt[:20] + "..." if len(prompt) > 20 else prompt
+        st.rerun()
+
+    with st.chat_message("user", avatar="🧑‍🎓"):
+        st.markdown(prompt)
 
     with st.chat_message("assistant", avatar="🦖"):
         placeholder = st.empty()
-        placeholder.markdown('<div class="loading-dots"></div>', unsafe_allow_html=True)
         
-        instruction = (
-            "คุณคือ 'น้องนนทรี' AI รุ่นพี่ มก. ศรีราชา "
-            "ตอบคำถามตามข้อมูลที่ให้มาอย่างสุภาพ"
-        )
-        
-        # ส่งประวัติล่าสุดเพื่อบริบทที่ต่อเนื่อง
-        history_text = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages[-5:]])
-        full_prompt = f"{instruction}\n\nข้อมูล: {knowledge_base}\n\nประวัติ:\n{history_text}\n\nคำถามล่าสุด: {prompt}"
+        instruction = "คุณคือ 'น้องนนทรี' ตอบคำถามตามข้อมูลที่ให้มาอย่างสุภาพ"
+        history_text = "\n".join([f"{m['role']}: {m['content']}" for m in current_chat["messages"][-5:]])
+        full_prompt = f"{instruction}\n\nข้อมูล: {knowledge_base}\n\nประวัติ:\n{history_text}\n\nคำถาม: {prompt}"
         
         try:
             response = model.generate_content(full_prompt, stream=True)
@@ -128,11 +117,7 @@ if prompt := st.chat_input("พิมพ์คำถามที่นี่..."
                 placeholder.markdown(full_response + "▌")
             
             placeholder.markdown(full_response)
-            st.session_state.messages.append({"role": "assistant", "content": full_response})
-            
-            # สั่ง rerun เพื่อให้ Sidebar อัปเดตข้อมูลล่าสุดทันที
-            st.rerun()
+            current_chat["messages"].append({"role": "assistant", "content": full_response})
             
         except Exception as e:
-            placeholder.empty()
             st.error(f"Error: {str(e)}")
