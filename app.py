@@ -113,15 +113,7 @@ with st.sidebar:
             
             # ตกแต่งชื่อปุ่มให้มี วันเวลา ต่อท้าย (เลียนแบบในรูป)
             
-            
-            if st.button(
-                display_text, 
-                key=chat_id, 
-                use_container_width=True,
-                type="primary" if is_active else "secondary"
-            ):
-                st.session_state.current_chat_id = chat_id
-                st.rerun()
+          
 
 # --- 5. การแสดงผล (🧑‍🎓 บัณฑิต / 🦖 ไดโนเสาร์) ---
 for m in messages:
