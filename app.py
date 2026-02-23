@@ -1,132 +1,101 @@
 import streamlit as st
 import google.generativeai as genai
-import uuid
+import os
 
-# --- 1. CSS ขั้นสูงสุด (บังคับขีดน้ำเงินติดหนึบ + New Chat สีขาว) ---
-st.set_page_config(page_title="AI TEST", layout="wide")
+st.set_page_config(page_title="KU Sriracha Bot", page_icon="🐢", layout="wide")
 
 st.markdown("""
 <style>
-    /* สไตล์ Sidebar สีขาวคลีน */
-    [data-testid="stSidebar"] { 
-        background-color: #ffffff !important; 
-        border-right: 1px solid #eee; 
-    }
-    
-    /* สไตล์ปุ่มประวัติ (ทรงสี่เหลี่ยมสีขาว) */
-    div.stButton > button {
-        width: 100% !important;
-        border: none !important;
-        background-color: #ffffff !important;
-        padding: 15px 10px !important;
-        text-align: left !important;
-        border-radius: 0px !important;
-        border-bottom: 1px solid #f0f0f0 !important;
-        color: #444 !important;
-        display: block !important;
-    }
+    .stApp { background-color: #FFFFFF !important; color: black !important; }
+    [data-testid="stSidebar"] { background-color: #f2f9f6 !important; }
+    h1, h2, h3, p, span, div { color: #00594C; }
+    [data-testid="stChatMessage"] { background-color: #f0f2f6; border-radius: 10px; }
+    .stMarkdown p { color: #333333 !important; }
 
-    /* บังคับขีดสีน้ำเงินด้านซ้ายสำหรับห้องที่เลือก (Active) */
-    div[data-testid="stSidebar"] .stButton button[kind="primary"] {
-        background-color: #f8f9fa !important; 
-        border-left: 6px solid #007bff !important; /* ขีดสีน้ำเงินที่ฮอนต้องการ */
-        color: #007bff !important;
-        font-weight: 600 !important;
+    .loading-dots {
+        font-size: 30px;
+        font-weight: bold;
+        display: inline-block;
     }
-
-    /* ปุ่ม New Chat: สีขาวสะอาดขอบบาง */
-    .stSidebar [data-testid="stVerticalBlock"] > div:nth-child(2) button {
-        background-color: #ffffff !important;
-        color: #333 !important;
-        border-radius: 8px !important;
-        text-align: center !important;
-        border: 1px solid #ddd !important;
-        margin-bottom: 20px !important;
+    .loading-dots:after {
+        content: '.';
+        animation: dots 1.5s steps(5, end) infinite;
+    }
+    @keyframes dots {
+        0%, 20% { content: '.'; }
+        40% { content: '..'; }
+        60% { content: '...'; }
+        80%, 100% { content: ''; }
     }
 </style>
 """, unsafe_allow_html=True)
 
-st.title("AI TEST")
-
-# --- 2. Setup Model (Auto-Detect ชื่อรุ่น) ---
 api_key = st.secrets.get("GEMINI_API_KEY")
-if api_key:
-    genai.configure(api_key=api_key)
+if not api_key:
+    st.error("❌ ไม่พบ GEMINI_API_KEY ในหน้า Settings > Secrets")
+    st.stop()
+
+genai.configure(api_key=api_key)
 
 @st.cache_resource
-def load_working_model():
+def load_model():
+    # ใช้การ List หาโมเดลที่ใช้งานได้จริงใน Key นี้ (วิธีที่ชัวร์ที่สุด)
     try:
-        # ใช้รุ่นที่เสถียรที่สุด
-        return genai.GenerativeModel('gemini-1.5-flash')
-    except:
-        return None
+        for m in genai.list_models():
+            if 'generateContent' in m.supported_generation_methods:
+                # เลือกตัวที่เป็น Flash ก่อนเพื่อความเร็ว
+                if "flash" in m.name.lower():
+                    return genai.GenerativeModel(model_name=m.name)
+        # ถ้าหา Flash ไม่เจอ เอาตัวไหนก็ได้ที่ส่งคำถามได้
+        for m in genai.list_models():
+            if 'generateContent' in m.supported_generation_methods:
+                return genai.GenerativeModel(model_name=m.name)
+    except Exception as e:
+        st.error(f"❌ ระบบไม่สามารถดึงรายชื่อโมเดลได้: {e}")
+    return None
 
-model = load_working_model()
+model = load_model()
 
-# --- 3. Initialization (รีหน้าเว็บแล้วหาย) ---
-if "chat_sessions" not in st.session_state:
-    st.session_state.chat_sessions = {}
-if "current_chat_id" not in st.session_state:
-    st.session_state.current_chat_id = None
+if not model:
+    st.error("❌ ไม่พบโมเดลที่ใช้งานได้ใน API Key นี้")
+    st.stop()
 
-# สร้างแชทเริ่มต้น
-if st.session_state.current_chat_id is None:
-    new_id = str(uuid.uuid4())
-    st.session_state.chat_sessions[new_id] = {"title": "New Chat", "messages": []}
-    st.session_state.current_chat_id = new_id
+st.title("AI TEST")
 
-current_id = st.session_state.current_chat_id
-current_chat = st.session_state.chat_sessions[current_id]
+if os.path.exists("ku_data.txt"):
+    with open("ku_data.txt", "r", encoding="utf-8") as f:
+        knowledge_base = f.read()
+else:
+    knowledge_base = "ข้อมูลมหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตศรีราชา"
 
-# --- 4. Sidebar ---
-with st.sidebar:
-    st.header("เมนูควบคุม")
-    if st.button("New Chat", use_container_width=True):
-        if len(current_chat["messages"]) > 0:
-            new_id = str(uuid.uuid4())
-            st.session_state.chat_sessions[new_id] = {"title": "New Chat", "messages": []}
-            st.session_state.current_chat_id = new_id
-            st.rerun()
-    
-    st.write("---")
-    st.subheader("ประวัติการคุย")
-    
-    for chat_id, chat_data in reversed(list(st.session_state.chat_sessions.items())):
-        if len(chat_data["messages"]) > 0:
-            is_active = (chat_id == current_id)
-            if st.button(
-                chat_data["title"], 
-                key=chat_id, 
-                use_container_width=True,
-                type="primary" if is_active else "secondary"
-            ):
-                st.session_state.current_chat_id = chat_id
-                st.rerun()
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-# --- 5. การแสดงผล (🧑‍🎓 บัณฑิต / 🦖 ไดโนเสาร์) ---
-for m in current_chat["messages"]:
-    avatar = "🧑‍🎓" if m["role"] == "user" else "🦖"
-    with st.chat_message(m["role"], avatar=avatar):
-        st.markdown(m["content"])
+for message in st.session_state.messages:
+    with st.chat_message(message["role"], avatar="🧑‍🎓" if message["role"] == "user" else "🦖"):
+        st.markdown(message["content"])
 
-if prompt := st.chat_input("พิมพ์ข้อความที่นี่..."):
-    with st.chat_message("user", avatar="🧑‍🎓"):
-        st.markdown(prompt)
-    current_chat["messages"].append({"role": "user", "content": prompt})
-    
-    if len(current_chat["messages"]) == 1:
-        current_chat["title"] = prompt[:25]
+if prompt := st.chat_input("พิมพ์คำถามที่นี่..."):
+    st.chat_message("user", avatar="🧑‍🎓").markdown(prompt)
+    st.session_state.messages.append({"role": "user", "content": prompt})
 
     with st.chat_message("assistant", avatar="🦖"):
-        placeholder = st.empty()
-        # ส่งประวัติย้อนหลังแค่ 2 ประโยคเพื่อประหยัดโควตา
-        history = "\n".join([f"{msg['role']}: {msg['content']}" for msg in current_chat["messages"][-2:]])
+        status_placeholder = st.empty()
+        status_placeholder.markdown('<div class="loading-dots"></div>', unsafe_allow_html=True)
+        
+        instruction = (
+            "คุณคือ 'น้องนนทรี' AI รุ่นพี่ของ มก. ศรีราชา (KU SRC) "
+            "ภารกิจ: จงจำชื่อผู้ใช้และสิ่งที่คุยกันก่อนหน้าจากประวัติการสนทนา "
+            "ตอบคำถามตามข้อมูลที่ให้มาอย่างสุภาพ หากถามเรื่องตึก ต้องส่งลิงก์แผนที่เสมอ"
+        )
+        
+        history_text = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages[-10:]])
+        full_prompt = f"{instruction}\n\nข้อมูล: {knowledge_base}\n\nประวัติการคุย:\n{history_text}\n\nคำถามล่าสุด: {prompt}"
+        
         try:
-            if model:
-                response = model.generate_content(f"คุณคือพี่นนทรี\n\nประวัติ:\n{history}\n\nคำถาม: {prompt}")
-                placeholder.markdown(response.text)
-                current_chat["messages"].append({"role": "assistant", "content": response.text})
-                st.rerun()
+            response = model.generate_content(full_prompt)
+            status_placeholder.markdown(response.text)
+            st.session_state.messages.append({"role": "assistant", "content": response.text})
         except Exception as e:
-            # ถ้าโควตาเต็ม จะขึ้นเตือนให้รอ 20 วินาที
-            st.error("ขออภัย โควตาเต็มชั่วคราว กรุณารอสัก 20 วินาทีแล้วลองพิมพ์ใหม่นะครับ")
+            status_placeholder.empty()
+            st.error(f"❌ เกิดข้อผิดพลาด: {e}")
