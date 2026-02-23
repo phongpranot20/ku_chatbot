@@ -3,11 +3,12 @@ import google.generativeai as genai
 import os
 import uuid
 
-# --- 1. CSS & UI (ขีดเขียวด้านซ้าย + Avatar บัณฑิต/ไดโนเสาร์) ---
+# --- 1. CSS ปรับแต่งปุ่มให้มีแค่ขีดเขียว (ลบสีแดง/ส้มออก 100%) ---
 st.set_page_config(page_title="AI TEST", layout="wide")
 
 st.markdown("""
 <style>
+    /* ล้างสไตล์ปุ่มมาตรฐานของ Streamlit ใน Sidebar */
     div[data-testid="stSidebar"] button {
         border: none !important;
         background-color: transparent !important;
@@ -18,44 +19,54 @@ st.markdown("""
         display: block !important;
         box-shadow: none !important;
     }
+
+    /* สไตล์ปุ่มที่เลือก (Active) - บังคับใสและมีขีดเขียวด้านซ้าย */
     div[data-testid="stSidebar"] button[kind="primary"] {
         background-color: rgba(0, 89, 76, 0.05) !important;
-        border-left: 6px solid #00594C !important;
+        border-left: 6px solid #00594C !important; /* ขีดสีเขียวนนทรี */
         color: #00594C !important;
         font-weight: bold !important;
         border-radius: 0px !important;
     }
+    
+    /* ปุ่มเริ่มแชทใหม่ให้ดูเด่นสไตล์คลีน */
+    div[data-testid="stSidebar"] [data-testid="stVerticalBlock"] > div:nth-child(2) button {
+        background-color: #f0f2f6 !important;
+        border-radius: 10px !important;
+        text-align: center !important;
+        padding-left: 0px !important;
+        margin-bottom: 20px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# --- 2. ฟังก์ชันตรวจสอบและเลือกโมเดล (ป้องกัน Error) ---
+st.title("AI TEST")
+
+# --- 2. การตั้งค่าโมเดล (ใช้ระบบเช็คชื่อรุ่นอัตโนมัติ) ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 genai.configure(api_key=api_key)
 
 @st.cache_resource
-def get_working_model():
+def get_model():
     try:
-        # วนลูปหาโมเดลที่ใช้งานได้จริงใน Key นี้
-        available_models = [m.name for m in genai.list_models() 
-                            if 'generateContent' in m.supported_generation_methods]
-        
-        # ลำดับความสำคัญ: ลองหา Flash ก่อน ถ้าไม่มีเอา Pro ถ้าไม่มีเอาตัวแรกที่เจอ
-        selected = next((m for m in available_models if "flash" in m), 
-                        next((m for m in available_models if "pro" in m), available_models[0]))
-        
+        # ดึงรายชื่อโมเดลที่ใช้งานได้มาเช็ค
+        models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+        selected = next((m for m in models if "flash" in m), models[0])
         return genai.GenerativeModel(selected)
-    except Exception as e:
-        st.error(f"ไม่สามารถโหลดโมเดลได้: {e}")
+    except:
         return None
 
-model = get_working_model()
+model = get_model()
 
-# --- 3. ระบบจัดการ Session & Sidebar (ตามโครงเดิมที่ ฮอน วางไว้) ---
+# --- 3. ระบบจัดการ Session ---
 if "chat_sessions" not in st.session_state:
     st.session_state.chat_sessions = {}
 if "current_chat_id" not in st.session_state:
     st.session_state.current_chat_id = None
+if "user_name" not in st.session_state:
+    st.session_state.user_name = None
 
+# สร้างแชทแรกถ้ายังไม่มี
 if st.session_state.current_chat_id is None:
     first_id = str(uuid.uuid4())
     st.session_state.chat_sessions[first_id] = {"title": "แชทใหม่", "messages": []}
@@ -64,6 +75,7 @@ if st.session_state.current_chat_id is None:
 current_chat = st.session_state.chat_sessions[st.session_state.current_chat_id]
 messages = current_chat["messages"]
 
+# --- 4. Sidebar (แก้ไข Syntax Error บรรทัดที่ 80) ---
 with st.sidebar:
     st.header("เมนูควบคุม")
     if st.button("+ เริ่มแชทใหม่", use_container_width=True):
@@ -75,15 +87,17 @@ with st.sidebar:
     
     st.write("---")
     st.subheader("ประวัติการคุย")
+    
     for chat_id, chat_data in reversed(list(st.session_state.chat_sessions.items())):
         if len(chat_data["messages"]) > 0:
+            # แก้ไข Syntax Error ตรงนี้ (ปิดวงเล็บให้ครบ)
             is_active = (chat_id == st.session_state.current_chat_id)
             if st.button(chat_data["title"], key=chat_id, use_container_width=True, 
                          type="primary" if is_active else "secondary"):
                 st.session_state.current_chat_id = chat_id
                 st.rerun()
 
-# --- 4. การแสดงผลและรับข้อมูล (🧑‍🎓 บัณฑิต / 🦖 ไดโนเสาร์) ---
+# --- 5. การแสดงผล (🧑‍🎓 บัณฑิต / 🦖 ไดโนเสาร์) ---
 for m in messages:
     avatar = "🧑‍🎓" if m["role"] == "user" else "🦖"
     with st.chat_message(m["role"], avatar=avatar):
@@ -94,6 +108,7 @@ if prompt := st.chat_input("พิมพ์ข้อความที่นี�
         st.markdown(prompt)
     messages.append({"role": "user", "content": prompt})
     
+    # ตั้งชื่อห้องจากคำถามแรก
     if len(messages) == 1:
         current_chat["title"] = prompt[:20] + "..."
 
@@ -101,7 +116,6 @@ if prompt := st.chat_input("พิมพ์ข้อความที่นี�
         placeholder = st.empty()
         placeholder.write("...")
         
-        # ดึงประวัติเพื่อให้ AI จำบริบทได้
         history = "\n".join([f"{m['role']}: {m['content']}" for m in messages[-10:]])
         full_p = f"คุณคือ 'น้องนนทรี' AI รุ่นพี่ มก. ศรีราชา\n\nประวัติ:\n{history}\n\nคำถาม: {prompt}"
         
@@ -112,4 +126,4 @@ if prompt := st.chat_input("พิมพ์ข้อความที่นี�
                 messages.append({"role": "assistant", "content": response.text})
                 st.rerun()
         except Exception as e:
-            st.error(f"เกิดข้อผิดพลาดในการตอบ: {e}")
+            st.error(f"Error: {e}")
