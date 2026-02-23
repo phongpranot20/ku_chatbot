@@ -52,14 +52,14 @@ if not st.session_state.chat_history_dict or st.session_state.current_chat_id no
 
 # --- Sidebar ---
 with st.sidebar:
-    st.title("KU Sriracha Bot")
+    st.title("AI TEST")
     
-    if st.button("➕ แชทใหม่", use_container_width=True):
+    if st.button(" New chat", use_container_width=True):
         start_new_chat()
         st.rerun()
     
     st.divider()
-    st.subheader("แชทล่าสุด")
+    st.subheader("History")
     
     # แสดงรายการแชท
     for chat_id in reversed(list(st.session_state.chat_history_dict.keys())):
