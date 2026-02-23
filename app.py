@@ -2,47 +2,63 @@ import streamlit as st
 import google.generativeai as genai
 import os
 import uuid
+from datetime import datetime
 
-# --- 1. CSS ชุดดุพิเศษ (ฆ่าสีแดง/ส้มทิ้ง 100% เหลือแค่ขีดเขียวซ้ายมือ) ---
+# --- 1. CSS ขั้นเทพ (เปลี่ยนปุ่มเป็นแถบสี่เหลี่ยมแบบในรูปเป๊ะๆ) ---
 st.set_page_config(page_title="AI TEST", layout="wide")
 
 st.markdown("""
 <style>
-    /* 1. ล้างค่าพื้นหลังปุ่มทุกชนิดใน Sidebar ให้ใสสะอาด */
-    div[data-testid="stSidebar"] button {
-        border: none !important;
-        background-color: transparent !important; /* บังคับใส */
-        color: #555 !important;
-        text-align: left !important;
-        padding-left: 20px !important;
-        width: 100% !important;
-        display: block !important;
-        box-shadow: none !important;
+    /* ล้างสไตล์ Sidebar เดิม */
+    [data-testid="stSidebar"] {
+        background-color: #f8f9fa !important;
     }
 
-    /* 2. ลบสีแดง/ส้ม ของปุ่ม Primary ออก และใส่ขีดสีเขียวนนทรีแทน */
-    div[data-testid="stSidebar"] button[kind="primary"] {
-        background-color: rgba(0, 89, 76, 0.05) !important; /* พื้นหลังจางๆ เพื่อให้รู้ว่าเลือกอยู่ */
-        border-left: 6px solid #00594C !important; /* ขีดสีเขียวนนทรีด้านซ้าย */
-        color: #00594C !important;
-        font-weight: bold !important;
+    /* สไตล์ปุ่มประวัติ (ทำให้เป็นแถบสี่เหลี่ยม) */
+    div.stButton > button {
+        width: 100% !important;
+        border: none !important;
+        background-color: transparent !important;
+        padding: 15px 10px !important;
+        text-align: left !important;
+        display: block !important;
         border-radius: 0px !important;
+        border-bottom: 1px solid #eee !important;
+        transition: 0.2s;
     }
-    
-    /* 3. สไตล์ปุ่มเริ่มแชทใหม่ให้ดูแยกสัดส่วนคลีนๆ */
-    div[data-testid="stSidebar"] [data-testid="stVerticalBlock"] > div:nth-child(2) button {
-        background-color: #f0f2f6 !important;
+
+    /* ปุ่มแชทที่เลือกอยู่ (Active) - ให้มีพื้นหลังสีฟ้าอ่อนและขีดน้ำเงินด้านซ้าย */
+    div[data-testid="stSidebar"] button[kind="primary"] {
+        background-color: #e9ecef !important; /* สีเทาฟ้าจางๆ แบบในรูป */
+        border-left: 5px solid #007bff !important; /* ขีดสีน้ำเงินหนาๆ */
+        color: #111 !important;
+        font-weight: 600 !important;
+    }
+
+    /* ปุ่มแชทที่ไม่ได้เลือก */
+    div[data-testid="stSidebar"] button[kind="secondary"] {
+        color: #444 !important;
+    }
+
+    div[data-testid="stSidebar"] button:hover {
+        background-color: #f1f3f5 !important;
+    }
+
+    /* ปุ่มแชทใหม่ (ทำให้ดูเด่น) */
+    .stSidebar [data-testid="stVerticalBlock"] > div:nth-child(2) button {
+        background-color: #00594C !important;
+        color: white !important;
         border-radius: 10px !important;
         text-align: center !important;
-        padding-left: 0px !important;
-        margin-bottom: 20px;
+        margin-bottom: 20px !important;
+        border-left: none !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
 st.title("AI TEST")
 
-# --- 2. การตั้งค่า Model (Auto-Detect ชื่อรุ่นป้องกัน Error) ---
+# --- 2. การตั้งค่า Model (ป้องกัน Syntax Error) ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 genai.configure(api_key=api_key)
 
@@ -52,12 +68,11 @@ def get_model():
         models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
         selected = next((m for m in models if "flash" in m), models[0])
         return genai.GenerativeModel(selected)
-    except:
-        return None
+    except: return None
 
 model = get_model()
 
-# --- 3. ระบบจัดการ Session ---
+# --- 3. ระบบจัดการ Session & Time ---
 if "chat_sessions" not in st.session_state:
     st.session_state.chat_sessions = {}
 if "current_chat_id" not in st.session_state:
@@ -65,32 +80,46 @@ if "current_chat_id" not in st.session_state:
 
 if st.session_state.current_chat_id is None:
     first_id = str(uuid.uuid4())
-    st.session_state.chat_sessions[first_id] = {"title": "แชทใหม่", "messages": []}
+    st.session_state.chat_sessions[first_id] = {
+        "title": "แชทใหม่", 
+        "messages": [], 
+        "time": datetime.now().strftime("%d/%m/%Y %H:%M")
+    }
     st.session_state.current_chat_id = first_id
 
 current_chat = st.session_state.chat_sessions[st.session_state.current_chat_id]
 messages = current_chat["messages"]
 
-# --- 4. Sidebar (แก้ไข Syntax Error บรรทัดที่ 80 เรียบร้อย) ---
+# --- 4. Sidebar (แถบประวัติแบบในรูป image_c562fe.png) ---
 with st.sidebar:
     st.header("เมนูควบคุม")
     if st.button("+ เริ่มแชทใหม่", use_container_width=True):
         if len(messages) > 0:
             new_id = str(uuid.uuid4())
-            st.session_state.chat_sessions[new_id] = {"title": "แชทใหม่", "messages": []}
+            st.session_state.chat_sessions[new_id] = {
+                "title": "แชทใหม่", 
+                "messages": [], 
+                "time": datetime.now().strftime("%d/%m/%Y %H:%M")
+            }
             st.session_state.current_chat_id = new_id
             st.rerun()
     
     st.write("---")
     st.subheader("ประวัติการคุย")
     
-    # วนลูปแสดงประวัติห้องแชท
     for chat_id, chat_data in reversed(list(st.session_state.chat_sessions.items())):
         if len(chat_data["messages"]) > 0:
-            # ปิดวงเล็บที่ค้างไว้ให้ครบถ้วนในบรรทัดนี้
-            is_active = (chat_id == st.session_state.current_chat_id) 
-            if st.button(chat_data["title"], key=chat_id, use_container_width=True, 
-                         type="primary" if is_active else "secondary"):
+            is_active = (chat_id == st.session_state.current_chat_id)
+            
+            # ตกแต่งชื่อปุ่มให้มี วันเวลา ต่อท้าย (เลียนแบบในรูป)
+            display_text = f"{chat_data['title']}\n{chat_data['time']}"
+            
+            if st.button(
+                display_text, 
+                key=chat_id, 
+                use_container_width=True,
+                type="primary" if is_active else "secondary"
+            ):
                 st.session_state.current_chat_id = chat_id
                 st.rerun()
 
@@ -106,7 +135,8 @@ if prompt := st.chat_input("พิมพ์ข้อความที่นี�
     messages.append({"role": "user", "content": prompt})
     
     if len(messages) == 1:
-        current_chat["title"] = prompt[:20] + "..."
+        # ใช้ข้อความแรกเป็นชื่อ (ตัดให้สั้นลง)
+        current_chat["title"] = (prompt[:25] + '...') if len(prompt) > 25 else prompt
 
     with st.chat_message("assistant", avatar="🦖"):
         placeholder = st.empty()
