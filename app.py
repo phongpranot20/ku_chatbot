@@ -77,4 +77,39 @@ with st.sidebar:
     st.subheader("ประวัติการคุย")
     for chat_id, chat_data in reversed(list(st.session_state.chat_sessions.items())):
         if len(chat_data["messages"]) > 0:
-            is_active = (chat_id == st.session_state.current_
+            is_active = (chat_id == st.session_state.current_chat_id)
+            if st.button(chat_data["title"], key=chat_id, use_container_width=True, 
+                         type="primary" if is_active else "secondary"):
+                st.session_state.current_chat_id = chat_id
+                st.rerun()
+
+# --- 4. การแสดงผลและรับข้อมูล (🧑‍🎓 บัณฑิต / 🦖 ไดโนเสาร์) ---
+for m in messages:
+    avatar = "🧑‍🎓" if m["role"] == "user" else "🦖"
+    with st.chat_message(m["role"], avatar=avatar):
+        st.markdown(m["content"])
+
+if prompt := st.chat_input("พิมพ์ข้อความที่นี่..."):
+    with st.chat_message("user", avatar="🧑‍🎓"):
+        st.markdown(prompt)
+    messages.append({"role": "user", "content": prompt})
+    
+    if len(messages) == 1:
+        current_chat["title"] = prompt[:20] + "..."
+
+    with st.chat_message("assistant", avatar="🦖"):
+        placeholder = st.empty()
+        placeholder.write("...")
+        
+        # ดึงประวัติเพื่อให้ AI จำบริบทได้
+        history = "\n".join([f"{m['role']}: {m['content']}" for m in messages[-10:]])
+        full_p = f"คุณคือ 'น้องนนทรี' AI รุ่นพี่ มก. ศรีราชา\n\nประวัติ:\n{history}\n\nคำถาม: {prompt}"
+        
+        try:
+            if model:
+                response = model.generate_content(full_p)
+                placeholder.markdown(response.text)
+                messages.append({"role": "assistant", "content": response.text})
+                st.rerun()
+        except Exception as e:
+            st.error(f"เกิดข้อผิดพลาดในการตอบ: {e}")
