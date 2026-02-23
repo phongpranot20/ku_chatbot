@@ -2,6 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 import uuid
 
+# --- 1. CSS (ขีดน้ำเงิน + New Chat ขาว) ---
 st.set_page_config(page_title="AI TEST", layout="wide")
 
 st.markdown("""
@@ -27,6 +28,7 @@ st.markdown("""
 
 st.title("AI TEST")
 
+# --- 2. Setup Model (ใช้ List Models เพื่อแก้ 404) ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 if api_key:
     genai.configure(api_key=api_key)
@@ -34,11 +36,11 @@ if api_key:
 @st.cache_resource
 def load_working_model():
     try:
-        # ดึงรายชื่อโมเดลที่ Key นี้ใช้ได้จริงออกมาดู
+        # ดึงรายชื่อโมเดลที่ใช้งานได้จริง
         available_models = [m.name for m in genai.list_models() 
                             if 'generateContent' in m.supported_generation_methods]
         
-        # เลือกตัวที่เหมาะสมที่สุดจากรายชื่อที่มีอยู่จริง (แก้ปัญหา 404)
+        # เลือกตัวที่เป็น flash-latest หรือ flash หรือตัวแรกที่มี
         selected = next((m for m in available_models if "flash-latest" in m),
                    next((m for m in available_models if "flash" in m),
                    next((m for m in available_models if "pro" in m), available_models[0])))
@@ -48,6 +50,7 @@ def load_working_model():
 
 model = load_working_model()
 
+# --- 3. Session Management ---
 if "chat_sessions" not in st.session_state:
     st.session_state.chat_sessions = {}
 if "current_chat_id" not in st.session_state:
@@ -61,6 +64,7 @@ if st.session_state.current_chat_id is None:
 current_id = st.session_state.current_chat_id
 current_chat = st.session_state.chat_sessions[current_id]
 
+# --- 4. Sidebar ---
 with st.sidebar:
     st.header("เมนูควบคุม")
     if st.button("New Chat", use_container_width=True):
@@ -69,6 +73,7 @@ with st.sidebar:
             st.session_state.chat_sessions[new_id] = {"title": "New Chat", "messages": []}
             st.session_state.current_chat_id = new_id
             st.rerun()
+    
     st.write("---")
     st.subheader("ประวัติการคุย")
     for chat_id, chat_data in reversed(list(st.session_state.chat_sessions.items())):
@@ -79,6 +84,7 @@ with st.sidebar:
                 st.session_state.current_chat_id = chat_id
                 st.rerun()
 
+# --- 5. Chat UI ---
 for m in current_chat["messages"]:
     avatar = "🧑‍🎓" if m["role"] == "user" else "🦖"
     with st.chat_message(m["role"], avatar=avatar):
@@ -94,22 +100,21 @@ if prompt := st.chat_input("พิมพ์ข้อความที่นี�
 
     with st.chat_message("assistant", avatar="🦖"):
         placeholder = st.empty()
-        with st.spinner(" "): # จุดขยับตอนกำลังคิด
+        with st.spinner(" "): 
             try:
                 if isinstance(model, genai.GenerativeModel):
-                    history = "\n".join([f"{msg['role']}: {msg['content']}" for msg in current_chat["messages"][-2:]])
-                    # ใช้ stream=True เพื่อให้ตอบไวขึ้น
-                    response = model.generate_content(f"คุณคือพี่นนทรี\n\nประวัติ:\n{history}\n\nคำถาม: {prompt}", stream=True)
+                    # ส่งแค่คำถามปัจจุบันเพียวๆ เพื่อความเร็วสูงสุด
+                    response = model.generate_content(f"คุณคือพี่นนทรี: {prompt}", stream=True)
                     
                     full_response = ""
                     for chunk in response:
-                        full_response += chunk.text
-                        placeholder.markdown(full_response + "▌")
+                        if chunk.text:
+                            full_response += chunk.text
+                            placeholder.markdown(full_response + "▌")
                     
                     placeholder.markdown(full_response)
                     current_chat["messages"].append({"role": "assistant", "content": full_response})
-                    st.rerun()
                 else:
-                    st.error(f"Model Error: {str(model)}")
+                    st.error(f"Discovery Error: {str(model)}")
             except Exception as e:
-                st.error(f"Execution Error: {str(e)}")
+                st.error(f"Error: {str(e)}")
