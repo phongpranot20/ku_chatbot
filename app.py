@@ -1,6 +1,7 @@
 import streamlit as st
 import google.generativeai as genai
 import uuid
+import time
 
 st.set_page_config(page_title="AI TEST", layout="wide")
 
@@ -10,33 +11,21 @@ st.markdown("""
         background-color: #ffffff !important; 
         border-right: 1px solid #eee; 
     }
-    
     div.stButton > button {
-        width: 100% !important;
-        border: none !important;
-        background-color: #ffffff !important;
-        padding: 15px 10px !important;
-        text-align: left !important;
-        border-radius: 0px !important;
-        border-bottom: 1px solid #f0f0f0 !important;
-        color: #444 !important;
-        display: block !important;
+        width: 100% !important; border: none !important;
+        background-color: #ffffff !important; padding: 15px 10px !important;
+        text-align: left !important; border-radius: 0px !important;
+        border-bottom: 1px solid #f0f0f0 !important; color: #444 !important;
     }
-
     div[data-testid="stSidebar"] .stButton button[kind="primary"] {
         background-color: #f8f9fa !important; 
         border-left: 6px solid #007bff !important;
-        color: #007bff !important;
-        font-weight: 600 !important;
+        color: #007bff !important; font-weight: 600 !important;
     }
-
     .stSidebar [data-testid="stVerticalBlock"] > div:nth-child(2) button {
-        background-color: #ffffff !important;
-        color: #333 !important;
-        border-radius: 8px !important;
-        text-align: center !important;
-        border: 1px solid #ddd !important;
-        margin-bottom: 20px !important;
+        background-color: #ffffff !important; color: #333 !important;
+        border-radius: 8px !important; text-align: center !important;
+        border: 1px solid #ddd !important; margin-bottom: 20px !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -50,21 +39,19 @@ if api_key:
 @st.cache_resource
 def load_working_model():
     try:
-        # ดึงรายชื่อโมเดลทั้งหมดที่ Key นี้เข้าถึงได้
         available_models = [m.name for m in genai.list_models() 
                             if 'generateContent' in m.supported_generation_methods]
-        
-        # ค้นหาโมเดลที่ต้องการตามลำดับความสำคัญ
-        # 1. ลองหา flash-latest 2. ลองหา flash 3. ลองหา pro 4. เอาตัวแรกที่เจอ
         selected = next((m for m in available_models if "flash-latest" in m),
                    next((m for m in available_models if "flash" in m),
                    next((m for m in available_models if "pro" in m), available_models[0])))
-        
         return genai.GenerativeModel(selected)
-    except Exception as e:
-        return e
+    except Exception as e: return e
 
 model = load_working_model()
+
+# --- 1. ระบบจำชื่อ (Global Memory) ---
+if "user_name" not in st.session_state:
+    st.session_state.user_name = "ฮอน" # ตั้งค่าเริ่มต้นเป็นชื่อของคุณ
 
 if "chat_sessions" not in st.session_state:
     st.session_state.chat_sessions = {}
@@ -87,19 +74,13 @@ with st.sidebar:
             st.session_state.chat_sessions[new_id] = {"title": "New Chat", "messages": []}
             st.session_state.current_chat_id = new_id
             st.rerun()
-    
     st.write("---")
     st.subheader("ประวัติการคุย")
-    
     for chat_id, chat_data in reversed(list(st.session_state.chat_sessions.items())):
         if len(chat_data["messages"]) > 0:
             is_active = (chat_id == current_id)
-            if st.button(
-                chat_data["title"], 
-                key=chat_id, 
-                use_container_width=True,
-                type="primary" if is_active else "secondary"
-            ):
+            if st.button(chat_data["title"], key=chat_id, use_container_width=True,
+                         type="primary" if is_active else "secondary"):
                 st.session_state.current_chat_id = chat_id
                 st.rerun()
 
@@ -118,14 +99,19 @@ if prompt := st.chat_input("พิมพ์ข้อความที่นี�
 
     with st.chat_message("assistant", avatar="🦖"):
         placeholder = st.empty()
-        history = "\n".join([f"{msg['role']}: {msg['content']}" for msg in current_chat["messages"][-2:]])
-        try:
-            if isinstance(model, genai.GenerativeModel):
-                response = model.generate_content(f"คุณคือพี่นนทรี\n\nประวัติ:\n{history}\n\nคำถาม: {prompt}")
-                placeholder.markdown(response.text)
-                current_chat["messages"].append({"role": "assistant", "content": response.text})
-                st.rerun()
-            else:
-                st.error(f"Model Discovery Error: {str(model)}")
-        except Exception as e:
-            st.error(f"Execution Error: {str(e)}")
+        with st.spinner("กำลังคิด..."):
+            history = "\n".join([f"{msg['role']}: {msg['content']}" for msg in current_chat["messages"][-2:]])
+            # --- 2. ใส่ชื่อผู้ใช้เข้าไปใน System Prompt ---
+            system_instruction = f"คุณคือพี่นนทรี AI มก.ศรีราชา กำลังคุยกับคุณ '{st.session_state.user_name}'"
+            try:
+                if isinstance(model, genai.GenerativeModel):
+                    response = model.generate_content(f"{system_instruction}\n\nประวัติ:\n{history}\n\nคำถาม: {prompt}", stream=True)
+                    full_response = ""
+                    for chunk in response:
+                        full_response += chunk.text
+                        placeholder.markdown(full_response + "▌")
+                    placeholder.markdown(full_response)
+                    current_chat["messages"].append({"role": "assistant", "content": full_response})
+                    st.rerun()
+                else: st.error(f"Model Error: {str(model)}")
+            except Exception as e: st.error(f"Execution Error: {str(e)}")
