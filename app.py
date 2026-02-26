@@ -154,7 +154,7 @@ with st.sidebar:
     st.markdown('<p class="sidebar-title">AI KUSRC Dashboard</p>', unsafe_allow_html=True)
 
     # 2. รายการแบบฟอร์มด่วน (จัดเต็มตามข้อมูลใหม่)
-    with st.expander("📄 ลิ้งรายการแบบฟอร์มต่างๆ ", expanded=True):
+    with st.expander("📄 ลิงก์แบบฟอร์มต่างๆ", expanded=True):
         st.markdown(f"""
             <div class="white-card-content">
                 <div class="form-row">
