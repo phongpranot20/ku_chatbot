@@ -41,7 +41,7 @@ st.markdown("""
     
     /* --- ปรับแต่งปุ่มให้ "ใสถาวร" และ "ยาวเท่ากล่องขาว" --- */
     div.stButton > button {
-        width: 200% !important;
+        width: 150% !important;
         border-radius: 12px !important;
         background-color: transparent !important; /* บังคับให้ใสถาวร */
         color: white !important;
@@ -90,7 +90,7 @@ model = load_model()
 
 # --- 5. จัดการ State ความจำข้าม Session ---
 if "all_chats" not in st.session_state:
-    st.session_state.all_chats = {"แชทเริ่มต้น": []}
+    st.session_state.all_chats = {"➕ แชทใหม่": []}
 if "current_chat_id" not in st.session_state:
     st.session_state.current_chat_id = "แชทเริ่มต้น"
 if "messages" not in st.session_state:
