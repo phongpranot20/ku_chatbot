@@ -2,82 +2,101 @@ import streamlit as st
 import google.generativeai as genai
 import os
 
-# --- ตั้งค่าหน้าจอ ---
+# --- 1. ตั้งค่าหน้าจอ (Page Config) ---
 st.set_page_config(page_title="น้องนนทรี - KU Sriracha Bot", page_icon="🐯", layout="wide")
 
-# --- CSS ปรับแต่งความสวยงาม ---
+# --- 2. CSS ปรับแต่ง UI ให้ดูเป็นมืออาชีพ ---
 st.markdown("""
 <style>
     .stApp { background-color: #FFFFFF; color: black; }
     [data-testid="stSidebar"] { background-color: #00594C !important; }
-    .stSidebar [data-testid="stMarkdownContainer"] p, .stSidebar h3 { color: white !important; }
-    h1 { color: #00594C !important; }
-    .stChatMessage { border-radius: 15px; margin-bottom: 10px; }
+    .stSidebar [data-testid="stMarkdownContainer"] p, .stSidebar h3 { color: white !important; font-weight: bold; }
+    h1 { color: #00594C !important; font-family: 'Tahoma'; }
+    .stChatMessage { border-radius: 15px; margin-bottom: 10px; border: 1px solid #e0e0e0; }
+    .stChatInputContainer { padding-bottom: 20px; }
 </style>
 """, unsafe_allow_html=True)
 
-# --- ส่วนจัดการ API ---
+# --- 3. ส่วนจัดการ API และ Dynamic Model Selection ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 if not api_key:
-    st.error("❌ ไม่พบ GEMINI_API_KEY ใน Streamlit Secrets")
+    st.error("❌ ไม่พบ GEMINI_API_KEY ใน Streamlit Secrets (Settings > Secrets)")
     st.stop()
 
 genai.configure(api_key=api_key)
 
 @st.cache_resource
-def load_model():
-    instruction = (
-        "คุณคือ 'น้องนนทรี' AI รุ่นพี่ มก. ศรีราชา (KU SRC) "
-        "1. ตอบคำถามโดยใช้ข้อมูลจาก 'ข้อมูลอ้างอิง' ที่ให้มาเป็นหลัก "
-        "2. ถ้าถามหาแบบฟอร์ม ให้ส่งชื่อแบบฟอร์มพร้อมลิงก์ PDF ตรงๆ ทันที "
-        "3. ถ้าถามหาสถานที่ ให้บอกพิกัดจากลิงก์ Google Maps ที่เตรียมไว้ให้ "
-        "4. ห้ามแสดงตัวเลขละติจูด/ลองจิจูด (GPS) ให้ผู้ใช้เห็น "
-        "5. ใช้สรรพนาม พี่-น้อง และตอบอย่างเป็นกันเองแต่สุภาพ"
-    )
-    return genai.GenerativeModel(model_name="gemini-1.5-flash", system_instruction=instruction)
+def load_smart_model():
+    try:
+        # ฟังก์ชัน List Model เพื่อเลือกตัวที่ดีที่สุดอัตโนมัติ
+        available_models = [
+            m.name for m in genai.list_models() 
+            if 'generateContent' in m.supported_generation_methods
+        ]
+        
+        # เลือก Gemini 1.5 Flash เป็นลำดับแรกเพื่อความเร็วในการแข่ง
+        selected_model = next((m for m in available_models if "1.5-flash" in m), available_models[0])
+        
+        instruction = (
+            "คุณคือ 'น้องนนทรี' AI รุ่นพี่ มก. ศรีราชา (KU SRC) "
+            "ตอบคำถามโดยใช้ข้อมูลจาก 'ข้อมูลอ้างอิง' ที่ให้มาเท่านั้น "
+            "1. หากถามหาแบบฟอร์ม ให้ส่งชื่อแบบฟอร์มพร้อมลิงก์ PDF ทันที "
+            "2. หากถามหาสถานที่ ให้บอกพิกัดจากลิงก์ Google Maps ที่เตรียมไว้ "
+            "3. ห้ามแสดงตัวเลขละติจูด/ลองจิจูด (GPS) ให้ผู้ใช้เห็นเด็ดขาด "
+            "4. ใช้สรรพนาม พี่-น้อง และตอบอย่างเป็นกันเองแต่สุภาพ"
+        )
+        return genai.GenerativeModel(model_name=selected_model, system_instruction=instruction)
+    except Exception as e:
+        st.error(f"Error loading model: {e}")
+        return None
 
-model = load_model()
+model = load_smart_model()
 
-# --- ส่วน Sidebar (แก้ไข Iframe แผนที่ให้ถูกต้อง) ---
+# --- 4. ส่วน Sidebar (แผนที่คงที่สำหรับดูประกอบ) ---
 with st.sidebar:
     st.image("https://www.src.ku.ac.th/th/images/logo/KU_Sriracha_Logo.png", width=150)
     st.markdown("### 📍 แผนที่วิทยาเขตศรีราชา")
     
-    # ใช้พิกัดกลางของ มก.ศรช. เพื่อเลี่ยง Error pb parameter
-    map_url = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3882.443217424641!2d100.9201!3d13.1158!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3102b1156a5c531d%3A0x600b2158864700!2z4Lih4Lir4Liy4Lin4Li04LiX4Lii4Liy4Lis4Liy4LiU4Lio4Liy4Liq4LiV4Lij4LiU4LmA4LiB4Liy4Lij4LiK4Liy4Liq4Liy4LiX4Lij4Liy4LiE4Li1!5e0!3m2!1sth!2sth!4v1700000000000"
-    st.components.v1.html(f'<iframe src="{map_url}" width="100%" height="300" style="border:0; border-radius:10px;" allowfullscreen="" loading="lazy"></iframe>', height=320)
-    st.info("💡 น้องๆ ถามทางหรือขอแบบฟอร์มกับพี่นนทรีได้เลยนะครับ")
+    # ใช้ Embed URL ที่ถูกต้องของ Google Maps สำหรับ มก.ศรช.
+    map_embed_url = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m13!1d3882.254131!2d100.9195!3d13.1132!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3102b70f0f0f0f0f%3A0x0!2z4Lih4Lir4Liy4Lin4Li04LiX4Lii4Liy4Lil4Liy4LiH4LiB4Liy4Lij4LiB4Liy4Lij4LiB4Liy4Lij4LiB4Liy4LijIOC4p-C4tOC4l-C4ouC4suC4peC4suC4hyDguLguIOC4qOC4o-C4teC4o-C4suC4iuC4sg!5e0!3m2!1sth!2sth!4v1710000000000"
+    st.components.v1.html(f'<iframe src="{map_embed_url}" width="100%" height="300" style="border:0; border-radius:10px;" allowfullscreen="" loading="lazy"></iframe>', height=320)
+    st.info("💡 น้องๆ สามารถถามทางหรือขอแบบฟอร์มลงทะเบียนกับพี่ได้เลยนะ!")
 
-# --- การจัดการ Chat ---
+# --- 5. การจัดการฐานข้อมูลและ Chat History ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# โหลด Knowledge Base
+# โหลด Knowledge Base จากไฟล์
 if os.path.exists("ku_data.txt"):
     with open("ku_data.txt", "r", encoding="utf-8") as f:
         knowledge_base = f.read()
 else:
-    knowledge_base = "ข้อมูล มก. ศรีราชา"
+    knowledge_base = "ข้อมูลมหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตศรีราชา"
 
-# แสดงประวัติ
-for m in st.session_state.messages:
-    with st.chat_message(m["role"], avatar="🧑‍🎓" if m["role"] == "user" else "🐯"):
-        st.markdown(m["content"])
+# แสดงประวัติการสนทนา
+for message in st.session_state.messages:
+    avatar = "🧑‍🎓" if message["role"] == "user" else "🐯"
+    with st.chat_message(message["role"], avatar=avatar):
+        st.markdown(message["content"])
 
-# ส่วนรับ Input
-if prompt := st.chat_input("พิมพ์คำถามที่นี่..."):
+# --- 6. ส่วนการทำงานของ ChatBot ---
+if prompt := st.chat_input("พิมพ์คำถามที่นี่... (เช่น อาคาร 10 อยู่ไหน?)"):
     st.chat_message("user", avatar="🧑‍🎓").markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     with st.chat_message("assistant", avatar="🐯"):
         placeholder = st.empty()
-        placeholder.markdown("*(กำลังประมวลผล...)*")
+        placeholder.markdown("*(พี่กำลังหาข้อมูลให้แป๊บนึงนะ...)*")
         
-        full_prompt = f"ข้อมูลอ้างอิง:\n{knowledge_base}\n\nคำถาม: {prompt}"
+        # คัดกรองบริบทเฉพาะ 5 ข้อความล่าสุด
+        history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} 
+                   for m in st.session_state.messages[-6:-1]]
         
         try:
-            # ใช้ Stream เพื่อให้ดูเหมือน AI กำลังพิมพ์
-            response = model.generate_content(full_prompt, stream=True)
+            chat_session = model.start_chat(history=history)
+            full_context = f"ข้อมูลอ้างอิง:\n{knowledge_base}\n\nคำถาม: {prompt}"
+            
+            response = chat_session.send_message(full_context, stream=True)
             full_response = ""
             for chunk in response:
                 full_response += chunk.text
@@ -85,6 +104,7 @@ if prompt := st.chat_input("พิมพ์คำถามที่นี่..."
             
             placeholder.markdown(full_response)
             st.session_state.messages.append({"role": "assistant", "content": full_response})
-            st.rerun()
+            st.rerun() # เพื่อ Update สถานะ Chat ทันที
+            
         except Exception as e:
-            st.error(f"Error: {str(e)}")
+            st.error(f"ขออภัยครับ เกิดข้อผิดพลาดทางเทคนิค: {e}")
