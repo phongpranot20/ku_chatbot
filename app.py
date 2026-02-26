@@ -40,7 +40,7 @@ st.markdown("""
     .sidebar-title { color: white !important; font-size: 14px; font-weight: bold; margin-bottom: 5px; }
     
     div.stButton > button {
-        width: 160% !important;
+        width: 200% !important;
         border-radius: 12px !important;
         background-color: transparent !important;
         color: white !important;
