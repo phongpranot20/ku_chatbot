@@ -151,45 +151,45 @@ with st.sidebar:
             </div>
         """, unsafe_allow_html=True)
     
-    st.markdown('<p class="sidebar-title">🎓 AI KUSRC Dashboard</p>', unsafe_allow_html=True)
+    st.markdown('<p class="sidebar-title">AI KUSRC Dashboard</p>', unsafe_allow_html=True)
 
     # 2. รายการแบบฟอร์มด่วน (จัดเต็มตามข้อมูลใหม่)
-    with st.expander("📄 รายการแบบฟอร์ม (คลิก)", expanded=True):
+    with st.expander("📄 ลิ้งรายการแบบฟอร์มต่างๆ ", expanded=True):
         st.markdown(f"""
             <div class="white-card-content">
                 <div class="form-row">
-                    <div class="form-label">📝 ขอลงทะเบียนเรียน<br>(Registrar-2)</div>
+                    <div class="form-label">ขอลงทะเบียนเรียน</div>
                     <a href="https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
                 <div class="form-row">
-                    <div class="form-label">📑 คำร้องทั่วไป<br>(Registrar-1)</div>
+                    <div class="form-label">คำร้องทั่วไป</div>
                     <a href="https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
                 <div class="form-row">
-                    <div class="form-label">💰 ผ่อนผันค่าเทอม<br>(Registrar-3)</div>
+                    <div class="form-label">ผ่อนผันค่าเทอม</div>
                     <a href="https://registrar.ku.ac.th/wp-content/uploads/2024/11/Postpone-tuition-and-fee-payments.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
                 <div class="form-row">
-                    <div class="form-label">📂 ใบลาพักการศึกษา<br>(Registrar-10)</div>
+                    <div class="form-label">ใบลาพักการศึกษา</div>
                     <a href="https://registrar.ku.ac.th/wp-content/uploads/2023/11/Request-for-Leave-of-Absence-Request.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
                 <div class="form-row">
-                    <div class="form-label">🚪 ใบลาออก<br>(Registrar-16)</div>
+                    <div class="form-label">ใบลาออก</div>
                     <a href="https://registrar.ku.ac.th/wp-content/uploads/2023/11/Resignation-Form.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
                 <div class="form-row">
-                    <div class="form-label">📊 ลงทะเบียนเรียน (KU1)</div>
+                    <div class="form-label">ลงทะเบียนเรียน</div>
                     <a href="https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU1-Registration-Form.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
                 <div class="form-row">
-                    <div class="form-label">🔄 เพิ่ม-ถอน (KU3)</div>
+                    <div class="form-label">เพิ่ม-ถอน</div>
                     <a href="https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU3-Add-Drop-Form.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
             </div>
         """, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
-    st.caption("💡 ถามพี่นนทรีได้เลยนะ!")
+  
 
 # --- 6. ส่วนหน้า Chat หลัก ---
 if "messages" not in st.session_state:
@@ -202,10 +202,10 @@ if os.path.exists("ku_data.txt"):
 else:
     knowledge_base = "ข้อมูล มก. ศรีราชา"
 
-st.markdown("## 🐯 AI KUSRC")
+st.markdown("## 🦖 AI TEST")
 
 for message in st.session_state.messages:
-    avatar = "🧑‍🎓" if message["role"] == "user" else "🐯"
+    avatar = "🧑‍🎓" if message["role"] == "user" else "🦖"
     with st.chat_message(message["role"], avatar=avatar):
         st.markdown(message["content"])
 
@@ -213,7 +213,7 @@ if prompt := st.chat_input("พิมพ์ถามพี่นนทรีไ�
     st.chat_message("user", avatar="🧑‍🎓").markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
-    with st.chat_message("assistant", avatar="🐯"):
+    with st.chat_message("assistant", avatar="🦖"):
         placeholder = st.empty()
         placeholder.markdown("*(พี่กำลังหาคำตอบให้...)*")
         
