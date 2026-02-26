@@ -4,16 +4,14 @@ import os
 import base64
 
 # --- 1. ตั้งค่าหน้าจอ (Page Config) ---
-st.set_page_config(page_title="AI KUSRC", page_icon="🐯", layout="wide")
+st.set_page_config(page_title="AI KUSRC", page_icon="🦖", layout="wide")
 
 # --- 2. ฟังก์ชันจัดการรูปภาพโลโก้ ---
 def get_image_base64(path):
-    if os.path.exists(path):
-        with open(path, "rb") as img_file:
-            return base64.b64encode(img_file.read()).decode()
-    return None
+    with open(path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode()
 
-# --- 3. CSS ปรับแต่ง UI ให้เป๊ะตามเรฟเฟอเรนซ์ ---
+# --- 3. CSS ปรับแต่ง UI ---
 st.markdown("""
 <style>
     /* พื้นหลังหน้าหลัก */
@@ -36,11 +34,11 @@ st.markdown("""
         align-items: center;
         text-align: center;
         padding: 5px 5px 15px 5px; 
-        margin-top: -35px; /* ขยับขึ้นชิดขอบบน */
+        margin-top: -35px;
         border-bottom: 2px solid rgba(255,255,255,0.2);
     }
     .header-logo-img {
-        width: 100px;
+        width: 90px;
         height: auto;
         margin-bottom: 10px;
     }
@@ -49,7 +47,7 @@ st.markdown("""
         font-family: 'Tahoma', sans-serif;
     }
     .univ-name { 
-        font-size: 24px;
+        font-size: 22px;
         font-weight: bold;
         line-height: 1.2;
     }
@@ -63,7 +61,7 @@ st.markdown("""
         text-align: center;
     }
 
-    /* --- ส่วน Expander สีขาว --- */
+    /* --- แก้ไข Expander ให้เป็นสีขาวตลอดเวลา --- */
     div[data-testid="stExpander"] {
         background-color: #FFFFFF !important;
         border-radius: 12px !important;
@@ -71,7 +69,6 @@ st.markdown("""
         margin-bottom: 10px;
     }
     
-    /* บังคับสีฟอนต์หัวข้อ Expander ให้เป็นสีดำ */
     div[data-testid="stExpander"] p {
         color: #000000 !important;
         font-weight: bold !important;
@@ -81,7 +78,6 @@ st.markdown("""
     .white-card-content {
         background-color: #FFFFFF;
         border-radius: 0px 0px 12px 12px;
-        padding: 5px;
     }
     
     .form-row {
@@ -99,11 +95,10 @@ st.markdown("""
         font-weight: 600;
         flex: 1;
         line-height: 1.3;
-        text-align: left;
     }
 
-    /* ปุ่ม Action สีเขียวเข้ม */
-    .btn-action {
+    /* ปุ่มดาวน์โหลดสีเขียวเข้ม */
+    .btn-download {
         background-color: #006861;
         color: white !important;
         padding: 4px 10px;
@@ -115,20 +110,15 @@ st.markdown("""
         margin-left: 5px;
     }
 
-    /* บังคับสีตัวอักษร Caption ด้านล่างให้เป็นสีขาว */
-    .stSidebar .stCaption p {
-        color: #FFFFFF !important;
-    }
-
-    /* หัวข้อหน้า Chat */
+    /* หน้า Chat */
     h2 { color: #006861 !important; font-weight: bold; }
 </style>
 """, unsafe_allow_html=True)
 
-# --- 4. ส่วนจัดการ API และ AI Model ---
+# --- 4. ส่วนจัดการ API ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 if not api_key:
-    st.error("❌ ไม่พบ API KEY ใน Secrets")
+    st.error("❌ ไม่พบ API KEY")
     st.stop()
 genai.configure(api_key=api_key)
 
@@ -143,96 +133,88 @@ model = load_model()
 
 # --- 5. ส่วน Sidebar (Dashboard) ---
 with st.sidebar:
-    # 1. Header (โลโก้บน-ชื่อล่าง)
-    img_b64 = get_image_base64("logo_ku.png")
-    if img_b64:
+    # 1. Header
+    if os.path.exists("logo_ku.png"):
+        img_data = get_image_base64("logo_ku.png")
         st.markdown(f"""
             <div class="custom-header">
-                <img src="data:image/png;base64,{img_b64}" class="header-logo-img">
+                <img src="data:image/png;base64,{img_data}" class="header-logo-img">
                 <div class="header-text">
                     <div class="univ-name">มหาวิทยาลัย<br>เกษตรศาสตร์</div>
                 </div>
             </div>
         """, unsafe_allow_html=True)
     
-    st.markdown('<p class="sidebar-title">🎓 AI KUSRC Dashboard</p>', unsafe_allow_html=True)
+    st.markdown('<p class="sidebar-title">AI KUSRC Dashboard</p>', unsafe_allow_html=True)
 
-    # 2. รายการแบบฟอร์มด่วน (ปิดไว้ตอนเริ่มต้น expanded=False)
+    # 2. รายการแบบฟอร์มด่วน (เปลี่ยน expanded=True เป็น False เพื่อให้ปิดตอนเริ่มต้น)
     with st.expander("📄 ลิงก์แบบฟอร์มต่างๆ", expanded=False):
-        forms = [
-            ("ขอลงทะเบียนเรียน (Registrar-2)", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf"),
-            ("คำร้องทั่วไป (Registrar-1)", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf"),
-            ("ผ่อนผันค่าเทอม (Registrar-3)", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Postpone-tuition-and-fee-payments.pdf"),
-            ("ใบลาพักการศึกษา (Registrar-10)", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/Request-for-Leave-of-Absence-Request.pdf"),
-            ("ใบลาออก (Registrar-16)", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/Resignation-Form.pdf"),
-            ("ลงทะเบียนเรียน (KU1)", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU1-Registration-Form.pdf"),
-            ("เพิ่ม-ถอน (KU3)", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU3-Add-Drop-Form.pdf")
-        ]
-        st.markdown('<div class="white-card-content">', unsafe_allow_html=True)
-        for name, link in forms:
-            st.markdown(f"""
+        st.markdown(f"""
+            <div class="white-card-content">
                 <div class="form-row">
-                    <div class="form-label">{name}</div>
-                    <a href="{link}" target="_blank" class="btn-action">ดาวน์โหลด</a>
+                    <div class="form-label">ขอลงทะเบียนเรียน</div>
+                    <a href="https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
-            """, unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    # 3. พิกัดตึกเรียนสำคัญ (ฟีเจอร์แนะนำเพิ่ม)
-    with st.expander("📍 พิกัดตึกเรียนสำคัญ", expanded=False):
-        places = [
-            ("อาคาร 10 (ศร.2)", "https://maps.app.goo.gl/xxx"),
-            ("อาคาร 17 (ศร.3)", "https://maps.app.goo.gl/xxx"),
-            ("โรงอาหารกลาง", "https://maps.app.goo.gl/xxx")
-        ]
-        st.markdown('<div class="white-card-content">', unsafe_allow_html=True)
-        for name, link in places:
-            st.markdown(f"""
                 <div class="form-row">
-                    <div class="form-label">{name}</div>
-                    <a href="{link}" target="_blank" class="btn-action">นำทาง</a>
+                    <div class="form-label">คำร้องทั่วไป</div>
+                    <a href="https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
-            """, unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+                <div class="form-row">
+                    <div class="form-label">ผ่อนผันค่าเทอม</div>
+                    <a href="https://registrar.ku.ac.th/wp-content/uploads/2024/11/Postpone-tuition-and-fee-payments.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
+                </div>
+                <div class="form-row">
+                    <div class="form-label">ใบลาพักการศึกษา</div>
+                    <a href="https://registrar.ku.ac.th/wp-content/uploads/2023/11/Request-for-Leave-of-Absence-Request.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
+                </div>
+                <div class="form-row">
+                    <div class="form-label">ใบลาออก</div>
+                    <a href="https://registrar.ku.ac.th/wp-content/uploads/2023/11/Resignation-Form.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
+                </div>
+                <div class="form-row">
+                    <div class="form-label">ลงทะเบียนเรียน</div>
+                    <a href="https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU1-Registration-Form.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
+                </div>
+                <div class="form-row">
+                    <div class="form-label">เพิ่ม-ถอน</div>
+                    <a href="https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU3-Add-Drop-Form.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
-    st.caption("💡 พิมพ์ถามพี่นนทรีได้ทุกเรื่องเลยนะ!")
 
 # --- 6. ส่วนหน้า Chat หลัก ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# โหลด Knowledge Base
 if os.path.exists("ku_data.txt"):
     with open("ku_data.txt", "r", encoding="utf-8") as f:
         knowledge_base = f.read()
 else:
     knowledge_base = "ข้อมูล มก. ศรีราชา"
 
-st.markdown("## 🐯 AI KUSRC: เพื่อนคู่คิด นิสิต มก.ศรช.")
+st.markdown("## 🦖 AI TEST")
 
-# แสดงประวัติการสนทนา
 for message in st.session_state.messages:
-    avatar = "🧑‍🎓" if message["role"] == "user" else "🐯"
+    avatar = "🧑‍🎓" if message["role"] == "user" else "🦖"
     with st.chat_message(message["role"], avatar=avatar):
         st.markdown(message["content"])
 
-# ส่วนรับข้อความจากผู้ใช้
-if prompt := st.chat_input("พิมพ์คำถามที่นี่..."):
+if prompt := st.chat_input("พิมพ์ถามพี่นนทรีได้เลย..."):
     st.chat_message("user", avatar="🧑‍🎓").markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
-    with st.chat_message("assistant", avatar="🐯"):
+    with st.chat_message("assistant", avatar="🦖"):
         placeholder = st.empty()
         placeholder.markdown("*(พี่กำลังหาคำตอบให้...)*")
         
-        # ดึงประวัติการคุยย้อนหลัง 5 ข้อความ
         history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} 
                    for m in st.session_state.messages[-6:-1]]
         
         try:
             chat_session = model.start_chat(history=history)
-            full_context = f"คุณคือรุ่นพี่ มก.ศรช. ตอบน้องด้วยความเป็นกันเอง\nข้อมูลอ้างอิง:\n{knowledge_base}\n\nคำถาม: {prompt}"
+            full_context = f"คุณคือรุ่นพี่ มก.ศรช. ตอบน้องเป็นกันเอง\nข้อมูล:\n{knowledge_base}\n\nคำถาม: {prompt}"
             
             response = chat_session.send_message(full_context, stream=True)
             full_response = ""
@@ -244,4 +226,4 @@ if prompt := st.chat_input("พิมพ์คำถามที่นี่..."
             st.session_state.messages.append({"role": "assistant", "content": full_response})
             st.rerun()
         except Exception as e:
-            st.error(f"เกิดข้อผิดพลาด: {e}")
+            st.error(f"Error: {e}")
