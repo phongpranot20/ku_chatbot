@@ -4,7 +4,7 @@ import os
 import base64
 
 # --- 1. ตั้งค่าหน้าจอ ---
-st.set_page_config(page_title="AI KUSRC", page_icon="🐯", layout="wide")
+st.set_page_config(page_title="AI ASSISTANT", page_icon="🦖", layout="wide")
 
 # --- 2. ฟังก์ชันจัดการรูปภาพโลโก้ ---
 def get_image_base64(path):
