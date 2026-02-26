@@ -119,7 +119,7 @@ with st.sidebar:
     
     st.markdown('<p class="sidebar-title">💬 ประวัติการแชท</p>', unsafe_allow_html=True)
     for chat_id in list(st.session_state.all_chats.keys()):
-        if st.button(f"{chat_id[:18]}...", key=f"hist_{chat_id}"):
+        if st.button(f"{chat_id[:18]}", key=f"hist_{chat_id}"):
             switch_chat(chat_id)
             st.rerun()
 
