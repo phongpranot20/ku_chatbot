@@ -14,23 +14,19 @@ def get_image_base64(path):
             return base64.b64encode(img_file.read()).decode()
     return ""
 
-# --- 3. ฟังก์ชันถอดรหัสห้องเรียน (Smart Room Decoder) ---
-def decode_room(room_code):
-    # ลบช่องว่างและตัวอักษรที่ไม่ใช่ตัวเลข
+# --- 3. ฟังก์ชันวิเคราะห์ห้องเรียน (แบบธรรมชาติ) ---
+def get_room_info(room_code):
     code = re.sub(r'\D', '', str(room_code))
-    
-    # กรณีเลข 5 หลัก (ตึก 10-25) เช่น 17203 -> ตึก 17 ชั้น 2 ห้อง 03
-    if len(code) == 5:
+    if len(code) == 5: # เช่น 17203
         building = code[:2]
         floor = code[2]
         room = code[3:]
-        return f"ตึก {building} ชั้น {floor} ห้อง {room}"
-    # กรณีเลข 4 หลัก (ตึก 1-9) เช่น 1404 -> ตึก 1 ชั้น 4 ห้อง 04
-    elif len(code) == 4:
+        return f"อ๋อ ห้องนี้อยู่ **ตึก {building} ชั้น {floor} ห้อง {room}** ครับน้อง"
+    elif len(code) == 4: # เช่น 1404
         building = code[0]
         floor = code[1]
         room = code[2:]
-        return f"ตึก {building} ชั้น {floor} ห้อง {room}"
+        return f"ห้องนี้คือ **ตึก {building} ชั้น {floor} ห้อง {room}** ครับผม"
     return None
 
 # --- 4. CSS ปรับแต่ง UI ---
@@ -69,7 +65,9 @@ genai.configure(api_key=api_key)
 
 @st.cache_resource
 def load_model():
-    return genai.GenerativeModel(model_name="gemini-1.5-flash")
+    # ปรับ System Instruction ให้ AI ตอบแบบธรรมชาติและเป็นกันเอง
+    instruction = "คุณคือ 'พี่นนทรี' รุ่นพี่ใจดีแห่ง มก.ศรช. ตอบคำถามน้องๆ นิสิตด้วยความสุภาพ เป็นกันเอง และใช้ภาษาที่เป็นธรรมชาติเหมือนรุ่นพี่คุยกับรุ่นน้อง"
+    return genai.GenerativeModel(model_name="gemini-1.5-flash", system_instruction=instruction)
 model = load_model()
 
 # --- 6. ส่วน Sidebar (Dashboard) ---
@@ -88,17 +86,6 @@ with st.sidebar:
                     <div class="form-label">ระบบจำลองการตัดเกรด</div>
                     <a href="https://fna.csc.ku.ac.th/grade/" target="_blank" class="btn-action">เปิดระบบ</a>
                 </div>
-            </div>
-        """, unsafe_allow_html=True)
-
-    # คู่มือถอดรหัสห้อง (ช่วยปี 1)
-    with st.expander("🔢 วิธีอ่านเลขห้องเรียน", expanded=False):
-        st.markdown("""
-            <div style="color:black; font-size:12px; padding:10px; background-color:white; border-radius:10px;">
-                <b>ตัวอย่าง: 17203</b><br>
-                • 17 = เลขตึก (ศร.3)<br>
-                • 2 = ชั้นที่เรียน<br>
-                • 03 = เลขห้อง
             </div>
         """, unsafe_allow_html=True)
 
@@ -124,20 +111,21 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"], avatar="🧑‍🎓" if message["role"] == "user" else "🐯"):
         st.markdown(message["content"])
 
-if prompt := st.chat_input("พิมพ์เลขห้อง (เช่น 17203) หรือคุยกับพี่นนทรี..."):
+if prompt := st.chat_input("ถามพี่นนทรีได้เลย..."):
     st.chat_message("user", avatar="🧑‍🎓").markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     with st.chat_message("assistant", avatar="🐯"):
-        # เช็คว่าเป็นเลขห้องหรือไม่
-        decoded = decode_room(prompt)
-        if decoded:
-            ans = f"📍 พี่ถอดรหัสห้องให้แล้วครับ: **{decoded}**"
-            st.success(ans)
+        # เช็คว่าเป็นตัวเลขห้องเพียวๆ หรือไม่
+        room_info = get_room_info(prompt)
+        
+        if room_info:
+            ans = room_info
+            st.markdown(ans)
             st.session_state.messages.append({"role": "assistant", "content": ans})
         else:
             placeholder = st.empty()
-            placeholder.markdown("*(พี่กำลังหาคำตอบให้...)*")
+            placeholder.markdown("*(พี่กำลังคิดคำตอบให้นะ...)*")
             try:
                 # โหลดฐานข้อมูล (ถ้ามี)
                 knowledge = ""
@@ -145,7 +133,7 @@ if prompt := st.chat_input("พิมพ์เลขห้อง (เช่น 1
                     with open("ku_data.txt", "r", encoding="utf-8") as f:
                         knowledge = f.read()
                 
-                full_ctx = f"คุณคือรุ่นพี่ มก.ศรช. ใจดี ตอบน้องปี 1 ข้อมูลอ้างอิง: {knowledge}\nคำถาม: {prompt}"
+                full_ctx = f"ข้อมูลมหาลัย: {knowledge}\nคำถามน้อง: {prompt}"
                 response = model.generate_content(full_ctx)
                 placeholder.markdown(response.text)
                 st.session_state.messages.append({"role": "assistant", "content": response.text})
