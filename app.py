@@ -24,7 +24,7 @@ def get_room_info(room_code):
         return f"ห้องนี้คือ **ตึก {building} ชั้น {floor} ห้อง {room}** ครับผม"
     return None
 
-# --- 3. CSS ปรับแต่ง UI (จุดที่แก้คือตรงนี้ครับน้องฮอน) ---
+# --- 3. CSS ปรับแต่ง UI (แยกคุมปุ่มและปรับความยาวให้สมดุล) ---
 st.markdown("""
 <style>
     .stApp { background-color: #FFFFFF; color: black; }
@@ -39,25 +39,40 @@ st.markdown("""
     .univ-name { color: white !important; font-size: 22px; font-weight: bold; line-height: 1.2; }
     .sidebar-title { color: #FFFFFF !important; font-size: 1.1rem; font-weight: bold; margin: 15px 0px 10px 0px; text-align: center; }
     
-    /* กล่องสีเขียวใสเดิม (rgba) ขยายความกว้างเต็มพื้นที่ 100% ให้เท่ากล่องล่าง */
-    .stButton > button {
-        width: 200% !important;             /* ขยายยาวเต็ม Sidebar */
-        border-radius: 12px !important;     /* ความโค้งเท่ากล่องขาว */
-        background-color: rgba(255, 255, 255, 0.1) !important; /* สีเดิมที่น้องต้องการ */
+    /* --- ปรับแต่งปุ่ม "แชทใหม่" (Key: new_chat_btn) --- */
+    div.stButton > button[key*="new_chat"] {
+        width: 100% !important;
+        border-radius: 12px !important;
+        background-color: rgba(255, 255, 255, 0.15) !important;
         color: white !important;
-        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        border: 1px solid rgba(255, 255, 255, 0.4) !important;
+        padding: 12px 15px !important;
+        font-weight: bold !important;
+        margin-bottom: 15px !important;
+        display: flex !important;
+        justify-content: center !important;
+    }
+
+    /* --- ปรับแต่งปุ่ม "ประวัติแชท" (Key: hist_) --- */
+    div.stButton > button[key*="hist_"] {
+        width: 100% !important;
+        border-radius: 12px !important;
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        color: white !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
         padding: 10px 15px !important;
         text-align: left !important;
-        margin-bottom: 10px !important;
+        margin-bottom: 8px !important;
         display: flex !important;
         justify-content: flex-start !important;
     }
+    
     .stButton > button:hover {
-        background-color: rgba(255, 255, 255, 0.2) !important;
+        background-color: rgba(255, 255, 255, 0.25) !important;
         border-color: #FFD700 !important;
     }
 
-    /* กล่องข้อมูลสีขาว (Expander) */
+    /* กล่องสีขาว (Expander) ด้านล่าง */
     div[data-testid="stExpander"] { 
         background-color: #FFFFFF !important; 
         border-radius: 12px !important; 
@@ -67,6 +82,8 @@ st.markdown("""
     div[data-testid="stExpander"] p { color: #000000 !important; font-weight: bold !important; }
     .white-card-content { background-color: #FFFFFF; border-radius: 0px 0px 12px 12px; }
     .form-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 8px; border-bottom: 1px solid #f0f0f0; }
+    .form-row:last-child { border-bottom: none; }
+    .form-label { color: #333333 !important; font-size: 11px; font-weight: 600; flex: 1; line-height: 1.3; }
     .btn-action { background-color: #006861; color: white !important; padding: 4px 10px; border-radius: 6px; text-decoration: none; font-size: 10px; font-weight: bold; white-space: nowrap; }
 </style>
 """, unsafe_allow_html=True)
@@ -107,6 +124,7 @@ with st.sidebar:
     
     st.markdown("<br>", unsafe_allow_html=True)
     
+    # 6.1 ปุ่มแชทใหม่
     if st.button("➕ แชทใหม่", key="new_chat_btn"):
         new_id = f"แชท {len(st.session_state.all_chats) + 1}"
         st.session_state.all_chats[new_id] = []
@@ -114,16 +132,20 @@ with st.sidebar:
         st.rerun()
     
     st.markdown('<p style="color:white; font-size:14px; font-weight:bold; margin-bottom:5px;">💬 ประวัติการแชท</p>', unsafe_allow_html=True)
+    # 6.2 รายการประวัติแชท
     for chat_id in list(st.session_state.all_chats.keys()):
         if st.button(f"📄 {chat_id[:18]}...", key=f"hist_{chat_id}"):
             switch_chat(chat_id)
             st.rerun()
 
     st.markdown("---")
+    # 6.3 เมนู Dashboard
     with st.expander("📅 ค้นหาตารางสอบ", expanded=False):
         st.markdown('<div class="white-card-content"><div class="form-row"><div class="form-label">เช็กวัน-เวลาสอบ</div><a href="https://reg2.src.ku.ac.th/table_test/" target="_blank" class="btn-action">ค้นหา</a></div></div>', unsafe_allow_html=True)
     with st.expander("🧮 คำนวณเกรด (GPA)", expanded=False):
         st.markdown('<div class="white-card-content"><div class="form-row"><div class="form-label">ระบบจำลองการตัดเกรด</div><a href="https://fna.csc.ku.ac.th/grade/" target="_blank" class="btn-action">เปิดระบบ</a></div></div>', unsafe_allow_html=True)
+    
+    # 6.4 ใบเอกสาร/แบบฟอร์ม (ครบ 7 รายการตามสั่ง)
     with st.expander("📄 ลิงก์แบบฟอร์มต่างๆ", expanded=False):
         forms = [
             ("ใบขอลงทะเบียนเรียน ", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf"),
@@ -131,8 +153,8 @@ with st.sidebar:
             ("ใบผ่อนผันค่าเทอม ", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Postpone-tuition-and-fee-payments.pdf"),
             ("ใบลาพักการศึกษา ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/Request-for-Leave-of-Absence-Request.pdf"),
             ("ใบลาออก ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/Resignation-Form.pdf"),
-            ("ใบลงทะเบียนเรียน ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU1-Registration-Form.pdf"),
-            ("ใบเพิ่ม-ถอน ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU3-Add-Drop-Form.pdf")
+            ("ใบลงทะเบียนเรียน (KU1) ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU1-Registration-Form.pdf"),
+            ("ใบเพิ่ม-ถอน (KU3) ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU3-Add-Drop-Form.pdf")
         ]
         st.markdown('<div class="white-card-content">', unsafe_allow_html=True)
         for name, link in forms:
@@ -149,6 +171,7 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 if prompt := st.chat_input("พิมพ์ถามพี่นนทรีได้เลย..."):
+    # อัปเดตชื่อหัวข้อแชท (ป้องกัน KeyError)
     if (st.session_state.current_chat_id.startswith("แชท") or st.session_state.current_chat_id == "แชทเริ่มต้น") and not st.session_state.messages:
         new_title = prompt[:20]
         st.session_state.all_chats[new_title] = []
@@ -156,6 +179,7 @@ if prompt := st.chat_input("พิมพ์ถามพี่นนทรีไ�
             del st.session_state.all_chats[st.session_state.current_chat_id]
         st.session_state.current_chat_id = new_title
 
+    # ตรวจจับชื่อผู้ใช้ข้ามเซสชัน
     name_match = re.search(r"(?:ผม|หนู|เรา|พี่|ชื่อ)\s*ชื่อว่า?\s*(\w+)", prompt)
     if name_match:
         st.session_state.global_user_nickname = name_match.group(1)
@@ -192,5 +216,4 @@ if prompt := st.chat_input("พิมพ์ถามพี่นนทรีไ�
             except Exception as e:
                 if "429" in str(e):
                     st.warning("⚠️ **ขออภัยครับ!** (Quota เต็ม)")
-                else:
-                    st.error(f"เกิดข้อผิดพลาด: {e}")
+                else: st.error(f"เกิดข้อผิดพลาด: {e}")
