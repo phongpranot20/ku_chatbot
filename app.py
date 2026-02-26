@@ -128,7 +128,7 @@ with st.sidebar:
     with st.expander("📄 ลิงก์แบบฟอร์มต่างๆ", expanded=False):
         forms = [
             ("ขอลงทะเบียนเรียน (Reg-2)", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf"),
-            ("คำร้องทั่วไป (Reg-1)", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf"),
+            ("คำร้องทั่วไป ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf"),
             ("ผ่อนผันค่าเทอม (Reg-3)", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Postpone-tuition-and-fee-payments.pdf"),
             ("ใบลาพักการศึกษา (Reg-10)", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/Request-for-Leave-of-Absence-Request.pdf"),
             ("ใบลาออก (Reg-16)", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/Resignation-Form.pdf"),
