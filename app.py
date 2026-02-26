@@ -149,51 +149,34 @@ if prompt := st.chat_input("พิมพ์ถามพี่นนทรีไ�
     st.session_state.messages.append({"role": "user", "content": prompt})
 
    with st.chat_message("assistant", avatar="🦖"):
-        # 1. เช็คข้อมูลเลขห้องเรียนก่อน (Fast Path)
         room_info = get_room_info(prompt)
-        
         if room_info:
             full_response = room_info
             st.markdown(full_response)
-            st.session_state.messages.append({"role": "assistant", "content": full_response})
-            # บันทึกลงประวัติและรีเฟรช Sidebar
-            st.session_state.all_chats[st.session_state.current_chat_id] = st.session_state.messages
-            st.rerun()
         else:
-            # 2. ถ้าไม่ใช่เลขห้อง ให้ส่งไปถาม AI (Slow Path)
             placeholder = st.empty()
             placeholder.markdown("*(พี่กำลังหาคำตอบให้...)*")
             try:
                 knowledge_base = ""
                 if os.path.exists("ku_data.txt"):
-                    with open("ku_data.txt", "r", encoding="utf-8") as f: 
-                        knowledge_base = f.read()
+                    with open("ku_data.txt", "r", encoding="utf-8") as f: knowledge_base = f.read()
                 
-                # ดึงบริบทการคุยย้อนหลัง 5 ข้อความ
                 history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} for m in st.session_state.messages[-6:-1]]
                 chat_session = model.start_chat(history=history)
-                
                 full_context = f"คุณคือรุ่นพี่ มก.ศรช. ใจดี คุยกับน้องชื่อ {st.session_state.global_user_nickname} ข้อมูลมหาลัย:\n{knowledge_base}\n\nคำถาม: {prompt}"
-                
                 response = chat_session.send_message(full_context, stream=True)
                 full_response = ""
                 for chunk in response:
                     full_response += chunk.text
                     placeholder.markdown(full_response + "▌")
-                
                 placeholder.markdown(full_response)
-                
-                # บันทึกเมื่อสำเร็จเท่านั้น
-                st.session_state.messages.append({"role": "assistant", "content": full_response})
-                st.session_state.all_chats[st.session_state.current_chat_id] = st.session_state.messages
-                st.rerun()
-
             except Exception as e:
-                if "429" in str(e):
-                    msg = "⚠️ **ขออภัยครับน้อง!** ตอนนี้คนใช้เยอะจนโควตาเต็ม รบกวนรอกดส่งใหม่อีกครั้งใน 1 นาทีนะ"
-                    st.warning(msg)
-                    # ไม่บันทึกค่า Error ลงในประวัติแชท
-                else:
-                    st.error(f"เกิดข้อผิดพลาด: {e}")
+                full_response = f"เกิดข้อผิดพลาด: {e}"
+                st.error(full_response)
+        
+        st.session_state.messages.append({"role": "assistant", "content": full_response})
+        # บันทึกลงประวัติ
+        st.session_state.all_chats[st.session_state.current_chat_id] = st.session_state.messages
+        st.rerun()
       
      
