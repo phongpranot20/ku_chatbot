@@ -2,99 +2,164 @@ import streamlit as st
 import google.generativeai as genai
 import os
 
-# 1. ตั้งค่าหน้าเว็บ
-st.set_page_config(
-    page_title="KU Sriracha Bot",
-    page_icon="🐢",
-    layout="wide"
-)
+# --- 1. ตั้งค่าหน้าจอ ---
+st.set_page_config(page_title="AI KUSRC", page_icon="🐯", layout="wide")
 
-# 🎨 ธีมสีเขียว KU + บังคับพื้นหลังขาว
+# --- 2. CSS ปรับแต่ง Contrast และขนาดโลโก้ ---
 st.markdown("""
 <style>
-    .stApp { background-color: #FFFFFF !important; color: black !important; }
-    [data-testid="stSidebar"] { background-color: #f2f9f6 !important; }
-    h1, h2, h3, p, span, div { color: #00594C; }
-    [data-testid="stChatMessage"] { background-color: #f0f2f6; border-radius: 10px; }
-    .stMarkdown p { color: #333333 !important; }
+    .stApp { background-color: #FFFFFF; color: black; }
+    
+    /* Sidebar Layout */
+    [data-testid="stSidebar"] { 
+        background-color: #00594C !important; 
+    }
+    
+    /* ปรับแต่งรูปโลโก้ให้เล็กลงและอยู่กึ่งกลาง */
+    .logo-container {
+        display: flex;
+        justify-content: center;
+        padding: 10px 0px;
+    }
+    .logo-img {
+        max-width: 180px; /* ปรับขนาดความกว้างของโลโก้ที่นี่ */
+        height: auto;
+    }
+    
+    /* หัวข้อ Dashboard - ปรับสีให้ขาวชัดเจน (High Contrast) */
+    .sidebar-header {
+        color: #FFFFFF !important; 
+        font-size: 18px;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 20px;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+
+    /* กล่องสีขาวสำหรับรายการแบบฟอร์ม */
+    .st-emotion-cache-p5mtransition {
+        background-color: #FFFFFF !important;
+        border-radius: 12px !important;
+    }
+
+    /* บังคับสีตัวหนังสือใน Widget Sidebar ให้เป็นสีดำเข้มเพื่อให้อ่านง่ายบนพื้นขาว */
+    [data-testid="stSidebar"] .stMarkdown p, 
+    [data-testid="stSidebar"] span, 
+    [data-testid="stSidebar"] label {
+        color: #000000 !important;
+        font-weight: 600 !important;
+    }
+
+    /* ข้อความแจ้งเตือนด้านล่าง Sidebar (สีขาวเพื่อให้เห็นบนพื้นเขียว) */
+    .stSidebar .stCaption p {
+        color: #E0E0E0 !important;
+    }
+
+    /* ปุ่มดาวน์โหลด */
+    .stButton>button {
+        background-color: #00594C !important;
+        color: #FFFFFF !important;
+        border-radius: 8px;
+        width: 100%;
+        border: 2px solid #FFFFFF;
+        font-weight: bold;
+    }
+    
+    /* Chat UI หน้าหลัก */
+    h2 { color: #00594C !important; font-weight: bold; }
 </style>
 """, unsafe_allow_html=True)
 
-# -------------------------------------------------------------
-# 2. ระบบความปลอดภัย (API Key) - แก้ไขตรงนี้
-# -------------------------------------------------------------
-# ดึง API Key จาก Secrets ของระบบ (ห้ามเขียนรหัสจริงลงในนี้)
-if "GEMINI_API_KEY" in st.secrets:
-    api_key = st.secrets["GEMINI_API_KEY"]
-else:
-    # สำหรับรันในเครื่องตัวเอง (Local) ให้สร้างไฟล์ .streamlit/secrets.toml
-    api_key = os.environ.get("GEMINI_API_KEY")
-
+# --- 3. ส่วนจัดการ API ---
+api_key = st.secrets.get("GEMINI_API_KEY")
 if not api_key:
-    st.error("❌ ไม่พบ API Key กรุณาตั้งค่าใน Secrets (GEMINI_API_KEY)")
+    st.error("❌ ไม่พบ GEMINI_API_KEY ใน Settings > Secrets")
     st.stop()
 
 genai.configure(api_key=api_key)
 
-# ⚙️ ระบบ Auto-Switch โมเดล
-def get_working_model():
-    model_list = ['gemini-1.5-flash', 'gemini-1.5-pro']
-    for model_name in model_list:
-        try:
-            model = genai.GenerativeModel(model_name)
-            return model
-        except:
-            continue
-    return genai.GenerativeModel('gemini-1.5-flash')
+@st.cache_resource
+def load_model():
+    try:
+        available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+        selected = next((m for m in available_models if "1.5-flash" in m), available_models[0])
+        return genai.GenerativeModel(model_name=selected)
+    except: return None
 
-model = get_working_model()
+model = load_model()
 
-# -------------------------------------------------------------
-# 3. Sidebar
-# -------------------------------------------------------------
+# --- 4. ส่วน Sidebar: Logo & Dashboard ---
 with st.sidebar:
-    st.markdown('<h3 style="text-align: center;">เมนูคำสั่ง</h3>', unsafe_allow_html=True)
-    if st.button("🗑️ ล้างประวัติแชท", use_container_width=True):
-        st.session_state.messages = []
-        st.rerun()
+    # แสดงโลโก้พร้อมจัดขนาด
+    if os.path.exists("logo_ku.png"):
+        st.markdown(f'<div class="logo-container"><img src="data:image/png;base64,{st.image("logo_ku.png").data}" class="logo-img"></div>', unsafe_allow_html=True)
+        # หมายเหตุ: ถ้าใช้ st.image ปกติแล้วภาพยังใหญ่ ให้ใช้คำสั่งด้างล่างแทน
+        st.image("logo_ku.png", width=180) 
+    else:
+        st.warning("ไม่พบไฟล์ logo_ku.png")
 
-# -------------------------------------------------------------
-# 4. การจัดการข้อมูลและแชท
-# -------------------------------------------------------------
-st.title("🐢 น้องนนทรี (AI Assistant)")
+    st.markdown('<p class="sidebar-header">🎓 AI KUSRC Student Dashboard</p>', unsafe_allow_html=True)
 
-# โหลดข้อมูลความรู้จากไฟล์
+    # รายการแบบฟอร์มด่วน
+    with st.expander("📂 ลิงก์แบบฟอร์มด่วน (คลิก)", expanded=True):
+        st.markdown("**📝 คำร้องขอลงทะเบียน (Registrar-2)**")
+        st.link_button("📥 ดาวน์โหลด", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf")
+        
+        st.markdown("---")
+        
+        st.markdown("**📑 คำร้องทั่วไป (Registrar-1)**")
+        st.link_button("📥 ดาวน์โหลด", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf")
+        
+        st.markdown("---")
+        
+        st.markdown("**💻 เพิ่ม-ถอน (KU3) ออนไลน์**")
+        st.link_button("🌐 ไปที่เว็บไซต์", "https://reg2.src.ku.ac.th/download.html")
+
+    st.markdown("---")
+    st.caption("💚 พัฒนาโดยนิสิตเพื่อนิสิต มก.ศรช.")
+
+# --- 5. การจัดการหน้า Chat ---
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# โหลด Knowledge Base
 if os.path.exists("ku_data.txt"):
     with open("ku_data.txt", "r", encoding="utf-8") as f:
         knowledge_base = f.read()
 else:
-    knowledge_base = "ข้อมูลมหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตศรีราชา"
+    knowledge_base = "ข้อมูล มก. ศรีราชา"
 
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+# เปลี่ยนชื่อหัวข้อเป็น AI KUSRC
+st.markdown("## 🐯 AI KUSRC")
 
 for message in st.session_state.messages:
-    with st.chat_message(message["role"], avatar="🧑‍🎓" if message["role"] == "user" else "🦖"):
+    avatar = "🧑‍🎓" if message["role"] == "user" else "🐯"
+    with st.chat_message(message["role"], avatar=avatar):
         st.markdown(message["content"])
 
 if prompt := st.chat_input("พิมพ์คำถามที่นี่..."):
     st.chat_message("user", avatar="🧑‍🎓").markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
-    with st.chat_message("assistant", avatar="🦖"):
-        # คำสั่งคุมสติ AI ให้เป็นรุ่นพี่ที่แนะนำเก่งๆ
-        instruction = (
-            "คุณคือ 'น้องนนทรี' AI รุ่นพี่ผู้เชี่ยวชาญของ มก. ศรีราชา (KU SRC) "
-            "กฎเหล็ก: 1. ตอบสุภาพเป็นกันเอง 2. หากถามเรื่องตึก ต้องส่งลิ้งค์แผนที่จากข้อมูลอ้างอิงเสมอ "
-            "3. ให้คำแนะนำแบบรุ่นพี่ (เช่น ร้านอาหารใกล้ๆ หรือวิธีเดินทาง) "
-            "4. ห้ามตอบข้อมูลของมหาวิทยาลัยอื่นเด็ดขาด"
-        )
+    with st.chat_message("assistant", avatar="🐯"):
+        placeholder = st.empty()
+        placeholder.markdown("*(พี่กำลังหาข้อมูลให้...)*")
         
-        full_prompt = f"{instruction}\n\nข้อมูลอ้างอิง: {knowledge_base}\n\nคำถาม: {prompt}"
+        history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} 
+                   for m in st.session_state.messages[-6:-1]]
         
         try:
-            response = model.generate_content(full_prompt)
-            st.markdown(response.text)
-            st.session_state.messages.append({"role": "assistant", "content": response.text})
+            chat_session = model.start_chat(history=history)
+            full_context = f"คุณคือรุ่นพี่ มก.ศรช. ตอบน้องด้วยความเป็นกันเอง\nข้อมูล:\n{knowledge_base}\n\nคำถาม: {prompt}"
+            
+            response = chat_session.send_message(full_context, stream=True)
+            full_response = ""
+            for chunk in response:
+                full_response += chunk.text
+                placeholder.markdown(full_response + "▌")
+            
+            placeholder.markdown(full_response)
+            st.session_state.messages.append({"role": "assistant", "content": full_response})
+            st.rerun()
         except Exception as e:
-            st.error(f"ระบบขัดข้อง: {e}")
+            st.error(f"Error: {e}")
