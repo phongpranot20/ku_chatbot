@@ -4,7 +4,7 @@ import os
 import base64
 import re
 
-# --- 1. ตั้งค่าหน้าจอ ---
+# --- 1. ตั้งค่าหน้าจอ (Page Config) ---
 st.set_page_config(page_title="AI KUSRC", page_icon="🦖", layout="wide")
 
 # --- 2. ฟังก์ชันจัดการข้อมูล ---
@@ -40,7 +40,7 @@ st.markdown("""
     .sidebar-title { color: white !important; font-size: 14px; font-weight: bold; margin-bottom: 5px; }
     
     div.stButton > button {
-        width: 225% !important;
+        width: 100% !important; /* ปรับให้พอดีกับ Sidebar */
         border-radius: 12px !important;
         background-color: transparent !important;
         color: white !important;
@@ -95,13 +95,11 @@ with st.sidebar:
     
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # ปุ่มแชทใหม่: ล้างค่าทันที
     if st.button("➕ แชทใหม่", key="new_chat_btn"):
         st.session_state.messages = []
         st.session_state.current_chat_id = None
         st.rerun()
     
-    # แสดงประวัติแชทเฉพาะที่มีข้อมูลจริง
     if st.session_state.all_chats:
         st.markdown('<p class="sidebar-title">💬 ประวัติการแชท</p>', unsafe_allow_html=True)
         for chat_id in list(st.session_state.all_chats.keys()):
@@ -116,15 +114,20 @@ with st.sidebar:
     with st.expander("🧮 คำนวณเกรด (GPA)", expanded=False):
         st.markdown('<div class="white-card-content"><div class="form-row"><div class="form-label">ระบบจำลองการตัดเกรด</div><a href="https://fna.csc.ku.ac.th/grade/" target="_blank" class="btn-action">เปิดระบบ</a></div></div>', unsafe_allow_html=True)
     with st.expander("📄 ลิงก์แบบฟอร์มต่างๆ", expanded=False):
-        forms = [("ใบขอลงทะเบียนเรียน ", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf"),
+        forms = [
+            ("ใบขอลงทะเบียนเรียน ", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf"),
             ("ใบคำร้องทั่วไป ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf"),
             ("ใบผ่อนผันค่าเทอม ", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Postpone-tuition-and-fee-payments.pdf"),
             ("ใบลาพักการศึกษา ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/Request-for-Leave-of-Absence-Request.pdf"),
             ("ใบลาออก ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/Resignation-Form.pdf"),
             ("ใบลงทะเบียนเรียน ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU1-Registration-Form.pdf"),
-            ("ใบเพิ่ม-ถอน ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU3-Add-Drop-Form.pdf")]
+            ("ใบเพิ่ม-ถอน ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU3-Add-Drop-Form.pdf")
+        ]
+        # ใส่คลาส white-card-content เพื่อความสวยงาม
+        st.markdown('<div class="white-card-content">', unsafe_allow_html=True)
         for name, link in forms:
             st.markdown(f'<div class="form-row"><div class="form-label">{name}</div><a href="{link}" target="_blank" class="btn-action">โหลด</a></div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
 # --- 7. หน้า Chat หลัก ---
 st.markdown(f"## 🦖 AI TEST")
@@ -137,11 +140,9 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 if prompt := st.chat_input("พิมพ์ถามพี่นนทรีได้เลย..."):
-    # ถ้าเป็นแชทใหม่ ให้ตั้งชื่อตามข้อความแรก
     if st.session_state.current_chat_id is None:
         st.session_state.current_chat_id = prompt[:20]
 
-    # จำชื่อผู้ใช้
     name_match = re.search(r"(?:ผม|หนู|เรา|พี่|ชื่อ)\s*ชื่อว่า?\s*(\w+)", prompt)
     if name_match: st.session_state.global_user_nickname = name_match.group(1)
 
@@ -171,10 +172,14 @@ if prompt := st.chat_input("พิมพ์ถามพี่นนทรีไ�
                     placeholder.markdown(full_response + "▌")
                 placeholder.markdown(full_response)
             except Exception as e:
-                full_response = f"เกิดข้อผิดพลาด: {e}"
-                st.error(full_response)
+                # แก้ไขการแจ้งเตือน 429 ตามที่ต้องการ
+                if "429" in str(e):
+                    full_response = "429 ⚠️ **ขออภัยครับ!** (Quota เต็ม)"
+                    st.warning(full_response)
+                else:
+                    full_response = f"เกิดข้อผิดพลาด: {e}"
+                    st.error(full_response)
         
         st.session_state.messages.append({"role": "assistant", "content": full_response})
-        # บันทึกลงประวัติ
         st.session_state.all_chats[st.session_state.current_chat_id] = st.session_state.messages
         st.rerun()
