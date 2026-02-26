@@ -2,8 +2,14 @@ import streamlit as st
 import google.generativeai as genai
 import os
 
-st.set_page_config(page_title="KU Sriracha Bot", page_icon="🐢", layout="wide")
+# 1. ตั้งค่าหน้าเว็บ
+st.set_page_config(
+    page_title="KU Sriracha Bot",
+    page_icon="🐢",
+    layout="wide"
+)
 
+# 🎨 ธีมสีเขียว KU + บังคับพื้นหลังขาว
 st.markdown("""
 <style>
     .stApp { background-color: #FFFFFF !important; color: black !important; }
@@ -11,85 +17,58 @@ st.markdown("""
     h1, h2, h3, p, span, div { color: #00594C; }
     [data-testid="stChatMessage"] { background-color: #f0f2f6; border-radius: 10px; }
     .stMarkdown p { color: #333333 !important; }
-
-    /* Animation สำหรับจุด Loading */
-    .loading-dots {
-        font-size: 30px;
-        font-weight: bold;
-        display: inline-block;
-    }
-    .loading-dots:after {
-        content: '.';
-        animation: dots 1.5s steps(5, end) infinite;
-    }
-    @keyframes dots {
-        0%, 20% { content: '.'; }
-        40% { content: '..'; }
-        60% { content: '...'; }
-        80%, 100% { content: ''; }
-    }
-    
-    /* ตกแต่งปุ่มทางลัด */
-    .stButton button {
-        width: 100%;
-        border-radius: 20px;
-        border: 1px solid #00594C;
-        color: #00594C;
-        background-color: transparent;
-        transition: 0.3s;
-    }
-    .stButton button:hover {
-        background-color: #00594C;
-        color: white;
-    }
 </style>
 """, unsafe_allow_html=True)
 
-api_key = st.secrets.get("GEMINI_API_KEY")
+# -------------------------------------------------------------
+# 2. ระบบความปลอดภัย (API Key) - แก้ไขตรงนี้
+# -------------------------------------------------------------
+# ดึง API Key จาก Secrets ของระบบ (ห้ามเขียนรหัสจริงลงในนี้)
+if "GEMINI_API_KEY" in st.secrets:
+    api_key = st.secrets["GEMINI_API_KEY"]
+else:
+    # สำหรับรันในเครื่องตัวเอง (Local) ให้สร้างไฟล์ .streamlit/secrets.toml
+    api_key = os.environ.get("GEMINI_API_KEY")
+
 if not api_key:
-    st.error("❌ ไม่พบ GEMINI_API_KEY ในหน้า Settings > Secrets")
+    st.error("❌ ไม่พบ API Key กรุณาตั้งค่าใน Secrets (GEMINI_API_KEY)")
     st.stop()
 
 genai.configure(api_key=api_key)
 
-@st.cache_resource
-def load_model():
-    try:
-        for m in genai.list_models():
-            if 'generateContent' in m.supported_generation_methods:
-                if "flash" in m.name.lower():
-                    return genai.GenerativeModel(model_name=m.name)
-        for m in genai.list_models():
-            if 'generateContent' in m.supported_generation_methods:
-                return genai.GenerativeModel(model_name=m.name)
-    except Exception as e:
-        st.error(f"❌ ระบบไม่สามารถดึงรายชื่อโมเดลได้: {e}")
-    return None
+# ⚙️ ระบบ Auto-Switch โมเดล
+def get_working_model():
+    model_list = ['gemini-1.5-flash', 'gemini-1.5-pro']
+    for model_name in model_list:
+        try:
+            model = genai.GenerativeModel(model_name)
+            return model
+        except:
+            continue
+    return genai.GenerativeModel('gemini-1.5-flash')
 
-model = load_model()
+model = get_working_model()
 
-if not model:
-    st.stop()
+# -------------------------------------------------------------
+# 3. Sidebar
+# -------------------------------------------------------------
+with st.sidebar:
+    st.markdown('<h3 style="text-align: center;">เมนูคำสั่ง</h3>', unsafe_allow_html=True)
+    if st.button("🗑️ ล้างประวัติแชท", use_container_width=True):
+        st.session_state.messages = []
+        st.rerun()
 
-st.title("AI TEST")
+# -------------------------------------------------------------
+# 4. การจัดการข้อมูลและแชท
+# -------------------------------------------------------------
+st.title("🐢 น้องนนทรี (AI Assistant)")
 
-# --- ระบบปุ่มทางลัด (Quick Reply) ---
-st.write("💡 คำถามที่พบบ่อย:")
-col1, col2, col3, col4 = st.columns(4)
-btn_prompt = None
-
-with col1:
-    if st.button("📍 พิกัดตึกเรียน"):
-        btn_prompt = "ขอพิกัดตึกเรียนสำคัญๆ ใน มก. ศรีราชา หน่อยครับ"
-with col2:
-    if st.button("🍽️ ร้านอาหารเด็ด"):
-        btn_prompt = "แนะนำร้านอาหารอร่อยๆ รอบมหาลัยหน่อยพี่"
-with col3:
-    if st.button("📄 งานทะเบียน"):
-        btn_prompt = "ติดต่อขอเอกสารการเรียนหรือฝ่ายทะเบียนต้องทำยังไงครับ"
-with col4:
-    if st.button("🚌 รถตะไล"):
-        btn_prompt = "รถตะไลในมอวิ่งเส้นทางไหนบ้างครับ"
+# โหลดข้อมูลความรู้จากไฟล์
+if os.path.exists("ku_data.txt"):
+    with open("ku_data.txt", "r", encoding="utf-8") as f:
+        knowledge_base = f.read()
+else:
+    knowledge_base = "ข้อมูลมหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตศรีราชา"
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -98,32 +77,24 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"], avatar="🧑‍🎓" if message["role"] == "user" else "🦖"):
         st.markdown(message["content"])
 
-# รับค่าจากทั้งปุ่มและช่องแชท
-chat_input = st.chat_input("พิมพ์คำถามที่นี่...")
-prompt = chat_input if chat_input else btn_prompt
-
-if prompt:
+if prompt := st.chat_input("พิมพ์คำถามที่นี่..."):
     st.chat_message("user", avatar="🧑‍🎓").markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     with st.chat_message("assistant", avatar="🦖"):
-        status_placeholder = st.empty()
-        status_placeholder.markdown('<div class="loading-dots"></div>', unsafe_allow_html=True)
-        
+        # คำสั่งคุมสติ AI ให้เป็นรุ่นพี่ที่แนะนำเก่งๆ
         instruction = (
-            "คุณคือ 'น้องนนทรี' AI รุ่นพี่ของ มก. ศรีราชา (KU SRC) "
-            "พูดจาสุภาพ เป็นกันเอง แทนตัวเองว่า 'พี่' และเรียกผู้ใช้ว่า 'น้อง' "
-            "จงจำชื่อผู้ใช้และสิ่งที่คุยกันก่อนหน้าเสมอ "
-            "ตอบคำถามตามข้อมูลที่ให้มาอย่างแม่นยำ หากถามเรื่องตึก ต้องส่งลิงก์แผนที่เสมอ"
+            "คุณคือ 'น้องนนทรี' AI รุ่นพี่ผู้เชี่ยวชาญของ มก. ศรีราชา (KU SRC) "
+            "กฎเหล็ก: 1. ตอบสุภาพเป็นกันเอง 2. หากถามเรื่องตึก ต้องส่งลิ้งค์แผนที่จากข้อมูลอ้างอิงเสมอ "
+            "3. ให้คำแนะนำแบบรุ่นพี่ (เช่น ร้านอาหารใกล้ๆ หรือวิธีเดินทาง) "
+            "4. ห้ามตอบข้อมูลของมหาวิทยาลัยอื่นเด็ดขาด"
         )
         
-        history_text = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages[-10:]])
-        full_prompt = f"{instruction}\n\nข้อมูล: {knowledge_base if 'knowledge_base' in locals() else 'ข้อมูล มก. ศรีราชา'}\n\nประวัติการคุย:\n{history_text}\n\nคำถามล่าสุด: {prompt}"
+        full_prompt = f"{instruction}\n\nข้อมูลอ้างอิง: {knowledge_base}\n\nคำถาม: {prompt}"
         
         try:
             response = model.generate_content(full_prompt)
-            status_placeholder.markdown(response.text)
+            st.markdown(response.text)
             st.session_state.messages.append({"role": "assistant", "content": response.text})
         except Exception as e:
-            status_placeholder.empty()
-            st.error(f"❌ เกิดข้อผิดพลาด: {e}")
+            st.error(f"ระบบขัดข้อง: {e}")
