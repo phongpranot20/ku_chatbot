@@ -227,4 +227,4 @@ if prompt := st.chat_input("พิมพ์ถามพี่นนทรีไ�
             st.session_state.messages.append({"role": "assistant", "content": full_response})
             st.rerun()
         except Exception as e:
-            st.error(f"Error: {e}")ห
+            st.error(f"Error: {e}")
