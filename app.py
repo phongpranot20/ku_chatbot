@@ -14,22 +14,28 @@ def get_image_base64(path):
             return base64.b64encode(img_file.read()).decode()
     return ""
 
-# --- 3. ฟังก์ชันวิเคราะห์ห้องเรียน (แบบธรรมชาติ) ---
+# --- 3. ฟังก์ชันวิเคราะห์เลขห้องเรียน (ตอบแบบธรรมชาติ) ---
 def get_room_info(room_code):
+    # ล้างค่าให้เหลือแต่ตัวเลข
     code = re.sub(r'\D', '', str(room_code))
-    if len(code) == 5: # เช่น 17203
+    
+    # กรณีเลข 5 หลัก เช่น 17203
+    if len(code) == 5:
         building = code[:2]
         floor = code[2]
         room = code[3:]
         return f"อ๋อ ห้องนี้อยู่ **ตึก {building} ชั้น {floor} ห้อง {room}** ครับน้อง"
-    elif len(code) == 4: # เช่น 1404
+    
+    # กรณีเลข 4 หลัก เช่น 1404
+    elif len(code) == 4:
         building = code[0]
         floor = code[1]
         room = code[2:]
         return f"ห้องนี้คือ **ตึก {building} ชั้น {floor} ห้อง {room}** ครับผม"
+    
     return None
 
-# --- 4. CSS ปรับแต่ง UI ---
+# --- 4. CSS ปรับแต่ง UI ให้สวยงามและ Scannable ---
 st.markdown("""
 <style>
     /* พื้นหลังหน้าหลัก */
@@ -79,7 +85,7 @@ st.markdown("""
         text-align: center;
     }
 
-    /* --- Expander สีขาว --- */
+    /* Expander สีขาวสำหรับเมนูต่างๆ */
     div[data-testid="stExpander"] {
         background-color: #FFFFFF !important;
         border-radius: 12px !important;
@@ -92,7 +98,7 @@ st.markdown("""
         font-weight: bold !important;
     }
 
-    /* กล่องขาวเนื้อหาด้านใน */
+    /* กล่องขาวรายการด้านใน Sidebar */
     .white-card-content {
         background-color: #FFFFFF;
         border-radius: 0px 0px 12px 12px;
@@ -109,13 +115,13 @@ st.markdown("""
     
     .form-label {
         color: #333333 !important;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 600;
         flex: 1;
         line-height: 1.3;
     }
 
-    /* ปุ่ม Action สีเขียวเข้ม */
+    /* ปุ่มดาวน์โหลดและปุ่มลิงก์สีเขียวเข้ม */
     .btn-download {
         background-color: #006861;
         color: white !important;
@@ -151,7 +157,7 @@ model = load_model()
 
 # --- 6. ส่วน Sidebar (Dashboard) ---
 with st.sidebar:
-    # 1. Header
+    # 1. Header (โลโก้บน-ชื่อล่าง)
     if os.path.exists("logo_ku.png"):
         img_data = get_image_base64("logo_ku.png")
         st.markdown(f"""
@@ -165,79 +171,95 @@ with st.sidebar:
     
     st.markdown('<p class="sidebar-title">AI KUSRC Dashboard</p>', unsafe_allow_html=True)
 
-    # 2. ค้นหาตารางสอบ (ใหม่)
-    with st.expander("📅 ค้นหาตารางสอบ", expanded=False):
+    # 2. ระบบค้นหาและคำนวณ (ตารางสอบ & GPA)
+    with st.expander("🛠️ ระบบค้นหาและคำนวณ", expanded=False):
         st.markdown(f"""
             <div class="white-card-content">
                 <div class="form-row">
-                    <div class="form-label">ตรวจสอบวัน-เวลาสอบ</div>
+                    <div class="form-label">📅 ค้นหาตารางสอบ</div>
                     <a href="https://reg2.src.ku.ac.th/table_test/" target="_blank" class="btn-download">ค้นหา</a>
                 </div>
-            </div>
-        """, unsafe_allow_html=True)
-
-    # 3. เมนูคำนวณเกรด (GPA)
-    with st.expander("🧮 คำนวณเกรด (GPA)", expanded=False):
-        st.markdown(f"""
-            <div class="white-card-content">
                 <div class="form-row">
-                    <div class="form-label">ระบบจำลองการตัดเกรด</div>
+                    <div class="form-label">🧮 คำนวณเกรด (GPA)</div>
                     <a href="https://fna.csc.ku.ac.th/grade/" target="_blank" class="btn-download">เปิดระบบ</a>
                 </div>
             </div>
         """, unsafe_allow_html=True)
 
-    # 4. รายการแบบฟอร์มด่วน
+    # 3. รายการแบบฟอร์มด่วน (ครบ 7 รายการ)
     with st.expander("📄 ลิงก์แบบฟอร์มต่างๆ", expanded=False):
         forms = [
-            ("ขอลงทะเบียนเรียน", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf"),
-            ("คำร้องทั่วไป", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf"),
+            ("ขอลงทะเบียนเรียน (Registrar-2)", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf"),
+            ("คำร้องทั่วไป (Registrar-1)", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf"),
+            ("ผ่อนผันค่าเทอม (Registrar-3)", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Postpone-tuition-and-fee-payments.pdf"),
+            ("ใบลาพักการศึกษา (Registrar-10)", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/Request-for-Leave-of-Absence-Request.pdf"),
+            ("ใบลาออก (Registrar-16)", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/Resignation-Form.pdf"),
+            ("ลงทะเบียนเรียน (KU1)", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU1-Registration-Form.pdf"),
             ("เพิ่ม-ถอน (KU3)", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU3-Add-Drop-Form.pdf")
         ]
         st.markdown('<div class="white-card-content">', unsafe_allow_html=True)
         for name, link in forms:
-            st.markdown(f'<div class="form-row"><div class="form-label">{name}</div><a href="{link}" target="_blank" class="btn-download">โหลด</a></div>', unsafe_allow_html=True)
+            st.markdown(f"""
+                <div class="form-row">
+                    <div class="form-label">{name}</div>
+                    <a href="{link}" target="_blank" class="btn-download">ดาวน์โหลด</a>
+                </div>
+            """, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
 
 # --- 7. ส่วนหน้า Chat หลัก ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-knowledge_base = ""
+# โหลดฐานข้อมูล ku_data.txt
 if os.path.exists("ku_data.txt"):
     with open("ku_data.txt", "r", encoding="utf-8") as f:
         knowledge_base = f.read()
+else:
+    knowledge_base = "ข้อมูล มก. ศรีราชา"
 
 st.markdown("## 🦖 AI TEST")
 
+# แสดงประวัติการสนทนา
 for message in st.session_state.messages:
     avatar = "🧑‍🎓" if message["role"] == "user" else "🦖"
     with st.chat_message(message["role"], avatar=avatar):
         st.markdown(message["content"])
 
-if prompt := st.chat_input("ถามพี่นนทรีได้เลย..."):
+# รับข้อความจากผู้ใช้
+if prompt := st.chat_input("พิมพ์ถามพี่นนทรีได้เลย (เช่น 17203 หรือ วิธีล็อกอิน MFA)..."):
     st.chat_message("user", avatar="🧑‍🎓").markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     with st.chat_message("assistant", avatar="🦖"):
-        # เช็คว่าเป็นเลขห้องหรือไม่
+        # 1. เช็คว่าเป็นเลขห้องเรียนหรือไม่ (ตอบแบบธรรมชาติ)
         room_info = get_room_info(prompt)
+        
         if room_info:
             st.markdown(room_info)
             st.session_state.messages.append({"role": "assistant", "content": room_info})
         else:
+            # 2. ตอบคำถามผ่าน AI Model (รองรับ MFA และข้อมูลใน ku_data)
             placeholder = st.empty()
             placeholder.markdown("*(พี่กำลังหาคำตอบให้...)*")
+            
+            # เก็บประวัติ 5 ข้อความล่าสุด
+            history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} 
+                       for m in st.session_state.messages[-6:-1]]
+            
             try:
-                history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} 
-                           for m in st.session_state.messages[-6:-1]]
                 chat_session = model.start_chat(history=history)
-                full_context = f"คุณคือรุ่นพี่ มก.ศรช. ตอบน้องเป็นกันเอง\nข้อมูลมหาลัย:\n{knowledge_base}\n\nคำถาม: {prompt}"
+                # สั่ง System Prompt ให้ AI ตอบแบบเป็นกันเอง
+                full_context = f"คุณคือรุ่นพี่ มก.ศรช. ตอบน้องเป็นกันเอง ข้อมูลมหาลัย:\n{knowledge_base}\n\nคำถาม: {prompt}"
+                
                 response = chat_session.send_message(full_context, stream=True)
                 full_response = ""
                 for chunk in response:
                     full_response += chunk.text
                     placeholder.markdown(full_response + "▌")
+                
                 placeholder.markdown(full_response)
                 st.session_state.messages.append({"role": "assistant", "content": full_response})
                 st.rerun()
