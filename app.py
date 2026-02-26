@@ -5,43 +5,50 @@ import os
 # --- 1. ตั้งค่าหน้าจอ (Page Config) ---
 st.set_page_config(page_title="น้องนนทรี - KU Sriracha Bot", page_icon="🐯", layout="wide")
 
-# --- 2. CSS ปรับแต่ง UI ใหม่ (แก้ปัญหาสีข้อความขาว) ---
+# --- 2. CSS ปรับแต่ง UI (เน้นแก้สีตัวหนังสือใน Sidebar) ---
 st.markdown("""
 <style>
-    /* พื้นหลังหลัก */
+    /* พื้นหลังหลักและตัวหนังสือหน้า Chat */
     .stApp { background-color: #FFFFFF; color: black; }
     
-    /* ปรับแต่ง Sidebar */
+    /* ส่วน Sidebar พื้นหลังเขียว */
     [data-testid="stSidebar"] { 
         background-color: #00594C !important; 
     }
     
-    /* บังคับสีข้อความใน Sidebar ให้เห็นชัดเจน */
-    [data-testid="stSidebar"] .stMarkdown p, 
+    /* หัวข้อหลักใน Sidebar ให้เป็นสีขาวเพื่อให้ตัดกับพื้นเขียว */
     [data-testid="stSidebar"] h3, 
-    [data-testid="stSidebar"] span,
-    [data-testid="stSidebar"] label { 
-        color: #FFFFFF !important; /* หัวข้อหลักใช้สีขาว */
+    [data-testid="stSidebar"] .stMarkdown h3 { 
+        color: #FFFFFF !important; 
     }
 
-    /* ปรับแต่ง Expander และ Input ใน Sidebar ให้ข้อความข้างในเป็นสีดำ */
-    .stSidebar .st-emotion-cache-1f3w0ih p, 
-    .stSidebar .st-emotion-cache-1629ce8 p,
-    .stSidebar input {
+    /* --- จุดสำคัญ: ปรับตัวหนังสือใน Widget ให้เป็นสีดำทั้งหมด --- */
+    /* ข้อความใน Expander, Label ของ Input และตัวเลขที่กรอก */
+    [data-testid="stSidebar"] .stMarkdown p,
+    [data-testid="stSidebar"] label,
+    [data-testid="stSidebar"] span,
+    [data-testid="stSidebar"] input {
         color: #000000 !important;
     }
 
-    /* ปรับแต่งปุ่มใน Sidebar */
+    /* ปรับแต่งกล่อง Expander ให้พื้นหลังเป็นสีขาวสว่างและตัวหนังสือดำ */
+    [data-testid="stSidebar"] .st-emotion-cache-1f3w0ih, 
+    [data-testid="stSidebar"] .st-emotion-cache-p5mtransition {
+        background-color: #FFFFFF !important;
+        border-radius: 10px;
+    }
+
+    /* ปรับแต่งปุ่มกดใน Sidebar ให้เป็นสีขาว/ตัวหนังสือเขียวเข้ม */
     .stSidebar .stButton>button {
         background-color: #FFFFFF !important;
         color: #00594C !important;
         border-radius: 10px;
-        border: none;
+        border: 2px solid #FFFFFF;
         font-weight: bold;
         width: 100%;
     }
     
-    /* ปรับแต่งหน้าจอ Chat */
+    /* หน้าจอ Chat */
     h1 { color: #00594C !important; }
     .stChatMessage { border-radius: 15px; margin-bottom: 10px; border: 1px solid #e0e0e0; }
 </style>
@@ -84,30 +91,28 @@ with st.sidebar:
     st.image("https://www.src.ku.ac.th/th/images/logo/KU_Sriracha_Logo.png", width=150)
     st.markdown("### 🎓 Student Dashboard")
     
-    # แบบฟอร์มด่วน
-    with st.expander("📄 ลิงก์แบบฟอร์มด่วน (คลิก)"):
+    # แบบฟอร์มด่วน (ข้อความข้างในจะเป็นสีดำตาม CSS ด้านบน)
+    with st.expander("📄 ลิงก์แบบฟอร์มด่วน"):
         st.link_button("📝 ใบเพิ่ม-ถอน (KU3)", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU3-Add-Drop-Form.pdf")
         st.link_button("💰 ใบผ่อนผันค่าเทอม", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Postpone-tuition-and-fee-payments.pdf")
         st.link_button("📁 หน้ารวมแบบฟอร์ม", "https://reg2.src.ku.ac.th/download.html")
 
     st.markdown("---")
     
-    # GPA Simulator
+    # GPA Simulator (ตัวหนังสือจะเป็นสีดำอ่านง่าย)
     st.markdown("### 🔢 GPA Simulator")
-    # ครอบด้วย Container เพื่อแยกส่วนสี
-    with st.container():
-        current_gpa = st.number_input("เกรดเฉลี่ยปัจจุบัน", min_value=0.0, max_value=4.0, value=3.00, step=0.01)
-        target_gpa = st.number_input("เกรดที่คาดหวัง", min_value=0.0, max_value=4.0, value=3.50, step=0.01)
-        
-        if st.button("คำนวณโอกาส"):
-            if target_gpa > current_gpa:
-                st.write(f"📢 ต้องทำเกรดเทอมนี้ให้ได้ประมาณ {target_gpa} นะครับน้อง!")
-            else:
-                st.balloons()
-                st.write("🎉 เกรดน้องอยู่ในระดับที่ยอดเยี่ยมแล้วครับ!")
+    current_gpa = st.number_input("เกรดเฉลี่ยปัจจุบัน", min_value=0.0, max_value=4.0, value=3.00, step=0.01)
+    target_gpa = st.number_input("เกรดที่คาดหวังเทอมนี้", min_value=0.0, max_value=4.0, value=3.50, step=0.01)
+    
+    if st.button("วิเคราะห์โอกาส"):
+        if target_gpa > current_gpa:
+            st.write(f"✍️ น้องต้องทำเกรดให้ได้มากกว่า {target_gpa} นะครับ!")
+        else:
+            st.balloons()
+            st.write("🌟 เกรดอยู่ในเกณฑ์ดีเยี่ยมแล้วรักษาไว้ครับ!")
 
     st.markdown("---")
-    st.caption("💡 แนะนำ: ลองถามพี่ว่า 'ตึก 17 อยู่ไหน' ดูสิ!")
+    st.caption("💡 แนะนำ: ลองถามพี่ว่า 'ตึก 17' ดูนะ!")
 
 # --- 5. จัดการ Chat History ---
 if "messages" not in st.session_state:
@@ -119,6 +124,7 @@ if os.path.exists("ku_data.txt"):
 else:
     knowledge_base = "ข้อมูล มก. ศรีราชา"
 
+# แสดงประวัติการสนทนา
 for message in st.session_state.messages:
     avatar = "🧑‍🎓" if message["role"] == "user" else "🐯"
     with st.chat_message(message["role"], avatar=avatar):
@@ -131,7 +137,7 @@ if prompt := st.chat_input("พิมพ์คำถามที่นี่..."
 
     with st.chat_message("assistant", avatar="🐯"):
         placeholder = st.empty()
-        placeholder.markdown("*(พี่กำลังหาคำตอบให้ครับ...)*")
+        placeholder.markdown("*(พี่นนทรี กำลังหาข้อมูลให้ครับ...)*")
         
         history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} 
                    for m in st.session_state.messages[-6:-1]]
