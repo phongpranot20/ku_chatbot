@@ -41,7 +41,7 @@ st.markdown("""
     
     /* ปุ่ม Sidebar กล่องสีเขียวใสเดิม แต่ขยายความกว้างเต็มพื้นที่ 100% */
     .stButton > button {
-        width: 100% !important;
+        width: 150% !important;
         border-radius: 12px !important;
         background-color: rgba(255, 255, 255, 0.1) !important;
         color: white !important;
