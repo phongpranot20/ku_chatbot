@@ -38,19 +38,12 @@ st.markdown("""
     .univ-name { color: white !important; font-size: 22px; font-weight: bold; line-height: 1.2; }
     .sidebar-title { color: #FFFFFF !important; font-size: 1.1rem; font-weight: bold; margin: 15px 0px 10px 0px; text-align: center; }
     
-    /* ปุ่มใน Sidebar */
     .stButton > button {
         width: 100%; border-radius: 10px; background-color: rgba(255,255,255,0.1);
         color: white; border: 1px solid rgba(255,255,255,0.3); transition: 0.3s;
     }
     .stButton > button:hover {
         background-color: rgba(255,255,255,0.2); border: 1px solid #FFD700; color: #FFD700;
-    }
-
-    /* กล่องข้อความแชทเก่า */
-    .chat-history-btn {
-        text-align: left; padding: 5px 10px; font-size: 12px; margin-bottom: 5px;
-        background-color: rgba(255,255,255,0.05); border-left: 3px solid #FFD700; cursor: pointer;
     }
 
     div[data-testid="stExpander"] { background-color: #FFFFFF !important; border-radius: 12px !important; margin-bottom: 10px; border: none !important; }
@@ -61,7 +54,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- 4. จัดการ API และ Model ---
+# --- 4. จัดการ API ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 if api_key: genai.configure(api_key=api_key)
 
@@ -74,17 +67,16 @@ def load_model():
     except: return None
 model = load_model()
 
-# --- 5. จัดการ State และประวัติแชท ---
+# --- 5. จัดการ State และระบบความจำ ---
 if "all_chats" not in st.session_state:
-    st.session_state.all_chats = {} # เก็บแชทแยกตามหัวข้อ
+    st.session_state.all_chats = {"แชทเริ่มต้น": []}
 if "current_chat_id" not in st.session_state:
-    st.session_state.current_chat_id = "Default Chat"
+    st.session_state.current_chat_id = "แชทเริ่มต้น"
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if "user_nickname" not in st.session_state:
-    st.session_state.user_nickname = "น้อง"
+    st.session_state.user_nickname = "Hon" # จำชื่อ Hon เป็นค่าตั้งต้น
 
-# ฟังก์ชันเปลี่ยนแชท
 def switch_chat(chat_id):
     st.session_state.all_chats[st.session_state.current_chat_id] = st.session_state.messages
     st.session_state.current_chat_id = chat_id
@@ -100,30 +92,42 @@ with st.sidebar:
     
     if st.button("➕ แชทใหม่"):
         new_id = f"แชทใหม่ {len(st.session_state.all_chats) + 1}"
+        st.session_state.all_chats[new_id] = []
         switch_chat(new_id)
         st.rerun()
     
     st.markdown('<p class="sidebar-title">💬 ประวัติการแชท</p>', unsafe_allow_html=True)
-    # แสดงรายชื่อแชทเก่าๆ ให้กดกลับไปดูได้
     for chat_id in list(st.session_state.all_chats.keys()):
-        if st.button(f"📄 {chat_id[:20]}", key=chat_id):
+        if st.button(f"📄 {chat_id[:18]}...", key=f"btn_{chat_id}"):
             switch_chat(chat_id)
             st.rerun()
 
     st.markdown("---")
+    # แดชบอร์ด (ตารางสอบ & GPA)
     with st.expander("📅 ค้นหาตารางสอบ", expanded=False):
         st.markdown('<div class="white-card-content"><div class="form-row"><div class="form-label">เช็กวัน-เวลาสอบ</div><a href="https://reg2.src.ku.ac.th/table_test/" target="_blank" class="btn-action">ค้นหา</a></div></div>', unsafe_allow_html=True)
     with st.expander("🧮 คำนวณเกรด (GPA)", expanded=False):
         st.markdown('<div class="white-card-content"><div class="form-row"><div class="form-label">ระบบจำลองการตัดเกรด</div><a href="https://fna.csc.ku.ac.th/grade/" target="_blank" class="btn-action">เปิดระบบ</a></div></div>', unsafe_allow_html=True)
+    
+    # แบบฟอร์มครบ 7 รายการ
     with st.expander("📄 ลิงก์แบบฟอร์มต่างๆ", expanded=False):
-        forms = [("ขอลงทะเบียนเรียน", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf"),
-                 ("คำร้องทั่วไป", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf"),
-                 ("เพิ่ม-ถอน (KU3)", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU3-Add-Drop-Form.pdf")]
+        forms = [
+            ("ขอลงทะเบียนเรียน (Reg-2)", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf"),
+            ("คำร้องทั่วไป (Reg-1)", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf"),
+            ("ผ่อนผันค่าเทอม (Reg-3)", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Postpone-tuition-and-fee-payments.pdf"),
+            ("ใบลาพักการศึกษา (Reg-10)", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/Request-for-Leave-of-Absence-Request.pdf"),
+            ("ใบลาออก (Reg-16)", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/Resignation-Form.pdf"),
+            ("ลงทะเบียนเรียน (KU1)", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU1-Registration-Form.pdf"),
+            ("เพิ่ม-ถอน (KU3)", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU3-Add-Drop-Form.pdf")
+        ]
+        st.markdown('<div class="white-card-content">', unsafe_allow_html=True)
         for name, link in forms:
-            st.markdown(f'<div class="white-card-content"><div class="form-row"><div class="form-label">{name}</div><a href="{link}" target="_blank" class="btn-action">โหลด</a></div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="form-row"><div class="form-label">{name}</div><a href="{link}" target="_blank" class="btn-action">โหลด</a></div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
 # --- 7. หน้า Chat หลัก ---
-st.markdown(f"## 🦖 AI TEST - {st.session_state.current_chat_id}")
+st.markdown(f"## 🦖 AI TEST")
+st.caption(f"กำลังคุยในเซสชัน: {st.session_state.current_chat_id}")
 
 for message in st.session_state.messages:
     avatar = "🧑‍🎓" if message["role"] == "user" else "🦖"
@@ -131,14 +135,15 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 if prompt := st.chat_input("พิมพ์ถามพี่นนทรีได้เลย..."):
-    # อัปเดตหัวข้อแชทถ้าเป็นข้อความแรก
-    if st.session_state.current_chat_id.startswith("แชทใหม่") or st.session_state.current_chat_id == "Default Chat":
+    # เปลี่ยนชื่อหัวข้อแชทตามข้อความแรก (ป้องกัน KeyError)
+    if st.session_state.current_chat_id.startswith("แชทใหม่") and not st.session_state.messages:
         new_title = prompt[:20]
-        st.session_state.all_chats[new_title] = st.session_state.messages
-        del st.session_state.all_chats[st.session_state.current_chat_id]
+        st.session_state.all_chats[new_title] = []
+        if st.session_state.current_chat_id in st.session_state.all_chats:
+            del st.session_state.all_chats[st.session_state.current_chat_id]
         st.session_state.current_chat_id = new_title
 
-    # ตรวจสอบชื่อ
+    # จำชื่อ Hon
     name_match = re.search(r"(?:ผม|หนู|เรา|พี่|ชื่อ)\s*ชื่อว่า?\s*(\w+)", prompt)
     if name_match: st.session_state.user_nickname = name_match.group(1)
 
@@ -170,4 +175,4 @@ if prompt := st.chat_input("พิมพ์ถามพี่นนทรีไ�
                 st.session_state.messages.append({"role": "assistant", "content": full_response})
                 st.session_state.all_chats[st.session_state.current_chat_id] = st.session_state.messages
                 st.rerun()
-            except Exception as e: st.error(f"Error: {e}")
+            except Exception as e: st.error(f"เกิดข้อผิดพลาด: {e}")
