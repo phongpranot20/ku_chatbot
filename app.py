@@ -92,7 +92,7 @@ model = load_model()
 if "all_chats" not in st.session_state:
     st.session_state.all_chats = {"➕ แชทใหม่": []}
 if "current_chat_id" not in st.session_state:
-    st.session_state.current_chat_id = "แชทเริ่มต้น"
+    st.session_state.current_chat_id = "➕ แชทใหม่"
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if "global_user_nickname" not in st.session_state:
