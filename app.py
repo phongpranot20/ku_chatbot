@@ -41,7 +41,7 @@ st.markdown("""
     
     /* กล่องสีเขียวใสเดิม (rgba) ขยายความกว้างเต็มพื้นที่ 100% ให้เท่ากล่องล่าง */
     .stButton > button {
-        width: 100% !important;             /* ขยายยาวเต็ม Sidebar */
+        width: 200% !important;             /* ขยายยาวเต็ม Sidebar */
         border-radius: 12px !important;     /* ความโค้งเท่ากล่องขาว */
         background-color: rgba(255, 255, 255, 0.1) !important; /* สีเดิมที่น้องต้องการ */
         color: white !important;
