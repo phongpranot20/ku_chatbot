@@ -194,7 +194,7 @@ if os.path.exists("ku_data.txt"):
 else:
     knowledge_base = "ข้อมูล มก. ศรีราชา"
 
-st.markdown("## 🦖 AI TEST")
+st.markdown("## AI TEST")
 
 for message in st.session_state.messages:
     avatar = "🧑‍🎓" if message["role"] == "user" else "🦖"
