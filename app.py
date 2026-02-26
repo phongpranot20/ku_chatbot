@@ -40,7 +40,7 @@ st.markdown("""
 
     /* --- ส่วนที่ 1: ปรับแยกกล่อง "แชทใหม่" --- */
     div.stButton > button[key*="new_chat"] {
-        width: 100% !important;
+        width: 170% !important;
         border-radius: 12px !important;
         background-color: rgba(255, 255, 255, 0.15) !important; /* ปรับความใส/สี แยกตรงนี้ */
         color: white !important;
@@ -52,7 +52,7 @@ st.markdown("""
 
     /* --- ส่วนที่ 2: ปรับแยกกล่อง "ประวัติการแชท" --- */
     div.stButton > button[key*="hist_"] {
-        width: 100% !important;
+        width: 160% !important;
         border-radius: 12px !important;
         background-color: rgba(255, 255, 255, 0.1) !important; /* ปรับความใส/สี แยกตรงนี้ */
         color: white !important;
