@@ -24,7 +24,7 @@ def get_room_info(room_code):
         return f"ห้องนี้คือ **ตึก {building} ชั้น {floor} ห้อง {room}** ครับผม"
     return None
 
-# --- 3. CSS ปรับแต่ง UI (ใสถาวร แยกกล่องยาวเท่ากัน) ---
+# --- 3. CSS (ใสถาวร ยาวเท่ากล่องขาว) ---
 st.markdown("""
 <style>
     .stApp { background-color: #FFFFFF; color: black; }
@@ -37,7 +37,7 @@ st.markdown("""
     }
     .header-logo-img { width: 90px; height: auto; margin-bottom: 10px; }
     .univ-name { color: white !important; font-size: 22px; font-weight: bold; line-height: 1.2; }
-    .sidebar-title { color: white !important; font-size: 14px; font-weight: bold; margin: 15px 0px 5px 0px; }
+    .sidebar-title { color: white !important; font-size: 14px; font-weight: bold; margin-bottom: 5px; }
     
     div.stButton > button {
         width: 100% !important;
@@ -51,17 +51,9 @@ st.markdown("""
         display: flex !important;
         justify-content: flex-start !important;
     }
-    
-    div.stButton > button:hover:not(:disabled) {
+    div.stButton > button:hover {
         background-color: rgba(255, 255, 255, 0.2) !important;
         border-color: #FFD700 !important;
-    }
-
-    /* สไตล์ปุ่มตอนโดนล็อก (Disabled) */
-    div.stButton > button:disabled {
-        opacity: 0.5 !important;
-        cursor: not_allowed !important;
-        border: 1px dashed rgba(255, 255, 255, 0.2) !important;
     }
 
     div[data-testid="stExpander"] { background-color: #FFFFFF !important; border-radius: 12px !important; margin-bottom: 10px !important; border: none !important; }
@@ -87,19 +79,13 @@ model = load_model()
 
 # --- 5. จัดการ State ---
 if "all_chats" not in st.session_state:
-    st.session_state.all_chats = {} # เริ่มต้นว่างเปล่า
-if "current_chat_id" not in st.session_state:
-    st.session_state.current_chat_id = "แชทใหม่"
+    st.session_state.all_chats = {} 
 if "messages" not in st.session_state:
     st.session_state.messages = []
+if "current_chat_id" not in st.session_state:
+    st.session_state.current_chat_id = None
 if "global_user_nickname" not in st.session_state:
     st.session_state.global_user_nickname = "นิสิต"
-
-def switch_chat(chat_id):
-    if st.session_state.messages: # บันทึกเฉพาะแชทที่มีข้อความ
-        st.session_state.all_chats[st.session_state.current_chat_id] = st.session_state.messages
-    st.session_state.current_chat_id = chat_id
-    st.session_state.messages = st.session_state.all_chats.get(chat_id, [])
 
 # --- 6. Sidebar ---
 with st.sidebar:
@@ -109,18 +95,19 @@ with st.sidebar:
     
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # 6.1 เงื่อนไขล็อกปุ่ม: ถ้าข้อความปัจจุบันว่าง จะกดเพิ่มแชทใหม่ไม่ได้
-    can_add_new = len(st.session_state.messages) > 0
-    if st.button("➕ แชทใหม่", key="new_chat_btn", disabled=not can_add_new):
-        switch_chat(f"แชท {len(st.session_state.all_chats) + 1}")
+    # ปุ่มแชทใหม่: ล้างค่าทันที
+    if st.button("➕ แชทใหม่", key="new_chat_btn"):
+        st.session_state.messages = []
+        st.session_state.current_chat_id = None
         st.rerun()
     
-    # แสดงประวัติแชท (เฉพาะแชทที่มีข้อความเท่านั้น)
+    # แสดงประวัติแชทเฉพาะที่มีข้อมูลจริง
     if st.session_state.all_chats:
         st.markdown('<p class="sidebar-title">💬 ประวัติการแชท</p>', unsafe_allow_html=True)
         for chat_id in list(st.session_state.all_chats.keys()):
             if st.button(f"📄 {chat_id[:18]}...", key=f"hist_{chat_id}"):
-                switch_chat(chat_id)
+                st.session_state.current_chat_id = chat_id
+                st.session_state.messages = st.session_state.all_chats[chat_id]
                 st.rerun()
 
     st.markdown("---")
@@ -128,25 +115,17 @@ with st.sidebar:
         st.markdown('<div class="white-card-content"><div class="form-row"><div class="form-label">เช็กวัน-เวลาสอบ</div><a href="https://reg2.src.ku.ac.th/table_test/" target="_blank" class="btn-action">ค้นหา</a></div></div>', unsafe_allow_html=True)
     with st.expander("🧮 คำนวณเกรด (GPA)", expanded=False):
         st.markdown('<div class="white-card-content"><div class="form-row"><div class="form-label">ระบบจำลองการตัดเกรด</div><a href="https://fna.csc.ku.ac.th/grade/" target="_blank" class="btn-action">เปิดระบบ</a></div></div>', unsafe_allow_html=True)
-    
     with st.expander("📄 ลิงก์แบบฟอร์มต่างๆ", expanded=False):
-        forms = [
-            ("ใบขอลงทะเบียนเรียน ", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf"),
-            ("ใบคำร้องทั่วไป ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf"),
-            ("ใบผ่อนผันค่าเทอม ", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Postpone-tuition-and-fee-payments.pdf"),
-            ("ใบลาพักการศึกษา ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/Request-for-Leave-of-Absence-Request.pdf"),
-            ("ใบลาออก ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/Resignation-Form.pdf"),
-            ("ใบลงทะเบียนเรียน (KU1) ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU1-Registration-Form.pdf"),
-            ("ใบเพิ่ม-ถอน (KU3) ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU3-Add-Drop-Form.pdf")
-        ]
-        st.markdown('<div class="white-card-content">', unsafe_allow_html=True)
+        forms = [("ใบขอลงทะเบียนเรียน ", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf"),
+                 ("ใบคำร้องทั่วไป ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf"),
+                 ("ใบเพิ่ม-ถอน (KU3) ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU3-Add-Drop-Form.pdf")]
         for name, link in forms:
             st.markdown(f'<div class="form-row"><div class="form-label">{name}</div><a href="{link}" target="_blank" class="btn-action">โหลด</a></div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
 
 # --- 7. หน้า Chat หลัก ---
 st.markdown(f"## 🦖 AI TEST")
-st.caption(f"👤 สวัสดีคุณ {st.session_state.global_user_nickname} | สถานะ: {st.session_state.current_chat_id}")
+current_title = st.session_state.current_chat_id if st.session_state.current_chat_id else "แชทใหม่"
+st.caption(f"👤 สวัสดีคุณ {st.session_state.global_user_nickname} | หัวข้อ: {current_title}")
 
 for message in st.session_state.messages:
     avatar = "🧑‍🎓" if message["role"] == "user" else "🦖"
@@ -154,11 +133,11 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 if prompt := st.chat_input("พิมพ์ถามพี่นนทรีได้เลย..."):
-    # เปลี่ยนชื่อหัวข้อแชทเมื่อเริ่มพิมพ์ครั้งแรก
-    if st.session_state.current_chat_id == "แชทใหม่" or not st.session_state.messages:
-        new_title = prompt[:20]
-        st.session_state.current_chat_id = new_title
+    # ถ้าเป็นแชทใหม่ ให้ตั้งชื่อตามข้อความแรก
+    if st.session_state.current_chat_id is None:
+        st.session_state.current_chat_id = prompt[:20]
 
+    # จำชื่อผู้ใช้
     name_match = re.search(r"(?:ผม|หนู|เรา|พี่|ชื่อ)\s*ชื่อว่า?\s*(\w+)", prompt)
     if name_match: st.session_state.global_user_nickname = name_match.group(1)
 
@@ -168,8 +147,8 @@ if prompt := st.chat_input("พิมพ์ถามพี่นนทรีไ�
     with st.chat_message("assistant", avatar="🦖"):
         room_info = get_room_info(prompt)
         if room_info:
-            st.markdown(room_info)
-            st.session_state.messages.append({"role": "assistant", "content": room_info})
+            full_response = room_info
+            st.markdown(full_response)
         else:
             placeholder = st.empty()
             placeholder.markdown("*(พี่กำลังหาคำตอบให้...)*")
@@ -187,9 +166,11 @@ if prompt := st.chat_input("พิมพ์ถามพี่นนทรีไ�
                     full_response += chunk.text
                     placeholder.markdown(full_response + "▌")
                 placeholder.markdown(full_response)
-                st.session_state.messages.append({"role": "assistant", "content": full_response})
-                # บันทึกลงประวัติทันทีที่มีการตอบกลับ
-                st.session_state.all_chats[st.session_state.current_chat_id] = st.session_state.messages
-                st.rerun()
             except Exception as e:
-                st.error(f"Error: {e}")
+                full_response = f"เกิดข้อผิดพลาด: {e}"
+                st.error(full_response)
+        
+        st.session_state.messages.append({"role": "assistant", "content": full_response})
+        # บันทึกลงประวัติ
+        st.session_state.all_chats[st.session_state.current_chat_id] = st.session_state.messages
+        st.rerun()
