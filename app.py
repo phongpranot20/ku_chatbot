@@ -24,7 +24,7 @@ def get_room_info(room_code):
         return f"ห้องนี้คือ **ตึก {building} ชั้น {floor} ห้อง {room}** ครับผม"
     return None
 
-# --- 3. CSS ปรับแต่ง UI (กล่องเขียวเดิม ขยายยาวเท่ากล่องขาวด้านล่าง) ---
+# --- 3. CSS ปรับแต่ง UI (แยกการคุมปุ่มแชทใหม่ และ ปุ่มประวัติ) ---
 st.markdown("""
 <style>
     .stApp { background-color: #FFFFFF; color: black; }
@@ -39,25 +39,42 @@ st.markdown("""
     .univ-name { color: white !important; font-size: 22px; font-weight: bold; line-height: 1.2; }
     .sidebar-title { color: #FFFFFF !important; font-size: 1.1rem; font-weight: bold; margin: 15px 0px 10px 0px; text-align: center; }
     
-    /* ปุ่ม Sidebar กล่องสีเขียวใสเดิม แต่ขยายความกว้างเต็มพื้นที่ 100% */
-    .stButton > button {
-        width: 200% !important;
+    /* --- ปรับแต่งปุ่ม "แชทใหม่" (คุมผ่าน Key เฉพาะ) --- */
+    div.stButton > button[key*="new_chat"] {
+        width: 100% !important;
+        border-radius: 12px !important;
+        background-color: rgba(255, 255, 255, 0.15) !important;
+        color: white !important;
+        border: 1px solid rgba(255, 255, 255, 0.4) !important;
+        padding: 12px 15px !important;
+        text-align: center !important;
+        margin-bottom: 15px !important;
+        font-weight: bold !important;
+        display: flex !important;
+        justify-content: center !important;
+    }
+
+    /* --- ปรับแต่งปุ่ม "รายการประวัติแชท" (คุมผ่าน Key ที่ขึ้นต้นด้วย hist_) --- */
+    div.stButton > button[key*="hist_"] {
+        width: 100% !important;
         border-radius: 12px !important;
         background-color: rgba(255, 255, 255, 0.1) !important;
         color: white !important;
-        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
         padding: 10px 15px !important;
         text-align: left !important;
-        margin-bottom: 10px !important;
+        margin-bottom: 8px !important;
         display: flex !important;
         justify-content: flex-start !important;
+        font-weight: normal !important;
     }
+    
     .stButton > button:hover {
-        background-color: rgba(255, 255, 255, 0.2) !important;
+        background-color: rgba(255, 255, 255, 0.25) !important;
         border-color: #FFD700 !important;
     }
 
-    /* กล่องข้อมูลสีขาว (Expander) */
+    /* กล่องข้อมูลสีขาว (Expander) ด้านล่าง */
     div[data-testid="stExpander"] { 
         background-color: #FFFFFF !important; 
         border-radius: 12px !important; 
@@ -91,7 +108,6 @@ if "current_chat_id" not in st.session_state:
     st.session_state.current_chat_id = "แชทเริ่มต้น"
 if "messages" not in st.session_state:
     st.session_state.messages = []
-# ระบบจดจำชื่อทุกคนข้าม Session
 if "global_user_nickname" not in st.session_state:
     st.session_state.global_user_nickname = "นิสิต"
 
@@ -108,6 +124,7 @@ with st.sidebar:
     
     st.markdown("<br>", unsafe_allow_html=True)
     
+    # ปุ่มแชทใหม่
     if st.button("➕ แชทใหม่", key="new_chat_btn"):
         new_id = f"แชท {len(st.session_state.all_chats) + 1}"
         st.session_state.all_chats[new_id] = []
@@ -115,6 +132,7 @@ with st.sidebar:
         st.rerun()
     
     st.markdown('<p style="color:white; font-size:14px; font-weight:bold; margin-bottom:5px;">💬 ประวัติการแชท</p>', unsafe_allow_html=True)
+    # รายการประวัติแชท
     for chat_id in list(st.session_state.all_chats.keys()):
         if st.button(f"📄 {chat_id[:18]}...", key=f"hist_{chat_id}"):
             switch_chat(chat_id)
@@ -150,7 +168,6 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 if prompt := st.chat_input("พิมพ์ถามพี่นนทรีได้เลย..."):
-    # ป้องกัน KeyError และอัปเดตชื่อหัวข้อแชทอัตโนมัติ
     if (st.session_state.current_chat_id.startswith("แชท") or st.session_state.current_chat_id == "แชทเริ่มต้น") and not st.session_state.messages:
         new_title = prompt[:20]
         st.session_state.all_chats[new_title] = []
@@ -158,7 +175,6 @@ if prompt := st.chat_input("พิมพ์ถามพี่นนทรีไ�
             del st.session_state.all_chats[st.session_state.current_chat_id]
         st.session_state.current_chat_id = new_title
 
-    # ตรวจจับชื่อผู้ใช้ (จำได้ทุกคนข้ามเซสชัน)
     name_match = re.search(r"(?:ผม|หนู|เรา|พี่|ชื่อ)\s*ชื่อว่า?\s*(\w+)", prompt)
     if name_match:
         st.session_state.global_user_nickname = name_match.group(1)
@@ -181,7 +197,6 @@ if prompt := st.chat_input("พิมพ์ถามพี่นนทรีไ�
                 
                 history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} for m in st.session_state.messages[-6:-1]]
                 chat_session = model.start_chat(history=history)
-                
                 full_context = f"คุณคือรุ่นพี่ มก.ศรช. ใจดี คุยกับน้องชื่อ {st.session_state.global_user_nickname} ข้อมูลมหาลัย:\n{knowledge_base}\n\nคำถาม: {prompt}"
                 
                 response = chat_session.send_message(full_context, stream=True)
@@ -194,8 +209,7 @@ if prompt := st.chat_input("พิมพ์ถามพี่นนทรีไ�
                 st.session_state.all_chats[st.session_state.current_chat_id] = st.session_state.messages
                 st.rerun()
             except Exception as e:
-                # จัดการ Error 429 Quota Exceeded แบบนุ่มนวล
                 if "429" in str(e):
-                    st.warning("⚠️ **ขออภัยครับ!**  (Quota เต็ม)")
+                    st.warning("⚠️ **ขออภัยครับ!** (Quota เต็ม)")
                 else:
                     st.error(f"เกิดข้อผิดพลาด: {e}")
