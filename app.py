@@ -3,59 +3,69 @@ import google.generativeai as genai
 import os
 
 # --- 1. ตั้งค่าหน้าจอ ---
-st.set_page_config(page_title="น้องนนทรี - KU Sriracha Bot", page_icon="🐯", layout="wide")
+st.set_page_config(page_title="AI KUSRC", page_icon="🐯", layout="wide")
 
-# --- 2. CSS จัดการหน้าตาและสีตัวหนังสือ (Force Black Text) ---
+# --- 2. CSS ปรับแต่ง Contrast และขนาดโลโก้ ---
 st.markdown("""
 <style>
     .stApp { background-color: #FFFFFF; color: black; }
     
     /* Sidebar Layout */
-    [data-testid="stSidebar"] { background-color: #00594C !important; }
+    [data-testid="stSidebar"] { 
+        background-color: #00594C !important; 
+    }
     
-    /* หัวข้อ Dashboard */
+    /* ปรับแต่งรูปโลโก้ให้เล็กลงและอยู่กึ่งกลาง */
+    .logo-container {
+        display: flex;
+        justify-content: center;
+        padding: 10px 0px;
+    }
+    .logo-img {
+        max-width: 180px; /* ปรับขนาดความกว้างของโลโก้ที่นี่ */
+        height: auto;
+    }
+    
+    /* หัวข้อ Dashboard - ปรับสีให้ขาวชัดเจน (High Contrast) */
     .sidebar-header {
-        color: white !important;
-        font-size: 20px;
+        color: #FFFFFF !important; 
+        font-size: 18px;
         font-weight: bold;
-        margin-top: 10px;
+        text-align: center;
         margin-bottom: 20px;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
     }
 
     /* กล่องสีขาวสำหรับรายการแบบฟอร์ม */
-    .white-card {
-        background-color: #FFFFFF;
-        border-radius: 12px;
-        padding: 15px;
-        margin-bottom: 15px;
-        border: 1px solid #ddd;
-    }
-
-    /* บังคับสีตัวหนังสือใน Sidebar ให้เป็นสีดำในส่วนที่ต้องการ */
-    [data-testid="stSidebar"] .stMarkdown p, 
-    [data-testid="stSidebar"] span, 
-    [data-testid="stSidebar"] label {
-        color: #000000 !important;
-        font-weight: 500;
-    }
-
-    /* ปรับแต่ง Expander */
     .st-emotion-cache-p5mtransition {
         background-color: #FFFFFF !important;
         border-radius: 12px !important;
     }
 
-    /* สไตล์ปุ่มดาวน์โหลด */
+    /* บังคับสีตัวหนังสือใน Widget Sidebar ให้เป็นสีดำเข้มเพื่อให้อ่านง่ายบนพื้นขาว */
+    [data-testid="stSidebar"] .stMarkdown p, 
+    [data-testid="stSidebar"] span, 
+    [data-testid="stSidebar"] label {
+        color: #000000 !important;
+        font-weight: 600 !important;
+    }
+
+    /* ข้อความแจ้งเตือนด้านล่าง Sidebar (สีขาวเพื่อให้เห็นบนพื้นเขียว) */
+    .stSidebar .stCaption p {
+        color: #E0E0E0 !important;
+    }
+
+    /* ปุ่มดาวน์โหลด */
     .stButton>button {
         background-color: #00594C !important;
-        color: white !important;
+        color: #FFFFFF !important;
         border-radius: 8px;
         width: 100%;
-        border: none;
+        border: 2px solid #FFFFFF;
         font-weight: bold;
     }
     
-    /* Chat UI */
+    /* Chat UI หน้าหลัก */
     h2 { color: #00594C !important; font-weight: bold; }
 </style>
 """, unsafe_allow_html=True)
@@ -70,39 +80,38 @@ genai.configure(api_key=api_key)
 
 @st.cache_resource
 def load_model():
-    available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-    selected = next((m for m in available_models if "1.5-flash" in m), available_models[0])
-    return genai.GenerativeModel(model_name=selected)
+    try:
+        available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+        selected = next((m for m in available_models if "1.5-flash" in m), available_models[0])
+        return genai.GenerativeModel(model_name=selected)
+    except: return None
 
 model = load_model()
 
-# --- 4. ส่วน Sidebar: Dashboard & Logo ---
+# --- 4. ส่วน Sidebar: Logo & Dashboard ---
 with st.sidebar:
-    # แสดงโลโก้จากไฟล์ในเครื่อง
+    # แสดงโลโก้พร้อมจัดขนาด
     if os.path.exists("logo_ku.png"):
-        st.image("logo_ku.png", use_container_width=True)
+        st.markdown(f'<div class="logo-container"><img src="data:image/png;base64,{st.image("logo_ku.png").data}" class="logo-img"></div>', unsafe_allow_html=True)
+        # หมายเหตุ: ถ้าใช้ st.image ปกติแล้วภาพยังใหญ่ ให้ใช้คำสั่งด้างล่างแทน
+        st.image("logo_ku.png", width=180) 
     else:
-        st.write("🚩 [ไม่พบไฟล์ logo_ku.png]")
+        st.warning("ไม่พบไฟล์ logo_ku.png")
 
-    st.markdown('<p class="sidebar-header">🎓 น้องนนทรี Student Dashboard</p>', unsafe_allow_html=True)
+    st.markdown('<p class="sidebar-header">🎓 AI KUSRC Student Dashboard</p>', unsafe_allow_html=True)
 
-    # รายการแบบฟอร์มด่วนในกล่องสีขาว
+    # รายการแบบฟอร์มด่วน
     with st.expander("📂 ลิงก์แบบฟอร์มด่วน (คลิก)", expanded=True):
-        st.markdown("---")
-        
-        # รายการที่ 1
         st.markdown("**📝 คำร้องขอลงทะเบียน (Registrar-2)**")
         st.link_button("📥 ดาวน์โหลด", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf")
         
         st.markdown("---")
         
-        # รายการที่ 2
         st.markdown("**📑 คำร้องทั่วไป (Registrar-1)**")
         st.link_button("📥 ดาวน์โหลด", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf")
         
         st.markdown("---")
         
-        # รายการที่ 3
         st.markdown("**💻 เพิ่ม-ถอน (KU3) ออนไลน์**")
         st.link_button("🌐 ไปที่เว็บไซต์", "https://reg2.src.ku.ac.th/download.html")
 
@@ -120,20 +129,21 @@ if os.path.exists("ku_data.txt"):
 else:
     knowledge_base = "ข้อมูล มก. ศรีราชา"
 
-st.markdown("## 🐯 น้องนนทรี: เพื่อนคู่คิด นิสิต มก.ศรช.")
+# เปลี่ยนชื่อหัวข้อเป็น AI KUSRC
+st.markdown("## 🐯 AI KUSRC")
 
 for message in st.session_state.messages:
     avatar = "🧑‍🎓" if message["role"] == "user" else "🐯"
     with st.chat_message(message["role"], avatar=avatar):
         st.markdown(message["content"])
 
-if prompt := st.chat_input("พิมพ์ถามพี่นนทรีได้เลย..."):
+if prompt := st.chat_input("พิมพ์คำถามที่นี่..."):
     st.chat_message("user", avatar="🧑‍🎓").markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     with st.chat_message("assistant", avatar="🐯"):
         placeholder = st.empty()
-        placeholder.markdown("*(พี่กำลังหาคำตอบให้...)*")
+        placeholder.markdown("*(พี่กำลังหาข้อมูลให้...)*")
         
         history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} 
                    for m in st.session_state.messages[-6:-1]]
