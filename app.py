@@ -127,13 +127,13 @@ with st.sidebar:
         st.markdown('<div class="white-card-content"><div class="form-row"><div class="form-label">ระบบจำลองการตัดเกรด</div><a href="https://fna.csc.ku.ac.th/grade/" target="_blank" class="btn-action">เปิดระบบ</a></div></div>', unsafe_allow_html=True)
     with st.expander("📄 ลิงก์แบบฟอร์มต่างๆ", expanded=False):
         forms = [
-            ("ขอลงทะเบียนเรียน (Reg-2)", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf"),
+            ("ขอลงทะเบียนเรียน ", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf"),
             ("คำร้องทั่วไป ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf"),
-            ("ผ่อนผันค่าเทอม (Reg-3)", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Postpone-tuition-and-fee-payments.pdf"),
-            ("ใบลาพักการศึกษา (Reg-10)", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/Request-for-Leave-of-Absence-Request.pdf"),
-            ("ใบลาออก (Reg-16)", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/Resignation-Form.pdf"),
-            ("ลงทะเบียนเรียน (KU1)", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU1-Registration-Form.pdf"),
-            ("เพิ่ม-ถอน (KU3)", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU3-Add-Drop-Form.pdf")
+            ("ผ่อนผันค่าเทอม ", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Postpone-tuition-and-fee-payments.pdf"),
+            ("ใบลาพักการศึกษา ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/Request-for-Leave-of-Absence-Request.pdf"),
+            ("ใบลาออก ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/Resignation-Form.pdf"),
+            ("ลงทะเบียนเรียน ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU1-Registration-Form.pdf"),
+            ("เพิ่ม-ถอน ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU3-Add-Drop-Form.pdf")
         ]
         st.markdown('<div class="white-card-content">', unsafe_allow_html=True)
         for name, link in forms:
