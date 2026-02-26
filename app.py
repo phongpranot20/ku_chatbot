@@ -8,8 +8,10 @@ st.set_page_config(page_title="AI KUSRC", page_icon="🦖", layout="wide")
 
 # --- 2. ฟังก์ชันจัดการรูปภาพโลโก้ ---
 def get_image_base64(path):
-    with open(path, "rb") as img_file:
-        return base64.b64encode(img_file.read()).decode()
+    if os.path.exists(path):
+        with open(path, "rb") as img_file:
+            return base64.b64encode(img_file.read()).decode()
+    return ""
 
 # --- 3. CSS ปรับแต่ง UI ---
 st.markdown("""
@@ -97,7 +99,7 @@ st.markdown("""
         line-height: 1.3;
     }
 
-    /* ปุ่มดาวน์โหลดสีเขียวเข้ม */
+    /* ปุ่มดาวน์โหลดและปุ่มลิงก์ */
     .btn-download {
         background-color: #006861;
         color: white !important;
@@ -147,7 +149,18 @@ with st.sidebar:
     
     st.markdown('<p class="sidebar-title">AI KUSRC Dashboard</p>', unsafe_allow_html=True)
 
-    # 2. รายการแบบฟอร์มด่วน (เปลี่ยน expanded=True เป็น False เพื่อให้ปิดตอนเริ่มต้น)
+    # 2. เมนูคำนวณเกรด (เพิ่มเข้ามาใหม่)
+    with st.expander("🧮 คำนวณเกรด (GPA)", expanded=False):
+        st.markdown(f"""
+            <div class="white-card-content">
+                <div class="form-row">
+                    <div class="form-label">ระบบจำลองการตัดเกรด</div>
+                    <a href="https://fna.csc.ku.ac.th/grade/" target="_blank" class="btn-download">เปิดระบบ</a>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    # 3. รายการแบบฟอร์มด่วน
     with st.expander("📄 ลิงก์แบบฟอร์มต่างๆ", expanded=False):
         st.markdown(f"""
             <div class="white-card-content">
