@@ -41,7 +41,7 @@ st.markdown("""
     
     /* --- ปรับแต่งปุ่มให้ "ใสถาวร" และ "ยาวเท่ากล่องขาว" --- */
     div.stButton > button {
-        width: 500% !important;
+        width: 250% !important;
         border-radius: 12px !important;
         background-color: transparent !important; /* บังคับให้ใสถาวร */
         color: white !important;
