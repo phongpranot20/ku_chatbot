@@ -3,18 +3,18 @@ import google.generativeai as genai
 import os
 import base64
 
-# --- 1. ตั้งค่าหน้าจอ ---
-st.set_page_config(page_title="AI ASSISTANT", page_icon="🦖", layout="wide")
+# --- 1. ตั้งค่าหน้าจอ (Page Config) ---
+st.set_page_config(page_title="AI KUSRC", page_icon="🐯", layout="wide")
 
 # --- 2. ฟังก์ชันจัดการรูปภาพโลโก้ ---
 def get_image_base64(path):
     with open(path, "rb") as img_file:
         return base64.b64encode(img_file.read()).decode()
 
-# --- 3. CSS ปรับแต่ง (ขยับ Header ชิดบน + แก้สี Expander) ---
+# --- 3. CSS ปรับแต่ง UI (ขยับชิดบน + แก้สี Expander) ---
 st.markdown("""
 <style>
-    /* พื้นหลังหลัก */
+    /* พื้นหลังหน้าหลัก */
     .stApp { background-color: #FFFFFF; color: black; }
     
     /* Sidebar: สีเขียวหัวเป็ด */
@@ -22,23 +22,23 @@ st.markdown("""
         background-color: #006861 !important; 
     }
 
-    /* ขยับส่วน Sidebar Content ทั้งหมดให้ชิดขอบบน */
+    /* ขยับส่วน Sidebar Content ให้ชิดขอบบนสุด */
     [data-testid="stSidebarContent"] {
         padding-top: 0rem !important;
     }
 
-    /* จัดการ Header: โลโก้บน ชื่อมหาลัยล่าง (ขยับขึ้นชิดบน) */
+    /* จัดการ Header: โลโก้อยู่บน ชื่อมหาลัยอยู่ล่าง (ขยับขึ้นชิดบน) */
     .custom-header {
         display: flex;
         flex-direction: column;
         align-items: center;
         text-align: center;
-        padding: 10px 5px 20px 5px; /* ลด Padding บนให้เหลือน้อยที่สุด */
-        margin-top: -30px; /* ขยับขึ้นไปชิดขอบ */
+        padding: 5px 5px 15px 5px; 
+        margin-top: -35px; /* ขยับขึ้นชิดขอบ */
         border-bottom: 2px solid rgba(255,255,255,0.2);
     }
     .header-logo-img {
-        width: 100px;
+        width: 90px;
         height: auto;
         margin-bottom: 10px;
     }
@@ -47,7 +47,7 @@ st.markdown("""
         font-family: 'Tahoma', sans-serif;
     }
     .univ-name { 
-        font-size: 24px;
+        font-size: 22px;
         font-weight: bold;
         line-height: 1.2;
     }
@@ -61,14 +61,15 @@ st.markdown("""
         text-align: center;
     }
 
-    /* --- แก้ไข Expander ให้เป็นสีขาวตลอดเวลา (ไม่กลืนกับพื้นหลัง) --- */
-    .st-emotion-cache-p5mtransition, div[data-testid="stExpander"] {
+    /* --- แก้ไข Expander ให้เป็นสีขาวตลอดเวลา (ตัวหนังสือดำชัดเจน) --- */
+    div[data-testid="stExpander"] {
         background-color: #FFFFFF !important;
         border-radius: 12px !important;
         border: none !important;
+        margin-bottom: 10px;
     }
     
-    /* สีฟอนต์หัวข้อ Expander (ลิงก์แบบฟอร์มต่างๆ) */
+    /* บังคับสีฟอนต์หัวข้อ Expander ให้เป็นสีดำ */
     div[data-testid="stExpander"] p {
         color: #000000 !important;
         font-weight: bold !important;
@@ -77,34 +78,42 @@ st.markdown("""
     /* กล่องขาวรายการแบบฟอร์มด้านใน */
     .white-card-content {
         background-color: #FFFFFF;
-        padding: 5px;
+        border-radius: 0px 0px 12px 12px;
     }
     
     .form-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 12px 10px;
+        padding: 10px 8px;
         border-bottom: 1px solid #f0f0f0;
     }
     .form-row:last-child { border-bottom: none; }
     
     .form-label {
         color: #333333 !important;
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 600;
         flex: 1;
+        line-height: 1.3;
     }
 
     /* ปุ่มดาวน์โหลดสีเขียวเข้ม */
     .btn-download {
         background-color: #006861;
         color: white !important;
-        padding: 5px 12px;
+        padding: 4px 10px;
         border-radius: 6px;
         text-decoration: none;
-        font-size: 11px;
+        font-size: 10px;
         font-weight: bold;
+        white-space: nowrap;
+        margin-left: 5px;
+    }
+
+    /* บังคับสีตัวอักษร Caption ด้านล่างให้เป็นสีขาว */
+    .stSidebar .stCaption p {
+        color: #FFFFFF !important;
     }
 
     /* หน้า Chat */
@@ -130,7 +139,7 @@ model = load_model()
 
 # --- 5. ส่วน Sidebar (Dashboard) ---
 with st.sidebar:
-    # 1. Custom Header (ขยับชิดบนสุด)
+    # 1. Header (โลโก้บน-ชื่อล่าง)
     if os.path.exists("logo_ku.png"):
         img_data = get_image_base64("logo_ku.png")
         st.markdown(f"""
@@ -142,48 +151,61 @@ with st.sidebar:
             </div>
         """, unsafe_allow_html=True)
     
-    
+    st.markdown('<p class="sidebar-title">🎓 AI KUSRC Dashboard</p>', unsafe_allow_html=True)
 
-    # 2. รายการแบบฟอร์มด่วน (แก้ปัญหาสีฟอนต์กลืนพื้นหลัง)
-    with st.expander("📄 ลิงก์แบบฟอร์มต่างๆ ", expanded=True):
+    # 2. รายการแบบฟอร์มด่วน (จัดเต็มตามข้อมูลใหม่)
+    with st.expander("📄 รายการแบบฟอร์ม (คลิก)", expanded=True):
         st.markdown(f"""
             <div class="white-card-content">
                 <div class="form-row">
-                    <div class="form-label">ใบคำร้องขอลงทะเบียนเรียน</div>
+                    <div class="form-label">📝 ขอลงทะเบียนเรียน<br>(Registrar-2)</div>
                     <a href="https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
                 <div class="form-row">
-                    <div class="form-label">ใบคำร้องทั่วไป </div>
+                    <div class="form-label">📑 คำร้องทั่วไป<br>(Registrar-1)</div>
                     <a href="https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
                 <div class="form-row">
-                    <div class="form-label">ใบลาพักการศึกษา </div>
+                    <div class="form-label">💰 ผ่อนผันค่าเทอม<br>(Registrar-3)</div>
+                    <a href="https://registrar.ku.ac.th/wp-content/uploads/2024/11/Postpone-tuition-and-fee-payments.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
+                </div>
+                <div class="form-row">
+                    <div class="form-label">📂 ใบลาพักการศึกษา<br>(Registrar-10)</div>
                     <a href="https://registrar.ku.ac.th/wp-content/uploads/2023/11/Request-for-Leave-of-Absence-Request.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
                 <div class="form-row">
-                    <div class="form-label">ใบ Add-Drop </div>
-                    <a href="https://reg2.src.ku.ac.th/download.html" target="_blank" class="btn-download">ดาวน์โหลด</a>
+                    <div class="form-label">🚪 ใบลาออก<br>(Registrar-16)</div>
+                    <a href="https://registrar.ku.ac.th/wp-content/uploads/2023/11/Resignation-Form.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
+                </div>
+                <div class="form-row">
+                    <div class="form-label">📊 ลงทะเบียนเรียน (KU1)</div>
+                    <a href="https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU1-Registration-Form.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
+                </div>
+                <div class="form-row">
+                    <div class="form-label">🔄 เพิ่ม-ถอน (KU3)</div>
+                    <a href="https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU3-Add-Drop-Form.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
             </div>
         """, unsafe_allow_html=True)
 
-    # ลบส่วน Caption พัฒนาโดยนิสิตออกเรียบร้อย
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.caption("💡 ถามพี่นนทรีได้เลยนะ!")
 
 # --- 6. ส่วนหน้า Chat หลัก ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# โหลด Knowledge Base
+# โหลด Knowledge Base สำหรับ AI
 if os.path.exists("ku_data.txt"):
     with open("ku_data.txt", "r", encoding="utf-8") as f:
         knowledge_base = f.read()
 else:
     knowledge_base = "ข้อมูล มก. ศรีราชา"
 
-st.markdown("## 🦖 AI ASSISTANT")
+st.markdown("## 🐯 AI KUSRC")
 
 for message in st.session_state.messages:
-    avatar = "🧑‍🎓" if message["role"] == "user" else "🦖"
+    avatar = "🧑‍🎓" if message["role"] == "user" else "🐯"
     with st.chat_message(message["role"], avatar=avatar):
         st.markdown(message["content"])
 
@@ -191,7 +213,7 @@ if prompt := st.chat_input("พิมพ์ถามพี่นนทรีไ�
     st.chat_message("user", avatar="🧑‍🎓").markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
-    with st.chat_message("assistant", avatar="🦖"):
+    with st.chat_message("assistant", avatar="🐯"):
         placeholder = st.empty()
         placeholder.markdown("*(พี่กำลังหาคำตอบให้...)*")
         
@@ -200,7 +222,7 @@ if prompt := st.chat_input("พิมพ์ถามพี่นนทรีไ�
         
         try:
             chat_session = model.start_chat(history=history)
-            full_context = f"คุณคือรุ่นพี่ มก.ศรช. ตอบน้องด้วยความเป็นกันเอง\nข้อมูล:\n{knowledge_base}\n\nคำถาม: {prompt}"
+            full_context = f"คุณคือรุ่นพี่ มก.ศรช. ตอบน้องเป็นกันเอง\nข้อมูล:\n{knowledge_base}\n\nคำถาม: {prompt}"
             
             response = chat_session.send_message(full_context, stream=True)
             full_response = ""
