@@ -142,7 +142,7 @@ with st.sidebar:
             </div>
         """, unsafe_allow_html=True)
     
-    st.markdown('<p class="sidebar-title">🎓 AI KUSRC Dashboard</p>', unsafe_allow_html=True)
+    
 
     # 2. รายการแบบฟอร์มด่วน (แก้ปัญหาสีฟอนต์กลืนพื้นหลัง)
     with st.expander("📄 ลิงก์แบบฟอร์มด่วน (คลิก)", expanded=True):
