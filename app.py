@@ -68,7 +68,7 @@ st.markdown("""
         border: none !important;
     }
     
-    /* สีฟอนต์หัวข้อ Expander (ลิงก์แบบฟอร์มด่วน) */
+    /* สีฟอนต์หัวข้อ Expander (ลิงก์แบบฟอร์มต่างๆ) */
     div[data-testid="stExpander"] p {
         color: #000000 !important;
         font-weight: bold !important;
@@ -145,23 +145,23 @@ with st.sidebar:
     
 
     # 2. รายการแบบฟอร์มด่วน (แก้ปัญหาสีฟอนต์กลืนพื้นหลัง)
-    with st.expander("📄 ลิงก์แบบฟอร์มด่วน ", expanded=True):
+    with st.expander("📄 ลิงก์แบบฟอร์มต่างๆ ", expanded=True):
         st.markdown(f"""
             <div class="white-card-content">
                 <div class="form-row">
-                    <div class="form-label">🢧 คำร้องขอลงทะเบียนเรียน<br>(Registrar-2)</div>
+                    <div class="form-label">🢧 ใบคำร้องขอลงทะเบียนเรียน</div>
                     <a href="https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
                 <div class="form-row">
-                    <div class="form-label">🢧 คำร้องทั่วไป (Registrar-1)</div>
+                    <div class="form-label">🢧 ใบคำร้องทั่วไป </div>
                     <a href="https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
                 <div class="form-row">
-                    <div class="form-label">🢧 ใบลาพักการศึกษา (Registrar-10)</div>
+                    <div class="form-label">🢧 ใบลาพักการศึกษา </div>
                     <a href="https://registrar.ku.ac.th/wp-content/uploads/2023/11/Request-for-Leave-of-Absence-Request.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
                 <div class="form-row">
-                    <div class="form-label">🢧 Add-Drop (KU3) ออนไลน์</div>
+                    <div class="form-label">🢧 ใบ Add-Drop </div>
                     <a href="https://reg2.src.ku.ac.th/download.html" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
             </div>
