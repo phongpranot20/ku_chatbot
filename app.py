@@ -2,136 +2,124 @@ import streamlit as st
 import google.generativeai as genai
 import os
 
-# --- 1. ตั้งค่าหน้าจอ (Page Config) ---
+# --- 1. ตั้งค่าหน้าจอ ---
 st.set_page_config(page_title="น้องนนทรี - KU Sriracha Bot", page_icon="🐯", layout="wide")
 
-# --- 2. CSS ปรับแต่ง UI ให้เหมือนเรฟเฟอเรนซ์ ---
+# --- 2. CSS จัดการหน้าตาและสีตัวหนังสือ (Force Black Text) ---
 st.markdown("""
 <style>
-    /* พื้นหลังหน้าจอหลัก */
     .stApp { background-color: #FFFFFF; color: black; }
     
-    /* Sidebar สไตล์เขียว มก. */
-    [data-testid="stSidebar"] { 
-        background-color: #00594C !important; 
-        border-right: 1px solid #e0e0e0;
-    }
+    /* Sidebar Layout */
+    [data-testid="stSidebar"] { background-color: #00594C !important; }
     
-    /* บังคับสีข้อความหัวข้อใน Sidebar */
-    [data-testid="stSidebar"] h3, .sidebar-title { 
-        color: #FFFFFF !important; 
-        font-family: 'Tahoma', sans-serif;
-        margin-top: -10px;
+    /* หัวข้อ Dashboard */
+    .sidebar-header {
+        color: white !important;
+        font-size: 20px;
+        font-weight: bold;
+        margin-top: 10px;
         margin-bottom: 20px;
     }
 
-    /* กล่องแบบฟอร์มสีขาว (White Card) */
-    .form-card {
+    /* กล่องสีขาวสำหรับรายการแบบฟอร์ม */
+    .white-card {
         background-color: #FFFFFF;
         border-radius: 12px;
         padding: 15px;
-        margin-bottom: 10px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
     }
-    
-    .form-info { display: flex; align-items: center; gap: 10px; }
-    .form-name { color: #333333 !important; font-weight: bold; font-size: 14px; }
-    
-    /* ปรับแต่ง Expander ให้เป็นกล่องขาว */
+
+    /* บังคับสีตัวหนังสือใน Sidebar ให้เป็นสีดำในส่วนที่ต้องการ */
+    [data-testid="stSidebar"] .stMarkdown p, 
+    [data-testid="stSidebar"] span, 
+    [data-testid="stSidebar"] label {
+        color: #000000 !important;
+        font-weight: 500;
+    }
+
+    /* ปรับแต่ง Expander */
     .st-emotion-cache-p5mtransition {
         background-color: #FFFFFF !important;
         border-radius: 12px !important;
     }
-    
-    /* สีข้อความใน Expander */
-    .st-emotion-cache-p5mtransition p, .st-emotion-cache-p5mtransition span {
-        color: #000000 !important;
-    }
 
-    /* หัวข้อ Chat หน้าหลัก */
-    h1 { color: #00594C !important; font-weight: bold; }
+    /* สไตล์ปุ่มดาวน์โหลด */
+    .stButton>button {
+        background-color: #00594C !important;
+        color: white !important;
+        border-radius: 8px;
+        width: 100%;
+        border: none;
+        font-weight: bold;
+    }
+    
+    /* Chat UI */
+    h2 { color: #00594C !important; font-weight: bold; }
 </style>
 """, unsafe_allow_html=True)
 
-# --- 3. ส่วนจัดการ API และ Model ---
+# --- 3. ส่วนจัดการ API ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 if not api_key:
-    st.error("❌ ไม่พบ GEMINI_API_KEY ใน Streamlit Secrets")
+    st.error("❌ ไม่พบ GEMINI_API_KEY ใน Settings > Secrets")
     st.stop()
 
 genai.configure(api_key=api_key)
 
 @st.cache_resource
-def load_smart_model():
-    try:
-        available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-        selected_model = next((m for m in available_models if "1.5-flash" in m), available_models[0])
-        
-        instruction = (
-            "คุณคือ 'น้องนนทรี' AI รุ่นพี่ มก. ศรีราชา (KU SRC) "
-            "ตอบคำถามรุ่นน้องด้วยความสุภาพ เป็นกันเอง "
-            "เน้นดึงข้อมูลจาก 'ข้อมูลอ้างอิง' มาตอบเป็นหลัก"
-        )
-        return genai.GenerativeModel(model_name=selected_model, system_instruction=instruction)
-    except Exception as e:
-        st.error(f"Error: {e}")
-        return None
+def load_model():
+    available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+    selected = next((m for m in available_models if "1.5-flash" in m), available_models[0])
+    return genai.GenerativeModel(model_name=selected)
 
-model = load_smart_model()
+model = load_model()
 
-# --- 4. ส่วน Sidebar: Dashboard พร้อมตรา มก. ---
+# --- 4. ส่วน Sidebar: Dashboard & Logo ---
 with st.sidebar:
-    # แสดงตรา มก. ศรีราชา (ใช้ URL รูปภาพหรือไฟล์ในโปรเจกต์)
-    st.image("https://www.src.ku.ac.th/th/images/logo/KU_Sriracha_Logo.png", use_container_width=True)
-    
-    st.markdown("<h3 class='sidebar-title'>🎓 น้องนนทรี Student Dashboard</h3>", unsafe_allow_html=True)
-    
-    # ส่วนของกล่องขาวใส่ลิงก์แบบฟอร์ม
-    st.markdown("### 📄 ลิงก์แบบฟอร์มด่วน (คลิก)")
-    
-    with st.expander("เปิดรายการแบบฟอร์ม", expanded=True):
-        # แบบที่ 1: Registrar-2
-        st.markdown("""
-        <div style="background-color:#f9f9f9; padding:10px; border-radius:8px; margin-bottom:8px; border:1px solid #ddd;">
-            <p style="color:black; font-weight:bold; margin-bottom:5px;">📝 คำร้องขอลงทะเบียน (Registrar-2)</p>
-        </div>
-        """, unsafe_allow_html=True)
-        st.link_button("📥 ดาวน์โหลด PDF", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf", use_container_width=True)
-        
-        # แบบที่ 2: Registrar-1
-        st.markdown("""
-        <div style="background-color:#f9f9f9; padding:10px; border-radius:8px; margin-bottom:8px; border:1px solid #ddd; margin-top:10px;">
-            <p style="color:black; font-weight:bold; margin-bottom:5px;">📑 คำร้องทั่วไป (Registrar-1)</p>
-        </div>
-        """, unsafe_allow_html=True)
-        st.link_button("📥 ดาวน์โหลด PDF", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf", use_container_width=True)
+    # แสดงโลโก้จากไฟล์ในเครื่อง
+    if os.path.exists("logo_ku.png"):
+        st.image("logo_ku.png", use_container_width=True)
+    else:
+        st.write("🚩 [ไม่พบไฟล์ logo_ku.png]")
 
-        # แบบที่ 3: KU3 Online
-        st.markdown("""
-        <div style="background-color:#f9f9f9; padding:10px; border-radius:8px; margin-bottom:8px; border:1px solid #ddd; margin-top:10px;">
-            <p style="color:black; font-weight:bold; margin-bottom:5px;">💻 เพิ่ม-ถอน (KU3) ออนไลน์</p>
-        </div>
-        """, unsafe_allow_html=True)
-        st.link_button("🌐 ไปที่เว็บไซต์", "https://reg2.src.ku.ac.th/download.html", use_container_width=True)
+    st.markdown('<p class="sidebar-header">🎓 น้องนนทรี Student Dashboard</p>', unsafe_allow_html=True)
+
+    # รายการแบบฟอร์มด่วนในกล่องสีขาว
+    with st.expander("📂 ลิงก์แบบฟอร์มด่วน (คลิก)", expanded=True):
+        st.markdown("---")
+        
+        # รายการที่ 1
+        st.markdown("**📝 คำร้องขอลงทะเบียน (Registrar-2)**")
+        st.link_button("📥 ดาวน์โหลด", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf")
+        
+        st.markdown("---")
+        
+        # รายการที่ 2
+        st.markdown("**📑 คำร้องทั่วไป (Registrar-1)**")
+        st.link_button("📥 ดาวน์โหลด", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf")
+        
+        st.markdown("---")
+        
+        # รายการที่ 3
+        st.markdown("**💻 เพิ่ม-ถอน (KU3) ออนไลน์**")
+        st.link_button("🌐 ไปที่เว็บไซต์", "https://reg2.src.ku.ac.th/download.html")
 
     st.markdown("---")
-    st.caption("💡 ถามพี่นนทรีได้เลย เช่น 'ตึก 17 อยู่ไหน' หรือ 'ขอใบดรอปเรียน'")
+    st.caption("💚 พัฒนาโดยนิสิตเพื่อนิสิต มก.ศรช.")
 
-# --- 5. การจัดการ Chat ---
+# --- 5. การจัดการหน้า Chat ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# โหลดฐานข้อมูลจากไฟล์
+# โหลด Knowledge Base
 if os.path.exists("ku_data.txt"):
     with open("ku_data.txt", "r", encoding="utf-8") as f:
         knowledge_base = f.read()
 else:
     knowledge_base = "ข้อมูล มก. ศรีราชา"
 
-# แสดง UI หน้าหลัก
 st.markdown("## 🐯 น้องนนทรี: เพื่อนคู่คิด นิสิต มก.ศรช.")
 
 for message in st.session_state.messages:
@@ -139,20 +127,20 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"], avatar=avatar):
         st.markdown(message["content"])
 
-if prompt := st.chat_input("พิมพ์คำถามที่นี่..."):
+if prompt := st.chat_input("พิมพ์ถามพี่นนทรีได้เลย..."):
     st.chat_message("user", avatar="🧑‍🎓").markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     with st.chat_message("assistant", avatar="🐯"):
         placeholder = st.empty()
-        placeholder.markdown("*(พี่กำลังพิมพ์...)*")
+        placeholder.markdown("*(พี่กำลังหาคำตอบให้...)*")
         
         history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} 
                    for m in st.session_state.messages[-6:-1]]
         
         try:
             chat_session = model.start_chat(history=history)
-            full_context = f"ข้อมูลอ้างอิง:\n{knowledge_base}\n\nคำถาม: {prompt}"
+            full_context = f"คุณคือรุ่นพี่ มก.ศรช. ตอบน้องด้วยความเป็นกันเอง\nข้อมูล:\n{knowledge_base}\n\nคำถาม: {prompt}"
             
             response = chat_session.send_message(full_context, stream=True)
             full_response = ""
@@ -164,4 +152,4 @@ if prompt := st.chat_input("พิมพ์คำถามที่นี่..."
             st.session_state.messages.append({"role": "assistant", "content": full_response})
             st.rerun()
         except Exception as e:
-            st.error(f"เกิดข้อผิดพลาด: {e}")
+            st.error(f"Error: {e}")
