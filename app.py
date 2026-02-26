@@ -35,7 +35,7 @@ def get_room_info(room_code):
     
     return None
 
-# --- 4. CSS ปรับแต่ง UI ให้สวยงามและ Scannable ---
+# --- 4. CSS ปรับแต่ง UI ให้สวยงาม ---
 st.markdown("""
 <style>
     /* พื้นหลังหน้าหลัก */
@@ -121,7 +121,7 @@ st.markdown("""
         line-height: 1.3;
     }
 
-    /* ปุ่มดาวน์โหลดและปุ่มลิงก์สีเขียวเข้ม */
+    /* ปุ่ม Action สีเขียวเข้ม */
     .btn-download {
         background-color: #006861;
         color: white !important;
@@ -141,10 +141,8 @@ st.markdown("""
 
 # --- 5. ส่วนจัดการ API ---
 api_key = st.secrets.get("GEMINI_API_KEY")
-if not api_key:
-    st.error("❌ ไม่พบ API KEY")
-    st.stop()
-genai.configure(api_key=api_key)
+if api_key:
+    genai.configure(api_key=api_key)
 
 @st.cache_resource
 def load_model():
@@ -171,22 +169,29 @@ with st.sidebar:
     
     st.markdown('<p class="sidebar-title">AI KUSRC Dashboard</p>', unsafe_allow_html=True)
 
-    # 2. ระบบค้นหาและคำนวณ (ตารางสอบ & GPA)
-    with st.expander("🛠️ ระบบค้นหาและคำนวณ", expanded=False):
+    # 2. ค้นหาตารางสอบ (แยกแถบ)
+    with st.expander("📅 ค้นหาตารางสอบ", expanded=False):
         st.markdown(f"""
             <div class="white-card-content">
                 <div class="form-row">
-                    <div class="form-label">📅 ค้นหาตารางสอบ</div>
+                    <div class="form-label">ตรวจสอบวัน-เวลาสอบ</div>
                     <a href="https://reg2.src.ku.ac.th/table_test/" target="_blank" class="btn-download">ค้นหา</a>
                 </div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    # 3. คำนวณเกรด (GPA) (แยกแถบ)
+    with st.expander("🧮 คำนวณเกรด (GPA)", expanded=False):
+        st.markdown(f"""
+            <div class="white-card-content">
                 <div class="form-row">
-                    <div class="form-label">🧮 คำนวณเกรด (GPA)</div>
+                    <div class="form-label">ระบบจำลองการตัดเกรด</div>
                     <a href="https://fna.csc.ku.ac.th/grade/" target="_blank" class="btn-download">เปิดระบบ</a>
                 </div>
             </div>
         """, unsafe_allow_html=True)
 
-    # 3. รายการแบบฟอร์มด่วน (ครบ 7 รายการ)
+    # 4. รายการแบบฟอร์มด่วน (ครบ 7 รายการ)
     with st.expander("📄 ลิงก์แบบฟอร์มต่างๆ", expanded=False):
         forms = [
             ("ขอลงทะเบียนเรียน (Registrar-2)", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf"),
@@ -214,11 +219,10 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 
 # โหลดฐานข้อมูล ku_data.txt
+knowledge_base = ""
 if os.path.exists("ku_data.txt"):
     with open("ku_data.txt", "r", encoding="utf-8") as f:
         knowledge_base = f.read()
-else:
-    knowledge_base = "ข้อมูล มก. ศรีราชา"
 
 st.markdown("## 🦖 AI TEST")
 
@@ -229,37 +233,31 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 # รับข้อความจากผู้ใช้
-if prompt := st.chat_input("พิมพ์ถามพี่นนทรีได้เลย (เช่น 17203 หรือ วิธีล็อกอิน MFA)..."):
+if prompt := st.chat_input("พิมพ์ถามพี่นนทรีได้เลย..."):
     st.chat_message("user", avatar="🧑‍🎓").markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     with st.chat_message("assistant", avatar="🦖"):
-        # 1. เช็คว่าเป็นเลขห้องเรียนหรือไม่ (ตอบแบบธรรมชาติ)
+        # 1. เช็คว่าเป็นเลขห้องเรียนหรือไม่
         room_info = get_room_info(prompt)
         
         if room_info:
             st.markdown(room_info)
             st.session_state.messages.append({"role": "assistant", "content": room_info})
         else:
-            # 2. ตอบคำถามผ่าน AI Model (รองรับ MFA และข้อมูลใน ku_data)
+            # 2. ตอบผ่าน AI Model
             placeholder = st.empty()
             placeholder.markdown("*(พี่กำลังหาคำตอบให้...)*")
-            
-            # เก็บประวัติ 5 ข้อความล่าสุด
-            history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} 
-                       for m in st.session_state.messages[-6:-1]]
-            
             try:
+                history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} 
+                           for m in st.session_state.messages[-6:-1]]
                 chat_session = model.start_chat(history=history)
-                # สั่ง System Prompt ให้ AI ตอบแบบเป็นกันเอง
                 full_context = f"คุณคือรุ่นพี่ มก.ศรช. ตอบน้องเป็นกันเอง ข้อมูลมหาลัย:\n{knowledge_base}\n\nคำถาม: {prompt}"
-                
                 response = chat_session.send_message(full_context, stream=True)
                 full_response = ""
                 for chunk in response:
                     full_response += chunk.text
                     placeholder.markdown(full_response + "▌")
-                
                 placeholder.markdown(full_response)
                 st.session_state.messages.append({"role": "assistant", "content": full_response})
                 st.rerun()
