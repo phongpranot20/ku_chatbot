@@ -6,98 +6,99 @@ import base64
 # --- 1. ตั้งค่าหน้าจอ ---
 st.set_page_config(page_title="AI KUSRC", page_icon="🐯", layout="wide")
 
-# --- 2. ฟังก์ชันจัดการรูปภาพ ---
+# --- 2. ฟังก์ชันจัดการรูปภาพโลโก้ ---
 def get_image_base64(path):
     with open(path, "rb") as img_file:
         return base64.b64encode(img_file.read()).decode()
 
-# --- 3. CSS ปรับแต่งสีและเลย์เอาต์ (High Contrast & Custom UI) ---
+# --- 3. CSS ปรับแต่ง UI (เน้น Header และ Contrast) ---
 st.markdown("""
 <style>
     /* พื้นหลังหน้าหลัก */
     .stApp { background-color: #FFFFFF; color: black; }
     
-    /* Sidebar: สีเขียวหัวเป็ดตามรูปเป้าหมาย */
+    /* Sidebar: สีเขียวหัวเป็ด */
     [data-testid="stSidebar"] { 
         background-color: #006861 !important; 
     }
 
-    /* จัดการ Header Logo (คุมขนาดไม่ให้ใหญ่เกินไป) */
-    .header-container {
-        text-align: left;
-        padding: 5px 0px;
-        margin-bottom: 0px;
+    /* จัดการ Header: โลโก้ + ข้อความมหาลัย */
+    .custom-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 5px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
     }
-    .header-img {
-        width: 100%;
-        max-width: 250px;
+    .header-logo-img {
+        width: 60px; /* ปรับขนาดโลโก้พระพิรุณ */
         height: auto;
     }
+    .header-text {
+        color: white !important;
+        font-family: 'Tahoma', sans-serif;
+        line-height: 1.2;
+    }
+    .univ-name { font-size: 14px; font-weight: bold; }
+    .campus-name { font-size: 12px; }
 
-    /* หัวข้อ Dashboard สีขาว */
+    /* หัวข้อ Dashboard */
     .sidebar-title {
         color: #FFFFFF !important;
         font-size: 1.1rem;
         font-weight: bold;
-        margin: 15px 0px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
+        margin-bottom: 15px;
     }
 
-    /* --- กล่องขาวรายการแบบฟอร์ม (White Card Style) --- */
-    .white-card {
+    /* กล่องขาวรายการแบบฟอร์ม */
+    .white-card-container {
         background-color: #FFFFFF;
-        border-radius: 10px;
-        padding: 8px;
-        margin-top: 5px;
+        border-radius: 12px;
+        padding: 5px;
     }
     
     .form-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 10px;
-        border-bottom: 1px solid #eeeeee;
+        padding: 12px 10px;
+        border-bottom: 1px solid #f0f0f0;
     }
     .form-row:last-child { border-bottom: none; }
     
     .form-label {
-        color: #333333 !important; /* ตัวหนังสือในกล่องขาวต้องสีเข้ม */
+        color: #333333 !important; /* ข้อความในกล่องขาวต้องสีเข้ม */
         font-size: 13px;
-        font-weight: bold;
-        line-height: 1.3;
+        font-weight: 600;
         flex: 1;
     }
 
-    /* ปุ่มดาวน์โหลดสีเขียวในกล่องขาว */
-    .btn-dl {
-        background-color: #00594C;
+    /* ปุ่มดาวน์โหลด */
+    .btn-download {
+        background-color: #006861;
         color: white !important;
         padding: 5px 12px;
         border-radius: 6px;
         text-decoration: none;
         font-size: 11px;
         font-weight: bold;
-        white-space: nowrap;
     }
 
-    /* ปรับแต่ง Expander ใน Sidebar ให้เป็นสีขาวและไม่มีไอคอนขยะ */
-    .st-emotion-cache-p5mtransition {
-        background-color: #FFFFFF !important;
-        border-radius: 10px !important;
-    }
-    .st-emotion-cache-p5mtransition p {
-        color: #000000 !important;
-        font-weight: bold !important;
-    }
-
-    /* ข้อความแจ้งเตือนด้านล่าง (สีขาว Contrast สูง) */
+    /* บังคับตัวอักษรใน Sidebar (นอกกล่องขาว) ให้เป็นสีขาว */
+    [data-testid="stSidebar"] .stMarkdown p, 
+    [data-testid="stSidebar"] span, 
+    [data-testid="stSidebar"] label,
     .stSidebar .stCaption p {
         color: #FFFFFF !important;
-        opacity: 0.9;
     }
 
+    /* ปรับแต่ง Expander Header */
+    .st-emotion-cache-p5mtransition {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px !important;
+    }
+    
     /* หน้า Chat */
     h2 { color: #006861 !important; font-weight: bold; }
 </style>
@@ -106,7 +107,7 @@ st.markdown("""
 # --- 4. ส่วนจัดการ API ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 if not api_key:
-    st.error("❌ ไม่พบ API KEY ใน Secrets")
+    st.error("❌ ไม่พบ API KEY")
     st.stop()
 genai.configure(api_key=api_key)
 
@@ -121,32 +122,40 @@ model = load_model()
 
 # --- 5. ส่วน Sidebar (Dashboard) ---
 with st.sidebar:
-    # 1. แสดงโลโก้ (ใช้ไฟล์ logo_ku.png ที่น้องมี)
+    # 1. Custom Header: โลโก้ + ชื่อมหาลัย
     if os.path.exists("logo_ku.png"):
-        img_b64 = get_image_base64("logo_ku.png")
-        st.markdown(f'<div class="header-container"><img src="data:image/png;base64,{img_b64}" class="header-img"></div>', unsafe_allow_html=True)
+        img_data = get_image_base64("logo_ku.png")
+        st.markdown(f"""
+            <div class="custom-header">
+                <img src="data:image/png;base64,{img_data}" class="header-logo-img">
+                <div class="header-text">
+                    <div class="univ-name">มหาวิทยาลัยเกษตรศาสตร์</div>
+                    <div class="campus-name">วิทยาเขตศรีราชา</div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
     
-    st.markdown('<div class="sidebar-title">🎓 AI KUSRC Dashboard</div>', unsafe_allow_html=True)
+    st.markdown('<p class="sidebar-title">🎓 AI KUSRC Dashboard</p>', unsafe_allow_html=True)
 
-    # 2. รายการแบบฟอร์มด่วนในกล่องขาว
+    # 2. รายการแบบฟอร์มด่วน
     with st.expander("📄 ลิงก์แบบฟอร์มด่วน (คลิก)", expanded=True):
         st.markdown(f"""
-            <div class="white-card">
+            <div class="white-card-container">
                 <div class="form-row">
                     <div class="form-label">📝 คำร้องขอลงทะเบียนเรียน<br>(Registrar-2)</div>
-                    <a href="https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf" target="_blank" class="btn-dl">ดาวน์โหลด</a>
+                    <a href="https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
                 <div class="form-row">
                     <div class="form-label">💰 คำร้องทั่วไป (Registrar-1)</div>
-                    <a href="https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf" target="_blank" class="btn-dl">ดาวน์โหลด</a>
+                    <a href="https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
                 <div class="form-row">
                     <div class="form-label">📂 ใบลาพักการศึกษา (Registrar-10)</div>
-                    <a href="https://registrar.ku.ac.th/wp-content/uploads/2023/11/Request-for-Leave-of-Absence-Request.pdf" target="_blank" class="btn-dl">ดาวน์โหลด</a>
+                    <a href="https://registrar.ku.ac.th/wp-content/uploads/2023/11/Request-for-Leave-of-Absence-Request.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
                 <div class="form-row">
                     <div class="form-label">📄 Add-Drop (KU3) ออนไลน์</div>
-                    <a href="https://reg2.src.ku.ac.th/download.html" target="_blank" class="btn-dl">ดาวน์โหลด</a>
+                    <a href="https://reg2.src.ku.ac.th/download.html" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
             </div>
         """, unsafe_allow_html=True)
