@@ -5,26 +5,6 @@ import base64
 import re
 
 # --- 1. ตั้งค่าหน้าจอ (Page Config) ---
-st.set_page_config(page_title="AI KUSRC", page_icon="🦖", layout="wide")
-
-# --- 2. ฟังก์ชันจัดการข้อมูล ---
-def get_image_base64(path):
-    if os.path.exists(path):
-        with open(path, "rb") as img_file:
-            return base64.b64encode(img_file.read()).decode()
-    return ""
-
-def get_room_info(room_code):
-    code = re.sub(r'\D', '', str(room_code))
-    if len(code) == 5:
-        building = code[:2]; floor = code[2]; room = code[3:]
-        return f"อ๋อ ห้องนี้อยู่ **ตึก {building} ชั้น {floor} ห้อง {room}** ครับน้อง"
-    elif len(code) == 4:
-        building = code[0]; floor = code[1]; room = code[2:]
-        return f"ห้องนี้คือ **ตึก {building} ชั้น {floor} ห้อง {room}** ครับผม"
-    return None
-
-# --- 3. CSS ปรับแต่ง UI (คืนค่าสีใสเดิม และทำให้ยาวเท่ากัน) ---
 st.markdown("""
 <style>
     .stApp { background-color: #FFFFFF; color: black; }
@@ -37,39 +17,30 @@ st.markdown("""
     }
     .header-logo-img { width: 90px; height: auto; margin-bottom: 10px; }
     .univ-name { color: white !important; font-size: 22px; font-weight: bold; line-height: 1.2; }
-
-    /* --- ส่วนที่ 1: ปรับแยกกล่อง "แชทใหม่" (บังคับสีใส) --- */
-    div.stButton > button[key*="new_chat"] {
+    .sidebar-title { color: white !important; font-size: 14px; font-weight: bold; margin-bottom: 5px; }
+    
+    /* --- ปรับแต่งปุ่มให้ "ใสถาวร" และ "ยาวเท่ากล่องขาว" --- */
+    div.stButton > button {
         width: 100% !important;
         border-radius: 12px !important;
-        background-color: rgba(255, 255, 255, 0.1) !important; /* บังคับสีใสเดิม */
+        background-color: transparent !important; /* บังคับให้ใสถาวร */
         color: white !important;
-        border: 1px solid rgba(255, 255, 255, 0.3) !important;
-        padding: 12px 15px !important;
-        font-weight: bold !important;
-        margin-bottom: 15px !important;
-        display: flex !important;
-        justify-content: flex-start !important;
-    }
-
-    /* --- ส่วนที่ 2: ปรับแยกกล่อง "ประวัติการแชท" (บังคับสีใส) --- */
-    div.stButton > button[key*="hist_"] {
-        width: 100% !important;
-        border-radius: 12px !important;
-        background-color: rgba(255, 255, 255, 0.1) !important; /* บังคับสีใสเดิม */
-        color: white !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important; /* เส้นขอบบางๆ ให้เห็นว่าเป็นกล่อง */
         padding: 10px 15px !important;
         text-align: left !important;
-        margin-bottom: 8px !important;
+        margin-bottom: 10px !important;
         display: flex !important;
         justify-content: flex-start !important;
+        transition: 0.3s !important;
     }
     
-    .stButton > button:hover {
-        background-color: rgba(255, 255, 255, 0.2) !important;
+    /* สไตล์เฉพาะเมื่อเอาเมาส์ชี้ (Hover) */
+    div.stButton > button:hover {
+        background-color: rgba(255, 255, 255, 0.2) !important; /* สว่างขึ้นตอนชี้ */
         border-color: #FFD700 !important;
+        color: #FFD700 !important;
     }
+
     /* กล่องข้อมูลสีขาว (Expander) ด้านล่าง */
     div[data-testid="stExpander"] { 
         background-color: #FFFFFF !important; 
@@ -83,7 +54,6 @@ st.markdown("""
     .btn-action { background-color: #006861; color: white !important; padding: 4px 10px; border-radius: 6px; text-decoration: none; font-size: 10px; font-weight: bold; }
 </style>
 """, unsafe_allow_html=True)
-
 # --- 4. จัดการ API ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 if api_key: genai.configure(api_key=api_key)
