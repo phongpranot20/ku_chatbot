@@ -38,32 +38,36 @@ st.markdown("""
     .header-logo-img { width: 90px; height: auto; margin-bottom: 10px; }
     .univ-name { color: white !important; font-size: 22px; font-weight: bold; line-height: 1.2; }
 
-    /* --- ส่วนที่ 1: ปรับแยกกล่อง "แชทใหม่" --- */
+    /* --- ส่วนที่ 1: ปรับแยกกล่อง "แชทใหม่" (บังคับสีใส) --- */
     div.stButton > button[key*="new_chat"] {
         width: 100% !important;
         border-radius: 12px !important;
-        background-color: rgba(255, 255, 255, 0.15) !important; /* ปรับความใส/สี แยกตรงนี้ */
+        background-color: rgba(255, 255, 255, 0.1) !important; /* บังคับสีใสเดิม */
         color: white !important;
-        border: 1px solid rgba(255, 255, 255, 0.4) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
         padding: 12px 15px !important;
         font-weight: bold !important;
         margin-bottom: 15px !important;
+        display: flex !important;
+        justify-content: flex-start !important;
     }
 
-    /* --- ส่วนที่ 2: ปรับแยกกล่อง "ประวัติการแชท" --- */
+    /* --- ส่วนที่ 2: ปรับแยกกล่อง "ประวัติการแชท" (บังคับสีใส) --- */
     div.stButton > button[key*="hist_"] {
         width: 100% !important;
         border-radius: 12px !important;
-        background-color: rgba(255, 255, 255, 0.1) !important; /* ปรับความใส/สี แยกตรงนี้ */
+        background-color: rgba(255, 255, 255, 0.1) !important; /* บังคับสีใสเดิม */
         color: white !important;
         border: 1px solid rgba(255, 255, 255, 0.2) !important;
         padding: 10px 15px !important;
         text-align: left !important;
         margin-bottom: 8px !important;
+        display: flex !important;
+        justify-content: flex-start !important;
     }
     
     .stButton > button:hover {
-        background-color: rgba(255, 255, 255, 0.25) !important;
+        background-color: rgba(255, 255, 255, 0.2) !important;
         border-color: #FFD700 !important;
     }
     /* กล่องข้อมูลสีขาว (Expander) ด้านล่าง */
