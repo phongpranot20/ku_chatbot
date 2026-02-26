@@ -40,7 +40,7 @@ st.markdown("""
 
     /* --- ส่วนที่ 1: ปรับแยกกล่อง "แชทใหม่" --- */
     div.stButton > button[key*="new_chat"] {
-        width: 170% !important;
+        width: 13000% !important;
         border-radius: 12px !important;
         background-color: rgba(255, 255, 255, 0.15) !important; /* ปรับความใส/สี แยกตรงนี้ */
         color: white !important;
