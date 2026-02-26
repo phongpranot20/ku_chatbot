@@ -178,3 +178,7 @@ if prompt := st.chat_input("พิมพ์ถามพี่นนทรีไ�
         # บันทึกลงประวัติ
         st.session_state.all_chats[st.session_state.current_chat_id] = st.session_state.messages
         st.rerun()
+        except Exception as e:
+                if "429" in str(e):
+                    st.warning("⚠️ **ขออภัยครับ!** (Quota เต็ม)")
+                else: st.error(f"เกิดข้อผิดพลาด: {e}")
