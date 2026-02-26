@@ -171,14 +171,13 @@ if prompt := st.chat_input("พิมพ์ถามพี่นนทรีไ�
                     placeholder.markdown(full_response + "▌")
                 placeholder.markdown(full_response)
             except Exception as e:
-                full_response = f"เกิดข้อผิดพลาด: {e}"
-                st.error(full_response)
+                if "429" in str(e):
+                    st.warning("⚠️ **ขออภัยครับ!** (Quota เต็ม)")
+                else: st.error(f"เกิดข้อผิดพลาด: {e}")
         
         st.session_state.messages.append({"role": "assistant", "content": full_response})
         # บันทึกลงประวัติ
         st.session_state.all_chats[st.session_state.current_chat_id] = st.session_state.messages
         st.rerun()
-        except Exception as e:
-                if "429" in str(e):
-                    st.warning("⚠️ **ขออภัยครับ!** (Quota เต็ม)")
-                else: st.error(f"เกิดข้อผิดพลาด: {e}")
+      
+     
