@@ -11,42 +11,44 @@ def get_image_base64(path):
     with open(path, "rb") as img_file:
         return base64.b64encode(img_file.read()).decode()
 
-# --- 3. CSS ปรับแต่ง UI (เน้น Header และ Contrast) ---
+# --- 3. CSS ปรับแต่ง UI (เน้นตัวอักษรใหญ่และโลโก้ใหญ่) ---
 st.markdown("""
 <style>
     /* พื้นหลังหน้าหลัก */
     .stApp { background-color: #FFFFFF; color: black; }
     
-    /* Sidebar: สีเขียวหัวเป็ด */
+    /* Sidebar: สีเขียวตามเรฟ */
     [data-testid="stSidebar"] { 
         background-color: #006861 !important; 
     }
 
-    /* จัดการ Header: โลโก้ + ข้อความมหาลัย */
+    /* จัดการ Header: โลโก้ใหญ่ + ชื่อมหาลัยตัวใหญ่ */
     .custom-header {
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 10px 5px;
-        margin-bottom: 20px;
-        border-bottom: 1px solid rgba(255,255,255,0.2);
+        gap: 15px;
+        padding: 15px 5px;
+        margin-bottom: 25px;
+        border-bottom: 2px solid rgba(255,255,255,0.2);
     }
     .header-logo-img {
-        width: 60px; /* ปรับขนาดโลโก้พระพิรุณ */
+        width: 80px; /* เพิ่มขนาดโลโก้ให้ใหญ่ขึ้น */
         height: auto;
     }
     .header-text {
         color: white !important;
         font-family: 'Tahoma', sans-serif;
-        line-height: 1.2;
     }
-    .univ-name { font-size: 14px; font-weight: bold; }
-    .campus-name { font-size: 12px; }
+    .univ-name { 
+        font-size: 22px; /* ขยายขนาดฟอนต์มหาลัยให้ใหญ่ชัดเจน */
+        font-weight: bold;
+        line-height: 1.1;
+    }
 
     /* หัวข้อ Dashboard */
     .sidebar-title {
         color: #FFFFFF !important;
-        font-size: 1.1rem;
+        font-size: 1.2rem;
         font-weight: bold;
         margin-bottom: 15px;
     }
@@ -68,8 +70,8 @@ st.markdown("""
     .form-row:last-child { border-bottom: none; }
     
     .form-label {
-        color: #333333 !important; /* ข้อความในกล่องขาวต้องสีเข้ม */
-        font-size: 13px;
+        color: #333333 !important;
+        font-size: 14px; /* ปรับฟอนต์ในกล่องขาวให้ใหญ่นิดนึง */
         font-weight: 600;
         flex: 1;
     }
@@ -78,14 +80,14 @@ st.markdown("""
     .btn-download {
         background-color: #006861;
         color: white !important;
-        padding: 5px 12px;
+        padding: 6px 14px;
         border-radius: 6px;
         text-decoration: none;
-        font-size: 11px;
+        font-size: 12px;
         font-weight: bold;
     }
 
-    /* บังคับตัวอักษรใน Sidebar (นอกกล่องขาว) ให้เป็นสีขาว */
+    /* บังคับตัวอักษรใน Sidebar ให้เป็นสีขาว */
     [data-testid="stSidebar"] .stMarkdown p, 
     [data-testid="stSidebar"] span, 
     [data-testid="stSidebar"] label,
@@ -93,12 +95,6 @@ st.markdown("""
         color: #FFFFFF !important;
     }
 
-    /* ปรับแต่ง Expander Header */
-    .st-emotion-cache-p5mtransition {
-        background-color: rgba(255, 255, 255, 0.1) !important;
-        border-radius: 12px !important;
-    }
-    
     /* หน้า Chat */
     h2 { color: #006861 !important; font-weight: bold; }
 </style>
@@ -122,15 +118,14 @@ model = load_model()
 
 # --- 5. ส่วน Sidebar (Dashboard) ---
 with st.sidebar:
-    # 1. Custom Header: โลโก้ + ชื่อมหาลัย
+    # 1. Custom Header: โลโก้ใหญ่ + ชื่อมหาลัย (ตัดชื่อวิทยาเขตออก)
     if os.path.exists("logo_ku.png"):
         img_data = get_image_base64("logo_ku.png")
         st.markdown(f"""
             <div class="custom-header">
                 <img src="data:image/png;base64,{img_data}" class="header-logo-img">
                 <div class="header-text">
-                    <div class="univ-name">มหาวิทยาลัยเกษตรศาสตร์</div>
-                    <div class="campus-name">วิทยาเขตศรีราชา</div>
+                    <div class="univ-name">มหาวิทยาลัย<br>เกษตรศาสตร์</div>
                 </div>
             </div>
         """, unsafe_allow_html=True)
