@@ -3,7 +3,7 @@ import google.generativeai as genai
 import os
 import base64
 
-# --- 1. ตั้งค่าหน้าจอ (Page Config) ---
+# --- 1. ตั้งค่าหน้าจอ ---
 st.set_page_config(page_title="AI KUSRC", page_icon="🐯", layout="wide")
 
 # --- 2. ฟังก์ชันจัดการรูปภาพโลโก้ ---
@@ -11,31 +11,36 @@ def get_image_base64(path):
     with open(path, "rb") as img_file:
         return base64.b64encode(img_file.read()).decode()
 
-# --- 3. CSS ปรับแต่ง UI ให้เหมือนรูปเรฟเฟอเรนซ์ ---
+# --- 3. CSS ปรับแต่ง (ขยับ Header ชิดบน + แก้สี Expander) ---
 st.markdown("""
 <style>
-    /* พื้นหลังหน้าหลัก */
+    /* พื้นหลังหลัก */
     .stApp { background-color: #FFFFFF; color: black; }
     
-    /* Sidebar: สีเขียวหัวเป็ดตามรูปเป้าหมาย */
+    /* Sidebar: สีเขียวหัวเป็ด */
     [data-testid="stSidebar"] { 
         background-color: #006861 !important; 
     }
 
-    /* จัดการ Header: โลโก้อยู่บน ชื่อมหาลัยอยู่ล่าง */
+    /* ขยับส่วน Sidebar Content ทั้งหมดให้ชิดขอบบน */
+    [data-testid="stSidebarContent"] {
+        padding-top: 0rem !important;
+    }
+
+    /* จัดการ Header: โลโก้บน ชื่อมหาลัยล่าง (ขยับขึ้นชิดบน) */
     .custom-header {
         display: flex;
         flex-direction: column;
         align-items: center;
         text-align: center;
-        padding: 20px 5px;
-        margin-bottom: 20px;
+        padding: 10px 5px 20px 5px; /* ลด Padding บนให้เหลือน้อยที่สุด */
+        margin-top: -30px; /* ขยับขึ้นไปชิดขอบ */
         border-bottom: 2px solid rgba(255,255,255,0.2);
     }
     .header-logo-img {
         width: 100px;
         height: auto;
-        margin-bottom: 15px;
+        margin-bottom: 10px;
     }
     .header-text {
         color: white !important;
@@ -52,16 +57,27 @@ st.markdown("""
         color: #FFFFFF !important;
         font-size: 1.1rem;
         font-weight: bold;
-        margin-bottom: 10px;
+        margin: 15px 0px 10px 0px;
         text-align: center;
     }
 
-    /* --- กล่องขาวรายการแบบฟอร์ม (White Card Style) --- */
-    .white-card {
+    /* --- แก้ไข Expander ให้เป็นสีขาวตลอดเวลา (ไม่กลืนกับพื้นหลัง) --- */
+    .st-emotion-cache-p5mtransition, div[data-testid="stExpander"] {
+        background-color: #FFFFFF !important;
+        border-radius: 12px !important;
+        border: none !important;
+    }
+    
+    /* สีฟอนต์หัวข้อ Expander (ลิงก์แบบฟอร์มด่วน) */
+    div[data-testid="stExpander"] p {
+        color: #000000 !important;
+        font-weight: bold !important;
+    }
+
+    /* กล่องขาวรายการแบบฟอร์มด้านใน */
+    .white-card-content {
         background-color: #FFFFFF;
-        border-radius: 12px;
         padding: 5px;
-        margin-top: 5px;
     }
     
     .form-row {
@@ -69,20 +85,18 @@ st.markdown("""
         justify-content: space-between;
         align-items: center;
         padding: 12px 10px;
-        border-bottom: 1px solid #eeeeee;
+        border-bottom: 1px solid #f0f0f0;
     }
     .form-row:last-child { border-bottom: none; }
     
     .form-label {
         color: #333333 !important;
         font-size: 13px;
-        font-weight: bold;
-        line-height: 1.3;
+        font-weight: 600;
         flex: 1;
-        text-align: left;
     }
 
-    /* ปุ่มดาวน์โหลดสีเขียวในกล่องขาว */
+    /* ปุ่มดาวน์โหลดสีเขียวเข้ม */
     .btn-download {
         background-color: #006861;
         color: white !important;
@@ -91,60 +105,32 @@ st.markdown("""
         text-decoration: none;
         font-size: 11px;
         font-weight: bold;
-        white-space: nowrap;
     }
 
-    /* บังคับตัวอักษรใน Sidebar นอกกล่องขาวให้เป็นสีขาว */
-    [data-testid="stSidebar"] .stMarkdown p, 
-    [data-testid="stSidebar"] span, 
-    [data-testid="stSidebar"] label,
-    .stSidebar .stCaption p {
-        color: #FFFFFF !important;
-    }
-
-    /* ปรับแต่ง Expander ใน Sidebar ให้พื้นหลังเป็นสีขาว (Card Look) */
-    .st-emotion-cache-p5mtransition {
-        background-color: #FFFFFF !important;
-        border-radius: 12px !important;
-    }
-    .st-emotion-cache-p5mtransition p {
-        color: #000000 !important;
-        font-weight: bold !important;
-    }
-    
-    /* หัวข้อ Chat หน้าหลัก */
+    /* หน้า Chat */
     h2 { color: #006861 !important; font-weight: bold; }
 </style>
 """, unsafe_allow_html=True)
 
-# --- 4. ส่วนจัดการ API และ Model (จากโค้ดเก่า) ---
+# --- 4. ส่วนจัดการ API ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 if not api_key:
-    st.error("❌ ไม่พบ API KEY ใน Secrets")
+    st.error("❌ ไม่พบ API KEY")
     st.stop()
 genai.configure(api_key=api_key)
 
 @st.cache_resource
-def load_smart_model():
+def load_model():
     try:
         available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-        selected_model = next((m for m in available_models if "1.5-flash" in m), available_models[0])
-        
-        instruction = (
-            "คุณคือ 'น้องนนทรี' AI รุ่นพี่ มก. ศรีราชา (KU SRC) "
-            "ตอบคำถามโดยใช้ข้อมูลจาก 'ข้อมูลอ้างอิง' ที่ให้มาเท่านั้น "
-            "เน้นความเป็นกันเอง สุภาพ และเรียกผู้ใช้ว่า 'น้อง'"
-        )
-        return genai.GenerativeModel(model_name=selected_model, system_instruction=instruction)
-    except Exception as e:
-        st.error(f"Error loading model: {e}")
-        return None
+        selected = next((m for m in available_models if "1.5-flash" in m), available_models[0])
+        return genai.GenerativeModel(model_name=selected)
+    except: return None
+model = load_model()
 
-model = load_smart_model()
-
-# --- 5. ส่วน Sidebar: Dashboard ตามเรฟเฟอเรนซ์ ---
+# --- 5. ส่วน Sidebar (Dashboard) ---
 with st.sidebar:
-    # 1. Header: โลโก้บน ชื่อมหาลัยล่าง
+    # 1. Custom Header (ขยับชิดบนสุด)
     if os.path.exists("logo_ku.png"):
         img_data = get_image_base64("logo_ku.png")
         st.markdown(f"""
@@ -158,10 +144,10 @@ with st.sidebar:
     
     st.markdown('<p class="sidebar-title">🎓 AI KUSRC Dashboard</p>', unsafe_allow_html=True)
 
-    # 2. รายการแบบฟอร์มด่วนในกล่องขาว (White Card)
+    # 2. รายการแบบฟอร์มด่วน (แก้ปัญหาสีฟอนต์กลืนพื้นหลัง)
     with st.expander("📄 ลิงก์แบบฟอร์มด่วน (คลิก)", expanded=True):
         st.markdown(f"""
-            <div class="white-card">
+            <div class="white-card-content">
                 <div class="form-row">
                     <div class="form-label">📝 คำร้องขอลงทะเบียนเรียน<br>(Registrar-2)</div>
                     <a href="https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
@@ -181,14 +167,13 @@ with st.sidebar:
             </div>
         """, unsafe_allow_html=True)
 
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    st.caption("💚 พัฒนาโดยนิสิตเพื่อนิสิต มก.ศรช.")
+    # ลบส่วน Caption พัฒนาโดยนิสิตออกเรียบร้อย
 
-# --- 6. ส่วนหน้า Chat หลัก (จากโค้ดเก่า) ---
+# --- 6. ส่วนหน้า Chat หลัก ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# โหลด Knowledge Base จากไฟล์
+# โหลด Knowledge Base
 if os.path.exists("ku_data.txt"):
     with open("ku_data.txt", "r", encoding="utf-8") as f:
         knowledge_base = f.read()
@@ -215,7 +200,7 @@ if prompt := st.chat_input("พิมพ์ถามพี่นนทรีไ�
         
         try:
             chat_session = model.start_chat(history=history)
-            full_context = f"ข้อมูลอ้างอิง:\n{knowledge_base}\n\nคำถาม: {prompt}"
+            full_context = f"คุณคือรุ่นพี่ มก.ศรช. ตอบน้องด้วยความเป็นกันเอง\nข้อมูล:\n{knowledge_base}\n\nคำถาม: {prompt}"
             
             response = chat_session.send_message(full_context, stream=True)
             full_response = ""
