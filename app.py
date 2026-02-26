@@ -11,7 +11,7 @@ def get_image_base64(path):
     with open(path, "rb") as img_file:
         return base64.b64encode(img_file.read()).decode()
 
-# --- 3. CSS ปรับแต่ง UI (ขยับชิดบน + แก้สี Expander) ---
+# --- 3. CSS ปรับแต่ง UI ---
 st.markdown("""
 <style>
     /* พื้นหลังหน้าหลัก */
@@ -27,14 +27,14 @@ st.markdown("""
         padding-top: 0rem !important;
     }
 
-    /* จัดการ Header: โลโก้อยู่บน ชื่อมหาลัยอยู่ล่าง (ขยับขึ้นชิดบน) */
+    /* จัดการ Header: โลโก้อยู่บน ชื่อมหาลัยอยู่ล่าง */
     .custom-header {
         display: flex;
         flex-direction: column;
         align-items: center;
         text-align: center;
         padding: 5px 5px 15px 5px; 
-        margin-top: -35px; /* ขยับขึ้นชิดขอบ */
+        margin-top: -35px;
         border-bottom: 2px solid rgba(255,255,255,0.2);
     }
     .header-logo-img {
@@ -61,7 +61,7 @@ st.markdown("""
         text-align: center;
     }
 
-    /* --- แก้ไข Expander ให้เป็นสีขาวตลอดเวลา (ตัวหนังสือดำชัดเจน) --- */
+    /* --- แก้ไข Expander ให้เป็นสีขาวตลอดเวลา --- */
     div[data-testid="stExpander"] {
         background-color: #FFFFFF !important;
         border-radius: 12px !important;
@@ -69,7 +69,6 @@ st.markdown("""
         margin-bottom: 10px;
     }
     
-    /* บังคับสีฟอนต์หัวข้อ Expander ให้เป็นสีดำ */
     div[data-testid="stExpander"] p {
         color: #000000 !important;
         font-weight: bold !important;
@@ -111,11 +110,6 @@ st.markdown("""
         margin-left: 5px;
     }
 
-    /* บังคับสีตัวอักษร Caption ด้านล่างให้เป็นสีขาว */
-    .stSidebar .stCaption p {
-        color: #FFFFFF !important;
-    }
-
     /* หน้า Chat */
     h2 { color: #006861 !important; font-weight: bold; }
 </style>
@@ -139,7 +133,7 @@ model = load_model()
 
 # --- 5. ส่วน Sidebar (Dashboard) ---
 with st.sidebar:
-    # 1. Header (โลโก้บน-ชื่อล่าง)
+    # 1. Header
     if os.path.exists("logo_ku.png"):
         img_data = get_image_base64("logo_ku.png")
         st.markdown(f"""
@@ -153,8 +147,8 @@ with st.sidebar:
     
     st.markdown('<p class="sidebar-title">AI KUSRC Dashboard</p>', unsafe_allow_html=True)
 
-    # 2. รายการแบบฟอร์มด่วน (จัดเต็มตามข้อมูลใหม่)
-    with st.expander("📄 ลิงก์แบบฟอร์มต่างๆ", expanded=True):
+    # 2. รายการแบบฟอร์มด่วน (เปลี่ยน expanded=True เป็น False เพื่อให้ปิดตอนเริ่มต้น)
+    with st.expander("📄 ลิงก์แบบฟอร์มต่างๆ", expanded=False):
         st.markdown(f"""
             <div class="white-card-content">
                 <div class="form-row">
@@ -189,13 +183,11 @@ with st.sidebar:
         """, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
-  
 
 # --- 6. ส่วนหน้า Chat หลัก ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# โหลด Knowledge Base สำหรับ AI
 if os.path.exists("ku_data.txt"):
     with open("ku_data.txt", "r", encoding="utf-8") as f:
         knowledge_base = f.read()
