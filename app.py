@@ -149,19 +149,19 @@ with st.sidebar:
         st.markdown(f"""
             <div class="white-card-content">
                 <div class="form-row">
-                    <div class="form-label">🢧 ใบคำร้องขอลงทะเบียนเรียน</div>
+                    <div class="form-label">ใบคำร้องขอลงทะเบียนเรียน</div>
                     <a href="https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
                 <div class="form-row">
-                    <div class="form-label">🢧 ใบคำร้องทั่วไป </div>
+                    <div class="form-label">ใบคำร้องทั่วไป </div>
                     <a href="https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
                 <div class="form-row">
-                    <div class="form-label">🢧 ใบลาพักการศึกษา </div>
+                    <div class="form-label">ใบลาพักการศึกษา </div>
                     <a href="https://registrar.ku.ac.th/wp-content/uploads/2023/11/Request-for-Leave-of-Absence-Request.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
                 <div class="form-row">
-                    <div class="form-label">🢧 ใบ Add-Drop </div>
+                    <div class="form-label">ใบ Add-Drop </div>
                     <a href="https://reg2.src.ku.ac.th/download.html" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
             </div>
