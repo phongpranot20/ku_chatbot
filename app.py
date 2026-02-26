@@ -145,23 +145,23 @@ with st.sidebar:
     
 
     # 2. รายการแบบฟอร์มด่วน (แก้ปัญหาสีฟอนต์กลืนพื้นหลัง)
-    with st.expander("📄 ลิงก์แบบฟอร์มด่วน (คลิก)", expanded=True):
+    with st.expander("📄 ลิงก์แบบฟอร์มด่วน ", expanded=True):
         st.markdown(f"""
             <div class="white-card-content">
                 <div class="form-row">
-                    <div class="form-label">📝 คำร้องขอลงทะเบียนเรียน<br>(Registrar-2)</div>
+                    <div class="form-label">🢧 คำร้องขอลงทะเบียนเรียน<br>(Registrar-2)</div>
                     <a href="https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
                 <div class="form-row">
-                    <div class="form-label">💰 คำร้องทั่วไป (Registrar-1)</div>
+                    <div class="form-label">🢧 คำร้องทั่วไป (Registrar-1)</div>
                     <a href="https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
                 <div class="form-row">
-                    <div class="form-label">📂 ใบลาพักการศึกษา (Registrar-10)</div>
+                    <div class="form-label">🢧 ใบลาพักการศึกษา (Registrar-10)</div>
                     <a href="https://registrar.ku.ac.th/wp-content/uploads/2023/11/Request-for-Leave-of-Absence-Request.pdf" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
                 <div class="form-row">
-                    <div class="form-label">📄 Add-Drop (KU3) ออนไลน์</div>
+                    <div class="form-label">🢧 Add-Drop (KU3) ออนไลน์</div>
                     <a href="https://reg2.src.ku.ac.th/download.html" target="_blank" class="btn-download">ดาวน์โหลด</a>
                 </div>
             </div>
@@ -180,10 +180,10 @@ if os.path.exists("ku_data.txt"):
 else:
     knowledge_base = "ข้อมูล มก. ศรีราชา"
 
-st.markdown("## 🐯 AI KUSRC")
+st.markdown("## 🦖 AI ASSISTANT")
 
 for message in st.session_state.messages:
-    avatar = "🧑‍🎓" if message["role"] == "user" else "🐯"
+    avatar = "🧑‍🎓" if message["role"] == "user" else "🦖"
     with st.chat_message(message["role"], avatar=avatar):
         st.markdown(message["content"])
 
@@ -191,7 +191,7 @@ if prompt := st.chat_input("พิมพ์ถามพี่นนทรีไ�
     st.chat_message("user", avatar="🧑‍🎓").markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
-    with st.chat_message("assistant", avatar="🐯"):
+    with st.chat_message("assistant", avatar="🦖"):
         placeholder = st.empty()
         placeholder.markdown("*(พี่กำลังหาคำตอบให้...)*")
         
