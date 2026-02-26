@@ -40,7 +40,7 @@ st.markdown("""
     .sidebar-title { color: white !important; font-size: 14px; font-weight: bold; margin-bottom: 5px; }
     
     div.stButton > button {
-        width: 225% !important;
+        width: 100% !important;
         border-radius: 12px !important;
         background-color: transparent !important;
         color: white !important;
@@ -117,12 +117,8 @@ with st.sidebar:
         st.markdown('<div class="white-card-content"><div class="form-row"><div class="form-label">ระบบจำลองการตัดเกรด</div><a href="https://fna.csc.ku.ac.th/grade/" target="_blank" class="btn-action">เปิดระบบ</a></div></div>', unsafe_allow_html=True)
     with st.expander("📄 ลิงก์แบบฟอร์มต่างๆ", expanded=False):
         forms = [("ใบขอลงทะเบียนเรียน ", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf"),
-            ("ใบคำร้องทั่วไป ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf"),
-            ("ใบผ่อนผันค่าเทอม ", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Postpone-tuition-and-fee-payments.pdf"),
-            ("ใบลาพักการศึกษา ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/Request-for-Leave-of-Absence-Request.pdf"),
-            ("ใบลาออก ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/Resignation-Form.pdf"),
-            ("ใบลงทะเบียนเรียน ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU1-Registration-Form.pdf"),
-            ("ใบเพิ่ม-ถอน ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU3-Add-Drop-Form.pdf")]
+                 ("ใบคำร้องทั่วไป ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf"),
+                 ("ใบเพิ่ม-ถอน (KU3) ", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU3-Add-Drop-Form.pdf")]
         for name, link in forms:
             st.markdown(f'<div class="form-row"><div class="form-label">{name}</div><a href="{link}" target="_blank" class="btn-action">โหลด</a></div>', unsafe_allow_html=True)
 
@@ -148,7 +144,7 @@ if prompt := st.chat_input("พิมพ์ถามพี่นนทรีไ�
     st.chat_message("user", avatar="🧑‍🎓").markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
-   with st.chat_message("assistant", avatar="🦖"):
+    with st.chat_message("assistant", avatar="🦖"):
         room_info = get_room_info(prompt)
         if room_info:
             full_response = room_info
@@ -178,5 +174,3 @@ if prompt := st.chat_input("พิมพ์ถามพี่นนทรีไ�
         # บันทึกลงประวัติ
         st.session_state.all_chats[st.session_state.current_chat_id] = st.session_state.messages
         st.rerun()
-      
-     
