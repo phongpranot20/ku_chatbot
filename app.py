@@ -40,7 +40,7 @@ st.markdown("""
     .sidebar-title { color: white !important; font-size: 14px; font-weight: bold; margin-bottom: 5px; }
     
     div.stButton > button {
-        width: 100% !important; /* ปรับให้พอดีกับ Sidebar */
+        width: 225% !important; /* ปรับให้พอดีกับ Sidebar */
         border-radius: 12px !important;
         background-color: transparent !important;
         color: white !important;
@@ -174,7 +174,7 @@ if prompt := st.chat_input("พิมพ์ถามพี่นนทรีไ�
             except Exception as e:
                 # แก้ไขการแจ้งเตือน 429 ตามที่ต้องการ
                 if "429" in str(e):
-                    full_response = "429 ⚠️ **ขออภัยครับ!** (Quota เต็ม)"
+                    full_response = "⚠️ **ขออภัยครับ!** (Quota เต็ม)"
                     st.warning(full_response)
                 else:
                     full_response = f"เกิดข้อผิดพลาด: {e}"
