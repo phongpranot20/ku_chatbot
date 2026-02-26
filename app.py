@@ -90,7 +90,7 @@ model = load_model()
 
 # --- 5. จัดการ State ความจำข้าม Session ---
 if "all_chats" not in st.session_state:
-    st.session_state.all_chats = {"แขทเริ่มต้น": []}
+    st.session_state.all_chats = {"แชทเริ่มต้น": []}
 if "current_chat_id" not in st.session_state:
     st.session_state.current_chat_id = "แชทเริ่มต้น"
 if "messages" not in st.session_state:
@@ -111,7 +111,7 @@ with st.sidebar:
     
     st.markdown("<br>", unsafe_allow_html=True)
     
-    if st.button("+ แชทใหม่", key="new_chat_btn"):
+    if st.button("➕ แชทใหม่", key="new_chat_btn"):
         new_id = f"แชท {len(st.session_state.all_chats) + 1}"
         st.session_state.all_chats[new_id] = []
         switch_chat(new_id)
@@ -119,7 +119,7 @@ with st.sidebar:
     
     st.markdown('<p class="sidebar-title">💬 ประวัติการแชท</p>', unsafe_allow_html=True)
     for chat_id in list(st.session_state.all_chats.keys()):
-        if st.button(f"{chat_id[:18]}", key=f"hist_{chat_id}"):
+        if st.button(f"📄 {chat_id[:18]}...", key=f"hist_{chat_id}"):
             switch_chat(chat_id)
             st.rerun()
 
