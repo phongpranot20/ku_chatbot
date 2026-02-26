@@ -4,7 +4,7 @@ import os
 import base64
 import re
 
-# --- 1. ตั้งค่าหน้าจอ ---
+# --- 1. ตั้งค่าหน้าจอ (Page Config) ---
 st.set_page_config(page_title="AI KUSRC", page_icon="🦖", layout="wide")
 
 # --- 2. ฟังก์ชันจัดการข้อมูล ---
@@ -24,7 +24,7 @@ def get_room_info(room_code):
         return f"ห้องนี้คือ **ตึก {building} ชั้น {floor} ห้อง {room}** ครับผม"
     return None
 
-# --- 3. CSS ปรับแต่ง UI (แยกคุม 2 กล่องให้ยาวเท่าอันล่าง) ---
+# --- 3. CSS ปรับแต่ง UI (บังคับสีใสถาวร และยาวเท่ากล่องขาวด้านล่าง) ---
 st.markdown("""
 <style>
     .stApp { background-color: #FFFFFF; color: black; }
@@ -37,34 +37,28 @@ st.markdown("""
     }
     .header-logo-img { width: 90px; height: auto; margin-bottom: 10px; }
     .univ-name { color: white !important; font-size: 22px; font-weight: bold; line-height: 1.2; }
-
-    /* --- ส่วนที่ 1: ปรับแยกกล่อง "แชทใหม่" --- */
-    div.stButton > button[key*="new_chat"] {
-        width: 13000% !important;
+    .sidebar-title { color: white !important; font-size: 14px; font-weight: bold; margin-bottom: 5px; }
+    
+    /* --- ปรับแต่งปุ่มให้ "ใสถาวร" และ "ยาวเท่ากล่องขาว" --- */
+    div.stButton > button {
+        width: 100% !important;
         border-radius: 12px !important;
-        background-color: rgba(255, 255, 255, 0.15) !important; /* ปรับความใส/สี แยกตรงนี้ */
+        background-color: transparent !important; /* บังคับให้ใสถาวร */
         color: white !important;
-        border: 1px solid rgba(255, 255, 255, 0.4) !important;
-        padding: 12px 15px !important;
-        font-weight: bold !important;
-        margin-bottom: 15px !important;
-    }
-
-    /* --- ส่วนที่ 2: ปรับแยกกล่อง "ประวัติการแชท" --- */
-    div.stButton > button[key*="hist_"] {
-        width: 160% !important;
-        border-radius: 12px !important;
-        background-color: rgba(255, 255, 255, 0.1) !important; /* ปรับความใส/สี แยกตรงนี้ */
-        color: white !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important; /* เส้นขอบบางๆ ให้เห็นว่าเป็นกล่อง */
         padding: 10px 15px !important;
         text-align: left !important;
-        margin-bottom: 8px !important;
+        margin-bottom: 10px !important;
+        display: flex !important;
+        justify-content: flex-start !important;
+        transition: 0.3s !important;
     }
     
-    .stButton > button:hover {
-        background-color: rgba(255, 255, 255, 0.25) !important;
+    /* สไตล์เฉพาะเมื่อเอาเมาส์ชี้ (Hover) */
+    div.stButton > button:hover {
+        background-color: rgba(255, 255, 255, 0.2) !important; /* สว่างขึ้นตอนชี้ */
         border-color: #FFD700 !important;
+        color: #FFD700 !important;
     }
 
     /* กล่องข้อมูลสีขาว (Expander) ด้านล่าง */
@@ -72,7 +66,9 @@ st.markdown("""
         background-color: #FFFFFF !important; 
         border-radius: 12px !important; 
         margin-bottom: 10px !important; 
+        border: none !important;
     }
+    div[data-testid="stExpander"] p { color: #000000 !important; font-weight: bold !important; }
     .white-card-content { background-color: #FFFFFF; border-radius: 0px 0px 12px 12px; }
     .form-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 8px; border-bottom: 1px solid #f0f0f0; }
     .btn-action { background-color: #006861; color: white !important; padding: 4px 10px; border-radius: 6px; text-decoration: none; font-size: 10px; font-weight: bold; }
@@ -92,7 +88,7 @@ def load_model():
     except: return None
 model = load_model()
 
-# --- 5. จัดการ State ความจำ ---
+# --- 5. จัดการ State ความจำข้าม Session ---
 if "all_chats" not in st.session_state:
     st.session_state.all_chats = {"แชทเริ่มต้น": []}
 if "current_chat_id" not in st.session_state:
@@ -115,15 +111,13 @@ with st.sidebar:
     
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # ปุ่มแชทใหม่
     if st.button("➕ แชทใหม่", key="new_chat_btn"):
         new_id = f"แชท {len(st.session_state.all_chats) + 1}"
         st.session_state.all_chats[new_id] = []
         switch_chat(new_id)
         st.rerun()
     
-    st.markdown('<p style="color:white; font-size:14px; font-weight:bold;">💬 ประวัติการแชท</p>', unsafe_allow_html=True)
-    # รายการประวัติแชท
+    st.markdown('<p class="sidebar-title">💬 ประวัติการแชท</p>', unsafe_allow_html=True)
     for chat_id in list(st.session_state.all_chats.keys()):
         if st.button(f"📄 {chat_id[:18]}...", key=f"hist_{chat_id}"):
             switch_chat(chat_id)
@@ -135,7 +129,6 @@ with st.sidebar:
     with st.expander("🧮 คำนวณเกรด (GPA)", expanded=False):
         st.markdown('<div class="white-card-content"><div class="form-row"><div class="form-label">ระบบจำลองการตัดเกรด</div><a href="https://fna.csc.ku.ac.th/grade/" target="_blank" class="btn-action">เปิดระบบ</a></div></div>', unsafe_allow_html=True)
     
-    # คืนค่าใบเอกสารครบ 7 รายการ
     with st.expander("📄 ลิงก์แบบฟอร์มต่างๆ", expanded=False):
         forms = [
             ("ใบขอลงทะเบียนเรียน ", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf"),
@@ -168,7 +161,6 @@ if prompt := st.chat_input("พิมพ์ถามพี่นนทรีไ�
             del st.session_state.all_chats[st.session_state.current_chat_id]
         st.session_state.current_chat_id = new_title
 
-    # จำชื่อข้าม Session
     name_match = re.search(r"(?:ผม|หนู|เรา|พี่|ชื่อ)\s*ชื่อว่า?\s*(\w+)", prompt)
     if name_match: st.session_state.global_user_nickname = name_match.group(1)
 
@@ -203,4 +195,4 @@ if prompt := st.chat_input("พิมพ์ถามพี่นนทรีไ�
             except Exception as e:
                 if "429" in str(e):
                     st.warning("⚠️ **ขออภัยครับ!** (Quota เต็ม) รอกดส่งใหม่ในอีก 1 นาทีนะ")
-                else: st.error(f"Error: {e}")
+                else: st.error(f"เกิดข้อผิดพลาด: {e}")
