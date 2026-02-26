@@ -5,6 +5,26 @@ import base64
 import re
 
 # --- 1. ตั้งค่าหน้าจอ (Page Config) ---
+st.set_page_config(page_title="AI KUSRC", page_icon="🦖", layout="wide")
+
+# --- 2. ฟังก์ชันจัดการข้อมูล ---
+def get_image_base64(path):
+    if os.path.exists(path):
+        with open(path, "rb") as img_file:
+            return base64.b64encode(img_file.read()).decode()
+    return ""
+
+def get_room_info(room_code):
+    code = re.sub(r'\D', '', str(room_code))
+    if len(code) == 5:
+        building = code[:2]; floor = code[2]; room = code[3:]
+        return f"อ๋อ ห้องนี้อยู่ **ตึก {building} ชั้น {floor} ห้อง {room}** ครับน้อง"
+    elif len(code) == 4:
+        building = code[0]; floor = code[1]; room = code[2:]
+        return f"ห้องนี้คือ **ตึก {building} ชั้น {floor} ห้อง {room}** ครับผม"
+    return None
+
+# --- 3. CSS ปรับแต่ง UI (บังคับสีใสถาวร และยาวเท่ากล่องขาวด้านล่าง) ---
 st.markdown("""
 <style>
     .stApp { background-color: #FFFFFF; color: black; }
@@ -54,6 +74,7 @@ st.markdown("""
     .btn-action { background-color: #006861; color: white !important; padding: 4px 10px; border-radius: 6px; text-decoration: none; font-size: 10px; font-weight: bold; }
 </style>
 """, unsafe_allow_html=True)
+
 # --- 4. จัดการ API ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 if api_key: genai.configure(api_key=api_key)
@@ -67,7 +88,7 @@ def load_model():
     except: return None
 model = load_model()
 
-# --- 5. จัดการ State ความจำ ---
+# --- 5. จัดการ State ความจำข้าม Session ---
 if "all_chats" not in st.session_state:
     st.session_state.all_chats = {"แชทเริ่มต้น": []}
 if "current_chat_id" not in st.session_state:
@@ -90,7 +111,6 @@ with st.sidebar:
     
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # 6.1 ปุ่มแชทใหม่ (สีใสเดิม ยาวเท่ากล่องล่าง)
     if st.button("➕ แชทใหม่", key="new_chat_btn"):
         new_id = f"แชท {len(st.session_state.all_chats) + 1}"
         st.session_state.all_chats[new_id] = []
@@ -98,20 +118,17 @@ with st.sidebar:
         st.rerun()
     
     st.markdown('<p class="sidebar-title">💬 ประวัติการแชท</p>', unsafe_allow_html=True)
-    # 6.2 ปุ่มประวัติแชท (สีใสเดิม ยาวเท่ากล่องล่าง)
     for chat_id in list(st.session_state.all_chats.keys()):
         if st.button(f"📄 {chat_id[:18]}...", key=f"hist_{chat_id}"):
             switch_chat(chat_id)
             st.rerun()
 
     st.markdown("---")
-    # 6.3 เมนู Dashboard
     with st.expander("📅 ค้นหาตารางสอบ", expanded=False):
         st.markdown('<div class="white-card-content"><div class="form-row"><div class="form-label">เช็กวัน-เวลาสอบ</div><a href="https://reg2.src.ku.ac.th/table_test/" target="_blank" class="btn-action">ค้นหา</a></div></div>', unsafe_allow_html=True)
     with st.expander("🧮 คำนวณเกรด (GPA)", expanded=False):
         st.markdown('<div class="white-card-content"><div class="form-row"><div class="form-label">ระบบจำลองการตัดเกรด</div><a href="https://fna.csc.ku.ac.th/grade/" target="_blank" class="btn-action">เปิดระบบ</a></div></div>', unsafe_allow_html=True)
     
-    # 6.4 ใบเอกสาร/แบบฟอร์ม (คืนค่าครบ 7 รายการ)
     with st.expander("📄 ลิงก์แบบฟอร์มต่างๆ", expanded=False):
         forms = [
             ("ใบขอลงทะเบียนเรียน ", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf"),
@@ -178,4 +195,4 @@ if prompt := st.chat_input("พิมพ์ถามพี่นนทรีไ�
             except Exception as e:
                 if "429" in str(e):
                     st.warning("⚠️ **ขออภัยครับ!** (Quota เต็ม) รอกดส่งใหม่ในอีก 1 นาทีนะ")
-                else: st.error(f"Error: {e}")
+                else: st.error(f"เกิดข้อผิดพลาด: {e}")
