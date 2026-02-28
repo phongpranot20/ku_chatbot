@@ -31,6 +31,7 @@ translation = {
         "btn_open": "เปิดระบบ",
         "btn_download": "โหลด",
         "quota_err": "⚠️ **ขออภัยครับ!** (Quota เต็ม)",
+        "model_err": "❌ ไม่พบโมเดลที่ใช้งานได้ โปรดเช็ค API Key ใน Secrets",
         "ai_intro": "คุณคือ 'น้องนนทรี' AI รุ่นพี่ มก.ศรช. ตอบเป็นภาษาไทยอย่างเป็นกันเอง"
     },
     "EN": {
@@ -48,6 +49,7 @@ translation = {
         "btn_open": "Open",
         "btn_download": "Get",
         "quota_err": "⚠️ **Sorry!** (Quota Full)",
+        "model_err": "❌ No functional model found. Please check API Key in Secrets",
         "ai_intro": "You are 'Nontri', a friendly senior student AI at KU Sriracha. Please respond in English."
     }
 }
@@ -107,9 +109,10 @@ if api_key: genai.configure(api_key=api_key)
 @st.cache_resource
 def load_model():
     try:
+        # วนลูปหาโมเดลตามโค้ดเดิมของคุณ
         for m in genai.list_models():
             if 'generateContent' in m.supported_generation_methods:
-                # ใช้ Google Search เป็น tool ตามโค้ดเดิม
+                # แก้ไขชื่อโมเดลที่เสถียร (Flash) และเพิ่มเครื่องมือค้นหา
                 return genai.GenerativeModel(model_name=m.name, tools=[{"google_search": {}}])
     except Exception as e:
         st.error(f"Error loading models: {e}")
@@ -169,7 +172,6 @@ for message in st.session_state.messages:
 if prompt := st.chat_input(curr["input_placeholder"]):
     if st.session_state.current_chat_id is None: st.session_state.current_chat_id = prompt[:20]
 
-    # ตรวจจับชื่อเล่น (Nickname logic เดิม)
     name_match = re.search(r"(?:ผม|หนู|เรา|พี่|ชื่อ)\s*ชื่อว่า?\s*(\w+)", prompt)
     if name_match: st.session_state.global_user_nickname = name_match.group(1)
 
@@ -184,30 +186,37 @@ if prompt := st.chat_input(curr["input_placeholder"]):
         else:
             placeholder = st.empty()
             placeholder.markdown(curr["loading"])
-            try:
-                knowledge_base = ""
-                if os.path.exists("ku_data.txt"):
-                    with open("ku_data.txt", "r", encoding="utf-8") as f: knowledge_base = f.read()
-                
-                # Chat logic เดิม
-                history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} for m in st.session_state.messages[-6:-1]]
-                chat_session = model.start_chat(history=history)
-                
-                full_context = f"{curr['ai_intro']}\nข้อมูลมหาลัย:\n{knowledge_base}\n\nคำถาม: {prompt}"
-                response = chat_session.send_message(full_context, stream=True)
-                
-                full_response = ""
-                for chunk in response:
-                    full_response += chunk.text
-                    placeholder.markdown(full_response + "▌")
-                placeholder.markdown(full_response)
-            except Exception as e:
-                if "429" in str(e):
-                    full_response = curr["quota_err"]
-                    st.warning(full_response)
-                else:
-                    full_response = f"Error: {e}"
-                    st.error(full_response)
+            
+            # --- แก้ไขจุดที่ทำให้เกิด Error: เพิ่มการเช็ค if model ---
+            if model is not None:
+                try:
+                    knowledge_base = ""
+                    if os.path.exists("ku_data.txt"):
+                        with open("ku_data.txt", "r", encoding="utf-8") as f: knowledge_base = f.read()
+                    
+                    history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} for m in st.session_state.messages[-6:-1]]
+                    chat_session = model.start_chat(history=history)
+                    
+                    full_context = f"{curr['ai_intro']}\nข้อมูลมหาลัย:\n{knowledge_base}\n\nคำถาม: {prompt}"
+                    response = chat_session.send_message(full_context, stream=True)
+                    
+                    full_response = ""
+                    for chunk in response:
+                        if chunk.text:
+                            full_response += chunk.text
+                            placeholder.markdown(full_response + "▌")
+                    placeholder.markdown(full_response)
+                except Exception as e:
+                    if "429" in str(e):
+                        full_response = curr["quota_err"]
+                        st.warning(full_response)
+                    else:
+                        full_response = f"Error: {e}"
+                        st.error(full_response)
+            else:
+                # กรณีที่โหลดโมเดลไม่สำเร็จ
+                full_response = curr["model_err"]
+                st.error(full_response)
         
         st.session_state.messages.append({"role": "assistant", "content": full_response})
         st.session_state.all_chats[st.session_state.current_chat_id] = st.session_state.messages
