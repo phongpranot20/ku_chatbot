@@ -7,14 +7,14 @@ import re
 # --- 1. ตั้งค่าหน้าจอ (Page Config) ---
 st.set_page_config(page_title="AI KUSRC", page_icon="🦖", layout="wide")
 
-# --- 2. ระบบจัดการภาษา (Language Management) ---
+# --- 2. ระบบจัดการภาษา (Language Settings) ---
 if "lang" not in st.session_state:
     st.session_state.lang = "TH"
 
 def toggle_language():
     st.session_state.lang = "EN" if st.session_state.lang == "TH" else "TH"
 
-# พจนานุกรมแปลภาษา
+# พจนานุกรมแปลภาษาสำหรับ UI
 translation = {
     "TH": {
         "univ_name": "มหาวิทยาลัย<br>เกษตรศาสตร์",
@@ -30,7 +30,8 @@ translation = {
         "btn_find": "ค้นหา",
         "btn_open": "เปิดระบบ",
         "btn_download": "โหลด",
-        "ai_instruction": "คุณคือ 'น้องนนทรี' AI รุ่นพี่ มก.ศรช. ตอบเป็นภาษาไทยอย่างเป็นกันเอง"
+        "quota_err": "⚠️ **ขออภัยครับ!** (Quota เต็ม)",
+        "ai_intro": "คุณคือ 'น้องนนทรี' AI รุ่นพี่ มก.ศรช. ตอบเป็นภาษาไทยอย่างเป็นกันเอง"
     },
     "EN": {
         "univ_name": "Kasetsart<br>University",
@@ -42,16 +43,17 @@ translation = {
         "input_placeholder": "Ask Nontri anything...",
         "welcome": "Hello",
         "topic": "Topic",
-        "loading": "*(Processing answer...)*",
+        "loading": "*(Nontri is thinking...)*",
         "btn_find": "Search",
         "btn_open": "Open",
         "btn_download": "Get",
-        "ai_instruction": "You are 'Nontri', a friendly senior student AI at KU Sriracha. Respond in English."
+        "quota_err": "⚠️ **Sorry!** (Quota Full)",
+        "ai_intro": "You are 'Nontri', a friendly senior student AI at KU Sriracha. Please respond in English."
     }
 }
 curr = translation[st.session_state.lang]
 
-# --- 3. ฟังก์ชันเสริม (Image & Room Info) ---
+# --- 3. ฟังก์ชันจัดการข้อมูล (Helper Functions) ---
 def get_image_base64(path):
     if os.path.exists(path):
         with open(path, "rb") as img_file:
@@ -62,10 +64,13 @@ def get_room_info(room_code):
     code = re.sub(r'\D', '', str(room_code))
     if len(code) == 5:
         building = code[:2]; floor = code[2]; room = code[3:]
-        return f"อ๋อ ห้องนี้อยู่ **ตึก {building} ชั้น {floor} ห้อง {room}** ครับ" if st.session_state.lang == "TH" else f"This room is in **Building {building}, Floor {floor}, Room {room}**."
+        return f"อ๋อ ห้องนี้อยู่ **ตึก {building} ชั้น {floor} ห้อง {room}** ครับน้อง" if st.session_state.lang == "TH" else f"This room is located in **Building {building}, Floor {floor}, Room {room}**."
+    elif len(code) == 4:
+        building = code[0]; floor = code[1]; room = code[2:]
+        return f"ห้องนี้คือ **ตึก {building} ชั้น {floor} ห้อง {room}** ครับผม" if st.session_state.lang == "TH" else f"It is **Building {building}, Floor {floor}, Room {room}**."
     return None
 
-# --- 4. CSS (จัดเต็ม UI เขียว-ขาว) ---
+# --- 4. CSS (UI เดิมที่สวยงาม) ---
 st.markdown(f"""
 <style>
     .stApp {{ background-color: #FFFFFF; color: black; }}
@@ -80,7 +85,6 @@ st.markdown(f"""
     .univ-name {{ color: white !important; font-size: 20px; font-weight: bold; line-height: 1.2; }}
     .sidebar-title {{ color: white !important; font-size: 14px; font-weight: bold; margin-top: 15px; }}
     
-    /* ปุ่มใน Sidebar */
     div.stButton > button {{
         width: 100% !important; border-radius: 12px !important;
         background-color: transparent !important; color: white !important;
@@ -89,7 +93,6 @@ st.markdown(f"""
     }}
     div.stButton > button:hover {{ background-color: rgba(255, 255, 255, 0.2) !important; border-color: #FFD700 !important; }}
 
-    /* Expander สีขาว */
     div[data-testid="stExpander"] {{ background-color: #FFFFFF !important; border-radius: 12px !important; margin-bottom: 10px !important; border: none !important; }}
     .form-row {{ display: flex; justify-content: space-between; align-items: center; padding: 10px 8px; border-bottom: 1px solid #f0f0f0; }}
     .form-label {{ color: #333 !important; font-size: 13px; font-weight: 500; }}
@@ -97,26 +100,32 @@ st.markdown(f"""
 </style>
 """, unsafe_allow_html=True)
 
-# --- 5. API & Model Setup ---
+# --- 5. จัดการ API & List Model (Original Logic) ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 if api_key: genai.configure(api_key=api_key)
 
 @st.cache_resource
 def load_model():
-    try: return genai.GenerativeModel('gemini-1.5-flash')
-    except: return None
+    try:
+        for m in genai.list_models():
+            if 'generateContent' in m.supported_generation_methods:
+                # ใช้ Google Search เป็น tool ตามโค้ดเดิม
+                return genai.GenerativeModel(model_name=m.name, tools=[{"google_search": {}}])
+    except Exception as e:
+        st.error(f"Error loading models: {e}")
+    return None
+
 model = load_model()
 
-# --- 6. State Management ---
+# --- 6. จัดการ State ---
 if "all_chats" not in st.session_state: st.session_state.all_chats = {} 
 if "messages" not in st.session_state: st.session_state.messages = []
 if "current_chat_id" not in st.session_state: st.session_state.current_chat_id = None
-if "global_user_nickname" not in st.session_state: st.session_state.global_user_nickname = "Student"
+if "global_user_nickname" not in st.session_state: st.session_state.global_user_nickname = "นิสิต" if st.session_state.lang == "TH" else "Student"
 
-# --- 7. Sidebar (Menu & Language Switch) ---
+# --- 7. Sidebar (เมนูเดิม + สลับภาษา) ---
 with st.sidebar:
-    # ปุ่มสลับภาษาแบบเท่ๆ
-    st.button(f"🌐 Language: {st.session_state.lang}", on_click=toggle_language)
+    st.button(f"🌐 {st.session_state.lang} / Change Language", on_click=toggle_language)
 
     if os.path.exists("logo_ku.png"):
         img_data = get_image_base64("logo_ku.png")
@@ -138,19 +147,16 @@ with st.sidebar:
                 st.rerun()
 
     st.markdown("---")
-    # ส่วนของ Expander เมนูต่างๆ
     with st.expander(curr["exam_table"], expanded=False):
-        st.markdown(f'<div class="form-row"><div class="form-label">KU SRC Exam</div><a href="https://reg2.src.ku.ac.th/table_test/" target="_blank" class="btn-action">{curr["btn_find"]}</a></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="form-row"><div class="form-label">{curr["exam_table"]}</div><a href="https://reg2.src.ku.ac.th/table_test/" target="_blank" class="btn-action">{curr["btn_find"]}</a></div>', unsafe_allow_html=True)
     
     with st.expander(curr["gpa_calc"], expanded=False):
-        st.markdown(f'<div class="form-row"><div class="form-label">GPAX Sim</div><a href="https://fna.csc.ku.ac.th/grade/" target="_blank" class="btn-action">{curr["btn_open"]}</a></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="form-row"><div class="form-label">GPAX</div><a href="https://fna.csc.ku.ac.th/grade/" target="_blank" class="btn-action">{curr["btn_open"]}</a></div>', unsafe_allow_html=True)
     
     with st.expander(curr["forms"], expanded=False):
-        forms = [("ใบคำร้องทั่วไป", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf"), ("ใบลาออก", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/Resignation-Form.pdf")]
-        for name, link in forms:
-            st.markdown(f'<div class="form-row"><div class="form-label">{name}</div><a href="{link}" target="_blank" class="btn-action">{curr["btn_download"]}</a></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="form-row"><div class="form-label">General Request</div><a href="https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf" target="_blank" class="btn-action">{curr["btn_download"]}</a></div>', unsafe_allow_html=True)
 
-# --- 8. Main Chat Interface ---
+# --- 8. หน้า Chat หลัก ---
 st.markdown(f"## 🦖 AI TEST")
 current_title = st.session_state.current_chat_id if st.session_state.current_chat_id else ( "แชทใหม่" if st.session_state.lang == "TH" else "New Chat")
 st.caption(f"👤 {curr['welcome']} {st.session_state.global_user_nickname} | {curr['topic']}: {current_title}")
@@ -162,7 +168,11 @@ for message in st.session_state.messages:
 
 if prompt := st.chat_input(curr["input_placeholder"]):
     if st.session_state.current_chat_id is None: st.session_state.current_chat_id = prompt[:20]
-    
+
+    # ตรวจจับชื่อเล่น (Nickname logic เดิม)
+    name_match = re.search(r"(?:ผม|หนู|เรา|พี่|ชื่อ)\s*ชื่อว่า?\s*(\w+)", prompt)
+    if name_match: st.session_state.global_user_nickname = name_match.group(1)
+
     st.chat_message("user", avatar="🧑‍🎓").markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
@@ -179,13 +189,26 @@ if prompt := st.chat_input(curr["input_placeholder"]):
                 if os.path.exists("ku_data.txt"):
                     with open("ku_data.txt", "r", encoding="utf-8") as f: knowledge_base = f.read()
                 
-                full_context = f"{curr['ai_instruction']}\nข้อมูลมหาลัย:\n{knowledge_base}\n\nคำถาม: {prompt}"
-                response = model.generate_content(full_context)
-                full_response = response.text
+                # Chat logic เดิม
+                history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} for m in st.session_state.messages[-6:-1]]
+                chat_session = model.start_chat(history=history)
+                
+                full_context = f"{curr['ai_intro']}\nข้อมูลมหาลัย:\n{knowledge_base}\n\nคำถาม: {prompt}"
+                response = chat_session.send_message(full_context, stream=True)
+                
+                full_response = ""
+                for chunk in response:
+                    full_response += chunk.text
+                    placeholder.markdown(full_response + "▌")
                 placeholder.markdown(full_response)
             except Exception as e:
-                full_response = f"Error: {e}"
-                st.error(full_response)
+                if "429" in str(e):
+                    full_response = curr["quota_err"]
+                    st.warning(full_response)
+                else:
+                    full_response = f"Error: {e}"
+                    st.error(full_response)
         
         st.session_state.messages.append({"role": "assistant", "content": full_response})
         st.session_state.all_chats[st.session_state.current_chat_id] = st.session_state.messages
+        st.rerun()
