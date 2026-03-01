@@ -57,20 +57,23 @@ def get_room_info(room_code):
         return f"📍 ข้อมูลสถานที่: **ตึก {code[:2]} ชั้น {code[2]} ห้อง {code[3:]}**"
     return None
 
-# --- 4. CSS (เจาะจงลบไอคอนสีแดง/ส้มทิ้ง 100% และล็อค UI ให้โปร) ---
+# --- 4. CSS (กำจัดไอคอนสีแดง/ส้มทิ้ง 100% แบบถาวร) ---
 st.markdown(f"""
 <style>
+    /* ล้างค่าสีพื้นหลังและสีตัวอักษรของแอป */
     .stApp {{ background-color: #FFFFFF; color: #1f1f1f; }}
     
-    /* ลบไอคอนวงกลมสีแดง/ส้ม (Avatar) และทุกส่วนที่วงมาทิ้งทั้งหมด */
-    [data-testid="chatAvatarIcon-user"], 
-    [data-testid="chatAvatarIcon-assistant"],
+    /* 1. ลบไอคอนวงกลมสีแดง/ส้ม (Avatar) และ Emoji ทุกจุดที่คุณวงมา */
     div[data-testid="stChatMessage"] figure,
-    .st-emotion-cache-kgp7id, .st-emotion-cache-12w0qpk {{
+    div[data-testid="chatAvatarIcon-user"],
+    div[data-testid="chatAvatarIcon-assistant"],
+    .st-emotion-cache-kgp7id, 
+    .st-emotion-cache-12w0qpk,
+    [data-testid="stChatMessage"] .st-emotion-cache-1pxm6sc {{
         display: none !important;
     }}
     
-    /* จัด Layout แชทใหม่ให้ไม่มีช่องว่างของไอคอนที่ถูกลบ */
+    /* 2. จัด Layout แชทใหม่ให้ชิดซ้ายและคลีนที่สุดเหมือน Gemini */
     div[data-testid="stChatMessage"] {{
         padding-left: 0px !important;
         margin-left: 0px !important;
@@ -78,7 +81,7 @@ st.markdown(f"""
         margin: 0 auto !important;
     }}
 
-    /* กล่องแชท Assistant สไตล์ Gemini (เทาอ่อนโค้งมน) */
+    /* 3. กล่องข้อความ AI สไตล์ Professional (เทาอ่อนโค้งมน) */
     [data-testid="stChatMessageAssistant"] {{
         background-color: #f0f4f9 !important;
         border-radius: 24px !important;
@@ -86,25 +89,25 @@ st.markdown(f"""
         border: none !important;
     }}
 
-    /* ปรับแต่ง Sidebar และล็อคขนาด Logo */
+    /* 4. ปรับแต่ง Sidebar และล็อคขนาด Logo */
+    [data-testid="stSidebar"] {{ background-color: #f8f9fa !important; }}
     .sidebar-header {{ text-align: center; padding: 20px 0; }}
-    .logo-img {{ width: 100px !important; height: auto; margin-bottom: 10px; }}
+    .logo-img {{ width: 100px !important; height: auto; }}
     .univ-name {{ color: #006861 !important; font-size: 18px; font-weight: bold; line-height: 1.2; }}
 
-    /* ปุ่มและ Expander */
+    /* ปุ่มและตาราง */
     .btn-action {{ background-color: #006861; color: white !important; padding: 4px 12px; border-radius: 8px; text-decoration: none; font-size: 12px; }}
-    .form-row {{ display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }}
+    .form-row {{ display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }}
 </style>
 """, unsafe_allow_html=True)
 
-# --- 5. จัดการ API (ใช้ Logic เดิมเพื่อให้คุยได้ปกติ 100%) ---
+# --- 5. จัดการ API (คงเดิม 100% เพื่อให้คุยได้ปกติ) ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 if api_key: genai.configure(api_key=api_key)
 
 @st.cache_resource
 def load_model():
     try:
-        # ใช้ Logic ดั้งเดิมเพื่อป้องกัน Error 404 Model Not Found
         available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
         selected = next((m for m in available_models if "1.5-flash" in m), available_models[0])
         return genai.GenerativeModel(model_name=selected)
@@ -116,7 +119,7 @@ if "all_chats" not in st.session_state: st.session_state.all_chats = {}
 if "messages" not in st.session_state: st.session_state.messages = []
 if "current_chat_id" not in st.session_state: st.session_state.current_chat_id = None
 
-# --- 7. Sidebar (ฟีเจอร์ครบ 100% ตามรูปเดิม) ---
+# --- 7. Sidebar (ฟีเจอร์ครบ 100%) ---
 with st.sidebar:
     st.markdown('<div class="sidebar-header">', unsafe_allow_html=True)
     logo_data = get_image_base64("logo_ku.png")
@@ -166,7 +169,7 @@ if prompt := st.chat_input(curr["input_placeholder"]):
             if os.path.exists("ku_data.txt"):
                 with open("ku_data.txt", "r", encoding="utf-8") as f: kb = f.read()
             
-            # รักษา Logic ประวัติการแชทเดิมของคุณ
+            # รักษา Logic ประวัติการแชทเดิม
             history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} for m in st.session_state.messages[-6:-1]]
             chat_session = model.start_chat(history=history)
             
