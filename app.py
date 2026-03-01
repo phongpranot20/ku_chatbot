@@ -67,114 +67,76 @@ def get_room_info(room_code):
         building = code[0]; floor = code[1]; room = code[2:]
         return f"ห้องนี้คือ **ตึก {building} ชั้น {floor} ห้อง {room}** ครับผม" if st.session_state.lang == "TH" else f"It is **Building {building}, Floor {floor}, Room {room}**."
     return None
-
 # --- 4. CSS (Updated UI Modern/Minimal) ---
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap');
     
     html, body, [class*="css"] {
-        font-family: 'Sarabun', sans-serif;
+        font-family: 'Prompt', sans-serif;
     }
 
     .stApp { 
-        background-color: #F8F9FA; 
+        background: #f4f7f6;
     }
 
-    /* Sidebar Styling */
+    /* Sidebar - Glassmorphism */
     [data-testid="stSidebar"] { 
-        background-color: #004D40 !important; 
-        background-image: linear-gradient(180deg, #004D40 0%, #006861 100%) !important;
-        border-right: 1px solid rgba(255,255,255,0.1);
+        background: rgba(0, 77, 64, 0.95) !important;
+        backdrop-filter: blur(10px);
     }
-    
-    [data-testid="stSidebarContent"] { padding-top: 1rem !important; }
 
     .custom-header { 
-        display: flex; 
-        flex-direction: column; 
-        align-items: center; 
-        text-align: center; 
-        padding: 20px 10px; 
-        margin-top: -20px; 
-        background: rgba(255,255,255,0.05);
-        border-radius: 0 0 20px 20px;
-        margin-bottom: 20px;
+        padding: 30px 10px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+        border-radius: 20px;
+        margin-bottom: 30px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
-    .header-logo-img { width: 80px; height: auto; filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.3)); }
-    .univ-name { color: white !important; font-size: 18px; font-weight: 600; line-height: 1.2; margin-top: 10px; }
+    .header-logo-img { 
+        width: 90px; 
+        transition: transform 0.3s ease;
+    }
     
-    .sidebar-title { 
-        color: rgba(255,255,255,0.7) !important; 
-        font-size: 12px; 
-        text-transform: uppercase; 
-        letter-spacing: 1.2px;
-        margin: 20px 0 10px 10px;
+    .univ-name { 
+        color: #FFD700 !important; 
+        font-size: 20px; 
+        font-weight: 600; 
+        margin-top: 15px; 
+        letter-spacing: 1px;
     }
 
-    /* Button Styling */
+    /* Chat Messages - Floating Style */
+    .stChatMessage {
+        background: rgba(255, 255, 255, 0.8) !important;
+        border-radius: 20px !important;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        backdrop-filter: blur(4px);
+    }
+
+    /* Buttons - Sophisticated Hover */
     div.stButton > button { 
-        width: 100% !important; 
-        border-radius: 12px !important; 
-        background-color: rgba(255,255,255,0.1) !important; 
-        color: white !important; 
-        border: 1px solid rgba(255, 255, 255, 0.2) !important; 
-        padding: 8px 15px !important; 
-        transition: all 0.3s ease !important;
+        border-radius: 15px !important; 
+        background: transparent !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        color: white !important;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
     }
     
     div.stButton > button:hover { 
-        background-color: #FFD700 !important; 
-        color: #004D40 !important; 
-        border-color: #FFD700 !important;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        background: #FFD700 !important; 
+        color: #004D40 !important;
+        transform: scale(1.02);
     }
 
-    /* Chat Messages */
-    .stChatMessage {
-        background-color: white !important;
-        border-radius: 15px !important;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05) !important;
-        border: 1px solid #E9ECEF !important;
-        margin-bottom: 15px !important;
+    /* Headings */
+    h2 {
+        color: #004D40 !important;
+        font-weight: 700 !important;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
     }
-
-    /* Expander UI */
-    div[data-testid="stExpander"] { 
-        background-color: rgba(255,255,255,0.05) !important; 
-        border-radius: 12px !important; 
-        border: 1px solid rgba(255,255,255,0.1) !important;
-        margin-bottom: 10px !important; 
-    }
-    
-    .form-row { 
-        display: flex; 
-        justify-content: space-between; 
-        align-items: center; 
-        padding: 10px;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-    
-    .form-label { color: #E0E0E0; font-size: 13px; }
-    
-    .btn-action { 
-        background-color: #FFD700; 
-        color: #004D40 !important; 
-        padding: 5px 12px; 
-        border-radius: 8px; 
-        text-decoration: none; 
-        font-size: 11px; 
-        font-weight: bold;
-        transition: 0.3s;
-    }
-    
-    .btn-action:hover { opacity: 0.8; transform: scale(1.05); }
-
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-thumb { background: #CBD5E0; border-radius: 10px; }
 </style>
 """, unsafe_allow_html=True)
 
