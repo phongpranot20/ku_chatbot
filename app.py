@@ -165,16 +165,15 @@ with st.sidebar:
         st.session_state.messages = []
         st.session_state.current_chat_id = None
         st.rerun()
-    
-  if st.session_state.all_chats:
-    st.markdown(f'<p class="sidebar-title">{curr["chat_hist"]}</p>', unsafe_allow_html=True)
-    # ใช้ container จำกัดความสูงถ้าแชทเยอะเกินไป
-    with st.container(height=300):
+  
+    if st.session_state.all_chats:
+        st.markdown(f'<p class="sidebar-title">{curr["chat_hist"]}</p>', unsafe_allow_html=True)
         for chat_id in list(st.session_state.all_chats.keys()):
-            if st.button(f"💬 {chat_id[:25]}..."): # ขยายความยาวที่แสดงได้
+            if st.button(f"📄 {chat_id[:18]}...", key=f"hist_{chat_id}"):
                 st.session_state.current_chat_id = chat_id
                 st.session_state.messages = st.session_state.all_chats[chat_id]
                 st.rerun()
+
     st.markdown("---")
     st.markdown(f'<p class="sidebar-title">Quick Links</p>', unsafe_allow_html=True)
     with st.expander(curr["exam_table"], expanded=False):
