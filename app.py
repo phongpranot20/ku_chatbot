@@ -70,113 +70,58 @@ def get_room_info(room_code):
 # --- 4. CSS (Updated UI Modern/Luxury) ---
 st.markdown("""
 <style>
-    /* ตั้งค่า Font และพื้นหลัง */
-    @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700&display=swap');
+    /* ตั้งค่า Font */
+    @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap');
     
-    html, body, [class*="css"] {
-        font-family: 'Prompt', sans-serif;
-    }
-
-    .stApp { 
-        background: radial-gradient(circle at center, #FDFDFD, #F4F7F6); /* พื้นหลังไล่เฉดสีนุ่มนวล */
-    }
-
-    /* Sidebar - มิติกระจกแบบ "Sleek" */
     [data-testid="stSidebar"] { 
-        background-image: linear-gradient(170deg, rgba(0, 77, 64, 0.98) 0%, rgba(0, 37, 26, 0.95) 100%) !important;
-        backdrop-filter: blur(15px); /* เอฟเฟกต์เบลอ */
-        border-right: 1px solid rgba(255, 255, 255, 0.03); /* เส้นขอบบางๆ */
-        box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1); /* เงาด้านข้าง */
+        background: linear-gradient(180deg, #004D40 0%, #00251A 100%) !important;
+        padding: 20px !important;
     }
 
-    /* Custom Header - มิติและความหรูหรา */
-    .custom-header { 
-        padding: 35px 15px;
-        background-color: rgba(255, 255, 255, 0.02);
-        backdrop-filter: blur(5px);
-        border-radius: 20px;
-        margin-bottom: 25px;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    }
-    
-    .header-logo-img { 
-        width: 100px;
-        filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.2)); /* แสงสีทองรอบโลโก้ */
-        transition: transform 0.4s ease;
-    }
-    
-    .univ-name { 
-        color: #FFD700 !important; /* สีเหลืองทองเด่นชัด */
-        font-size: 20px; 
-        font-weight: 700; /* ตัวหนา */
-        margin-top: 15px; 
-        letter-spacing: 1px; /* ระยะห่างตัวอักษรแบบโมเดิร์น */
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* เงาบางๆ เพิ่มมิติ */
+    /* กล่อง Logo และชื่อมหาวิทยาลัย */
+    .brand-card {
+        background: rgba(255,255,255,0.05);
+        padding: 20px;
+        border-radius: 16px;
+        text-align: center;
+        border: 1px solid rgba(255,215,0,0.2);
+        margin-bottom: 20px;
     }
 
-    /* Quick Links Title - เด่นและทันสมัย */
-    .sidebar-title { 
-        color: rgba(255, 255, 255, 0.85) !important;
-        font-size: 14px; 
-        text-transform: uppercase; 
-        letter-spacing: 2px;
-        margin: 25px 0 15px 10px;
-        font-weight: 600;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        padding-bottom: 5px;
-    }
-
-    /* Button Styling - มิติและความหรูหราเมื่อ Hover */
+    /* ปุ่มเมนูแบบเรียบหรู */
     div.stButton > button { 
-        width: calc(100% - 20px) !important;
-        margin-left: 10px !important;
+        width: 100% !important;
         border-radius: 12px !important; 
-        background-color: transparent !important;
-        color: white !important; 
-        border: 1px solid rgba(255, 255, 255, 0.15) !important;
-        padding: 10px 18px !important; 
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important; /* แอนิเมชั่นที่นุ่มนวล */
-        text-align: left !important;
-        display: flex !important;
-        align-items: center !important;
+        background: rgba(255,255,255,0.03) !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+        color: #E0E0E0 !important;
+        transition: all 0.3s ease !important;
+        justify-content: flex-start !important;
+        padding: 12px 15px !important;
     }
     
-    /* Hover Effect - มิติแบบลอยตัว */
     div.stButton > button:hover { 
-        background-color: #FFD700 !important; /* สีเหลืองทองนุ่มนวล */
-        color: #004D40 !important; 
+        background: rgba(255,215,0,0.15) !important; 
         border-color: #FFD700 !important;
-        transform: translateX(4px) !important; /* เลื่อนไปทางขวาเล็กน้อย */
-        box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2) !important; /* เงาสีทองจางๆ */
+        color: #FFD700 !important;
     }
 
-    /* Expander UI - ปรับให้เข้ากับสไตล์ภาพรวม */
-    div[data-testid="stExpander"] { 
-        background-color: transparent !important; 
+    /* หัวข้อ Quick Links */
+    .sidebar-title { 
+        color: #FFD700 !important; 
+        font-size: 11px !important; 
+        letter-spacing: 2px !important;
+        margin: 30px 0 10px 5px !important;
+        font-weight: 600 !important;
+    }
+    
+    /* ปรับแต่ง Expander */
+    .stExpander {
         border: none !important;
-        margin-bottom: 12px !important; 
-        padding: 0 5px !important;
+        background: transparent !important;
     }
-    
-    .stExpanderHeader {
-        background-color: rgba(255, 255, 255, 0.02) !important;
-        border-radius: 10px !important;
-        color: rgba(255, 255, 255, 0.9) !important;
-        transition: 0.3s !important;
-    }
-    
-    .stExpanderHeader:hover {
-        background-color: rgba(255, 255, 255, 0.05) !important;
-        color: white !important;
-    }
-
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.15); border-radius: 10px; }
 </style>
 """, unsafe_allow_html=True)
-
 # --- 5. จัดการ API (คงโมเดลเดิมไว้) ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 if api_key: genai.configure(api_key=api_key)
@@ -198,41 +143,30 @@ if "global_user_nickname" not in st.session_state: st.session_state.global_user_
 
 # --- 7. Sidebar (เพิ่มปุ่มสลับภาษา) ---
 with st.sidebar:
-    # ปุ่มเปลี่ยนภาษาไว้ด้านบนขวา
-    if st.button(f"🌐 {st.session_state.lang}"):
-        toggle_language()
-        st.rerun()
-
+    # 1. ส่วนหัว (Brand Card)
+    st.markdown('<div class="brand-card">', unsafe_allow_html=True)
     if os.path.exists("logo_ku.png"):
-        img_data = get_image_base64("logo_ku.png")
-        st.markdown(f'<div class="custom-header"><img src="data:image/png;base64,{img_data}" class="header-logo-img"><div class="univ-name">{curr["univ_name"]}</div></div>', unsafe_allow_html=True)
-    
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    if st.button(curr["new_chat"], key="new_chat_btn"):
+        st.image("logo_ku.png", width=80)
+    st.markdown('<div class="univ-name">มหาวิทยาลัย<br>เกษตรศาสตร์</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # 2. ปุ่มจัดการหลัก
+    if st.button("➕ แชทใหม่"):
         st.session_state.messages = []
-        st.session_state.current_chat_id = None
         st.rerun()
-  
-    if st.session_state.all_chats:
-        st.markdown(f'<p class="sidebar-title">{curr["chat_hist"]}</p>', unsafe_allow_html=True)
-        for chat_id in list(st.session_state.all_chats.keys()):
-            if st.button(f"📄 {chat_id[:18]}...", key=f"hist_{chat_id}"):
-                st.session_state.current_chat_id = chat_id
-                st.session_state.messages = st.session_state.all_chats[chat_id]
-                st.rerun()
 
-    st.markdown("---")
-    st.markdown(f'<p class="sidebar-title">Quick Links</p>', unsafe_allow_html=True)
-    with st.expander(curr["exam_table"], expanded=False):
-        st.markdown(f'<div class="form-row"><div class="form-label">KU Exam</div><a href="https://reg2.src.ku.ac.th/table_test/" target="_blank" class="btn-action">{curr["btn_find"]}</a></div>', unsafe_allow_html=True)
-    with st.expander(curr["gpa_calc"], expanded=False):
-        st.markdown(f'<div class="form-row"><div class="form-label">GPAX</div><a href="https://fna.csc.ku.ac.th/grade/" target="_blank" class="btn-action">{curr["btn_open"]}</a></div>', unsafe_allow_html=True)
-    with st.expander(curr["forms"], expanded=False):
-        forms = [("ใบคำร้องทั่วไป", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf")]
-        for name, link in forms:
-            st.markdown(f'<div class="form-row"><div class="form-label">{name}</div><a href="{link}" target="_blank" class="btn-action">{curr["btn_download"]}</a></div>', unsafe_allow_html=True)
+    # 3. ส่วนประวัติแชท (ใช้ Container)
+    st.markdown('<p class="sidebar-title">CHAT HISTORY</p>', unsafe_allow_html=True)
+    with st.container(height=250): # กำหนดความสูงเพื่อให้ดูเป็นสัดส่วน
+        # ใส่โค้ด loop แสดงประวัติแชทของคุณที่นี่
+        pass 
 
+    # 4. ส่วน Quick Links
+    st.markdown('<p class="sidebar-title">QUICK LINKS</p>', unsafe_allow_html=True)
+    with st.expander("📅 ค้นหาตารางสอบ"):
+        st.link_button("เปิดระบบ", "https://reg2.src.ku.ac.th/table_test/", use_container_width=True)
+    with st.expander("🧮 คำนวณเกรด (GPA)"):
+        st.link_button("เข้าสู่หน้า GPA", "https://fna.csc.ku.ac.th/grade/", use_container_width=True)
 # --- 8. หน้า Chat หลัก ---
 st.markdown(f"<h2 style='color: #004D40;'>🦖 AI KUSRC</h2>", unsafe_allow_html=True)
 current_title = st.session_state.current_chat_id if st.session_state.current_chat_id else ( "แชทใหม่" if st.session_state.lang == "TH" else "New Chat")
