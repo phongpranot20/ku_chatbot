@@ -238,7 +238,7 @@ with st.sidebar:
         img_data = get_image_base64("logo_ku.png")
         st.markdown(f'<div class="custom-header"><img src="data:image/png;base64,{img_data}" class="header-logo-img"><div class="univ-name">{curr["univ_name"]}</div></div>', unsafe_allow_html=True)
     
-  st.markdown("", unsafe_allow_html=True)
+    st.markdown("", unsafe_allow_html=True)
     
     # บรรทัดถัดไปต้องเคาะย่อหน้าให้ตรงกับบรรทัด if หรือคำสั่งด้านบน
     if st.button(curr["new_chat"], key="new_chat_btn"):
