@@ -4,7 +4,7 @@ import os
 import base64
 import re
 
-# --- 1. ตั้งค่าหน้าจอ (Page Config) ---
+# --- 1. ตั้งค่าหน้าจอ ---
 st.set_page_config(page_title="AI KUSRC", page_icon="🦖", layout="wide")
 
 # --- 2. ระบบจัดการภาษา ---
@@ -16,119 +16,89 @@ def toggle_language():
 
 translation = {
     "TH": {
-        "univ_name": "Kasetsart University<br><small>Sriracha Campus</small>",
-        "new_chat": "➕ เริ่มแชทใหม่",
+        "univ_name": "Kasetsart University<br>Sriracha Campus",
+        "new_chat": "เริ่มแชทใหม่",
         "chat_hist": "ประวัติการสนทนา",
         "input_placeholder": "พิมพ์คำถามของคุณที่นี่...",
-        "welcome_main": "มีอะไรให้พี่ช่วยไหม?",
-        "loading": "กำลังประมวลผล...",
-        "ai_identity": "คุณคือรุ่นพี่ มก.ศรช. ใจดี ตอบเป็นภาษาไทยเป็นหลัก",
-        "quick_1": "📅 ตารางสอบ", "quick_2": "🧮 คำนวณเกรด", "quick_3": "📄 แบบฟอร์ม", "quick_4": "🔍 ข้อมูลหอพัก"
+        "welcome_main": "สวัสดีครับ มีอะไรให้พี่ช่วยไหม?",
+        "loading": "รอสักครู่นะครับ...",
+        "ai_identity": "คุณคือรุ่นพี่ มก.ศรช. ใจดี ตอบเป็นภาษาไทยเป็นหลัก"
     },
     "EN": {
-        "univ_name": "Kasetsart University<br><small>Sriracha Campus</small>",
-        "new_chat": "➕ New Chat",
+        "univ_name": "Kasetsart University<br>Sriracha Campus",
+        "new_chat": "New Chat",
         "chat_hist": "Recent Chats",
         "input_placeholder": "Message Nontri AI...",
         "welcome_main": "How can I help you?",
         "loading": "Thinking...",
-        "ai_identity": "You are a friendly KU Sriracha senior. Please respond in English.",
-        "quick_1": "📅 Exam", "quick_2": "🧮 GPA", "quick_3": "📄 Forms", "quick_4": "🔍 Dorm"
+        "ai_identity": "You are a friendly KU Sriracha senior. Please respond in English."
     }
 }
 curr = translation[st.session_state.lang]
 
-# --- 3. ฟังก์ชันจัดการข้อมูล ---
+# --- 3. ฟังก์ชันดึงโลโก้ (แก้ให้ดึงจากไฟล์ logo_ku.png ในโฟลเดอร์หลัก) ---
 def get_image_base64(path):
     if os.path.exists(path):
         with open(path, "rb") as img_file:
             return base64.b64encode(img_file.read()).decode()
-    return ""
-
-def get_room_info(room_code):
-    code = re.sub(r'\D', '', str(room_code))
-    if len(code) >= 4:
-        # Simple logic preserved as requested
-        return f"📍 ห้อง {code} อยู่ที่อาคารเรียนรวมครับน้อง" if st.session_state.lang == "TH" else f"📍 Room {code} is located in the main building."
     return None
 
-# --- 4. CSS (Modern & Clean UI) ---
+logo_base64 = get_image_base64("logo_ku.png")
+
+# --- 4. CSS ใหม่ (สีเขียว KU มินิมอล ไม่แดงแน่นอน!) ---
 st.markdown(f"""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
-    
-    html, body, [class*="st-"] {{ font-family: 'Inter', sans-serif; }}
-    
-    /* Main Background */
+    /* ปรับพื้นหลังหลัก */
     .stApp {{ background-color: #FFFFFF; }}
-
-    /* Sidebar Styling */
+    
+    /* Sidebar: สีเทาอ่อนมินิมอล */
     [data-testid="stSidebar"] {{
-        background-color: #f9f9f9 !important;
-        border-right: 1px solid #eee;
+        background-color: #F8F9FA !important;
+        border-right: 1px solid #E0E0E0;
     }}
-    
-    /* Sidebar Header */
-    .sidebar-brand {{
-        padding: 1.5rem;
+
+    /* จัดวางโลโก้และชื่อมหาลัยใน Sidebar */
+    .sidebar-header {{
         text-align: center;
-        border-bottom: 1px solid #eee;
-        margin-bottom: 1rem;
+        padding: 20px 10px;
     }}
-    .univ-name {{ color: #006861; font-weight: 700; font-size: 1.1rem; line-height: 1.1; }}
-
-    /* Chat Input Styling */
-    .stChatInputContainer {{
-        padding-bottom: 2rem !important;
-        background-color: transparent !important;
+    .logo-img {{
+        width: 80px;
+        margin-bottom: 10px;
     }}
-    
-    div[data-testid="stChatInput"] {{
-        border-radius: 20px !important;
-        border: 1px solid #e5e5e5 !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+    .univ-title {{
+        color: #006861;
+        font-weight: bold;
+        font-size: 16px;
+        line-height: 1.2;
     }}
 
-    /* Hero Text */
-    .hero-container {{
-        text-align: center;
-        margin-top: 10vh;
-        margin-bottom: 2rem;
-    }}
-    .hero-title {{
-        font-size: 2.5rem;
-        font-weight: 600;
-        color: #212121;
-        margin-bottom: 2rem;
-    }}
-
-    /* Quick Action Buttons */
-    .quick-action-container {{
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-        flex-wrap: wrap;
-        max-width: 800px;
-        margin: 0 auto;
-    }}
-    .quick-btn {{
-        padding: 10px 20px;
-        border: 1px solid #e5e5e5;
-        border-radius: 15px;
-        background: white;
-        cursor: pointer;
-        font-size: 0.9rem;
+    /* ปุ่มใน Sidebar: แก้จากสีแดงเป็นสีเขียวมินิมอล */
+    div.stButton > button {{
+        background-color: white !important;
+        color: #006861 !important;
+        border: 1px solid #006861 !important;
+        border-radius: 10px !important;
         transition: 0.3s;
     }}
-    .quick-btn:hover {{ background: #f0f0f0; }}
+    div.stButton > button:hover {{
+        background-color: #006861 !important;
+        color: white !important;
+    }}
 
-    /* Message Bubbles */
-    .stChatMessage {{ background-color: transparent !important; border: none !important; }}
-    [data-testid="chatAvatarIcon-user"], [data-testid="chatAvatarIcon-assistant"] {{ background-color: #006861 !important; }}
+    /* ปุ่มเริ่มแชทใหม่ (ทำให้เด่นแต่ยังคุมโทนเขียว) */
+    .st-key-new_chat_btn button {{
+        background-color: #006861 !important;
+        color: white !important;
+        font-weight: bold !important;
+    }}
+
+    /* ปรับแต่งกล่องแชท */
+    .stChatMessage {{ border-radius: 15px; }}
 </style>
 """, unsafe_allow_html=True)
 
-# --- 5. จัดการ API ---
+# --- 5. จัดการ API (คงเดิม) ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 if api_key: genai.configure(api_key=api_key)
 
@@ -141,91 +111,70 @@ def load_model():
     except: return None
 model = load_model()
 
-# --- 6. จัดการ State ---
+# --- 6. State Management ---
 if "all_chats" not in st.session_state: st.session_state.all_chats = {} 
 if "messages" not in st.session_state: st.session_state.messages = []
 if "current_chat_id" not in st.session_state: st.session_state.current_chat_id = None
-if "global_user_nickname" not in st.session_state: st.session_state.global_user_nickname = "นิสิต"
 
 # --- 7. Sidebar ---
 with st.sidebar:
-    st.markdown(f'<div class="sidebar-brand"><div class="univ-name">{curr["univ_name"]}</div></div>', unsafe_allow_html=True)
+    # ส่วนหัวโลโก้
+    st.markdown('<div class="sidebar-header">', unsafe_allow_html=True)
+    if logo_base64:
+        st.markdown(f'<img src="data:image/png;base64,{logo_base64}" class="logo-img">', unsafe_allow_html=True)
+    st.markdown(f'<div class="univ-title">{curr["univ_name"]}</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
     
-    st.button(f"🌐 Language: {st.session_state.lang}", on_click=toggle_language, use_container_width=True)
+    st.button(f"🌐 {st.session_state.lang}", on_click=toggle_language, use_container_width=True)
     
-    if st.button(curr["new_chat"], key="new_chat_btn", use_container_width=True, type="primary"):
+    if st.button(curr["new_chat"], key="new_chat_btn", use_container_width=True):
         st.session_state.messages = []
         st.session_state.current_chat_id = None
         st.rerun()
 
-    st.markdown(f"### {curr['chat_hist']}")
+    st.markdown(f"**{curr['chat_hist']}**")
     for chat_id in list(st.session_state.all_chats.keys()):
-        if st.button(f"💬 {chat_id[:20]}...", key=f"hist_{chat_id}", use_container_width=True):
+        if st.button(f"📄 {chat_id[:15]}...", key=f"hist_{chat_id}", use_container_width=True):
             st.session_state.current_chat_id = chat_id
             st.session_state.messages = st.session_state.all_chats[chat_id]
             st.rerun()
 
-# --- 8. หน้า Chat หลัก ---
-
-# แสดง Hero UI เฉพาะตอนที่ยังไม่มีการคุย
+# --- 8. Main Chat Logic ---
 if not st.session_state.messages:
-    st.markdown(f"""
-    <div class="hero-container">
-        <div class="hero-title">{curr['welcome_main']}</div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Quick Actions (ปุ่มทางลัด)
-    cols = st.columns(4)
-    with cols[0]: 
-        if st.button(curr["quick_1"], use_container_width=True): prompt_pre = "ตารางสอบ"
-    with cols[1]: 
-        if st.button(curr["quick_2"], use_container_width=True): prompt_pre = "คำนวณเกรด"
-    with cols[2]: 
-        if st.button(curr["quick_3"], use_container_width=True): prompt_pre = "แบบฟอร์ม"
-    with cols[3]: 
-        if st.button(curr["quick_4"], use_container_width=True): prompt_pre = "หอพัก"
+    st.markdown(f"<h1 style='text-align: center; color: #006861; margin-top: 50px;'>{curr['welcome_main']}</h1>", unsafe_allow_html=True)
 
-# แสดงประวัติแชท
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# ส่วนรับ Input
 if prompt := st.chat_input(curr["input_placeholder"]):
-    if st.session_state.current_chat_id is None: 
-        st.session_state.current_chat_id = prompt[:30]
-
+    if st.session_state.current_chat_id is None: st.session_state.current_chat_id = prompt[:30]
     st.chat_message("user").markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     with st.chat_message("assistant"):
-        room_info = get_room_info(prompt)
-        if room_info:
-            full_response = room_info
-            st.markdown(full_response)
-        else:
-            placeholder = st.empty()
-            placeholder.markdown(f"*{curr['loading']}*")
-            try:
-                knowledge_base = ""
-                if os.path.exists("ku_data.txt"):
-                    with open("ku_data.txt", "r", encoding="utf-8") as f: knowledge_base = f.read()
-                
-                history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} for m in st.session_state.messages[-6:-1]]
-                chat_session = model.start_chat(history=history)
-                
-                full_context = f"{curr['ai_identity']} คุยกับน้อง {st.session_state.global_user_nickname} ข้อมูลมหาลัย:\n{knowledge_base}\nคำถาม: {prompt}"
-                
-                response = chat_session.send_message(full_context, stream=True)
-                full_response = ""
-                for chunk in response:
-                    full_response += chunk.text
-                    placeholder.markdown(full_response + "▌")
-                placeholder.markdown(full_response)
-            except Exception as e:
-                full_response = f"ขออภัยครับ เกิดข้อผิดพลาด: {e}"
-                st.error(full_response)
+        placeholder = st.empty()
+        placeholder.markdown(f"*{curr['loading']}*")
+        try:
+            # ดึงข้อมูลจาก ku_data.txt ถ้ามี
+            kb = ""
+            if os.path.exists("ku_data.txt"):
+                with open("ku_data.txt", "r", encoding="utf-8") as f: kb = f.read()
+            
+            history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} for m in st.session_state.messages[-6:-1]]
+            chat_session = model.start_chat(history=history)
+            
+            full_context = f"{curr['ai_identity']}\nข้อมูลมหาลัย: {kb}\nคำถาม: {prompt}"
+            response = chat_session.send_message(full_context, stream=True)
+            
+            full_response = ""
+            for chunk in response:
+                full_response += chunk.text
+                placeholder.markdown(full_response + "▌")
+            placeholder.markdown(full_response)
+        except Exception as e:
+            full_response = f"Error: {e}"
+            st.error(full_response)
         
         st.session_state.messages.append({"role": "assistant", "content": full_response})
         st.session_state.all_chats[st.session_state.current_chat_id] = st.session_state.messages
