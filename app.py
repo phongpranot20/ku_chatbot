@@ -70,77 +70,64 @@ def get_room_info(room_code):
 # --- 4. CSS (Updated UI Modern/Luxury) ---
 st.markdown("""
 <style>
-    /* ตั้งค่า Font */
     @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap');
     
-    html, body, [class*="css"] { font-family: 'Prompt', sans-serif; }
-
-    /* ปรับแต่ง Sidebar ให้ดูมีมิติและหรูหรา */
+    /* สไตล์ Sidebar แบบมีมิติและแสง */
     [data-testid="stSidebar"] { 
-        background: linear-gradient(165deg, #004D40 0%, #00251A 100%) !important;
-        padding: 20px !important;
+        background: radial-gradient(circle at top right, #006064, #004D40, #00251A) !important;
+        box-shadow: 10px 0 30px rgba(0,0,0,0.5) !important;
     }
 
-    /* ปุ่มเปลี่ยนภาษา */
-    .lang-btn { margin-bottom: 20px; }
-
-    /* Header Profile & Title */
+    /* กล่อง Header ที่มีความเป็น Glassmorphism */
     .custom-header { 
-        text-align: center; 
-        padding: 20px 0; 
-        background: rgba(255,255,255,0.05); 
-        border-radius: 20px; 
-        margin-bottom: 20px;
-        transition: 0.3s;
+        background: rgba(255, 255, 255, 0.08) !important;
+        backdrop-filter: blur(15px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-radius: 25px !important;
+        padding: 25px 15px !important;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important;
     }
-    .header-logo-img { width: 80px; transition: 0.5s; }
-    .header-logo-img:hover { transform: scale(1.1) rotate(5deg); }
-    .univ-name { color: #FFD700 !important; font-size: 18px; font-weight: 600; margin-top: 10px; }
 
-    /* ปรับปุ่มเมนูให้เต็มความกว้าง */
+    /* Animation สำหรับโลโก้ */
+    .header-logo-img { 
+        filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5)); 
+        animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    /* ปุ่มเมนูที่มีลูกเล่น Glow */
     div.stButton > button { 
-        width: 100% !important; 
-        border-radius: 12px !important; 
-        background: rgba(255,255,255,0.05) !important;
-        border: 1px solid rgba(255,255,255,0.1) !important;
-        color: white !important;
-        transition: 0.3s !important;
-        justify-content: flex-start !important;
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
     }
     div.stButton > button:hover { 
         background: #FFD700 !important; 
-        color: #004D40 !important;
-        transform: scale(1.02);
+        color: #00251A !important;
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.4) !important;
+        transform: translateX(5px) scale(1.02);
     }
 
-    /* ประวัติแชท - ให้แสดงเต็มไม่ตัดคำ */
-    .stButton button { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
-
-    /* Quick Links Style */
-    .sidebar-title { color: #FFD700; font-size: 12px; margin: 20px 0 10px; letter-spacing: 2px; }
-    
-    /* Expander ปรับให้โปร่งใสและหรู */
-    div[data-testid="stExpander"] { 
-        background: transparent !important; 
-        border: none !important; 
+    /* Sidebar Title แบบหรูหรา */
+    .sidebar-title { 
+        color: #FFD700 !important;
+        text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        border-left: 3px solid #FFD700 !important;
+        padding-left: 10px !important;
     }
-    
-    /* ปุ่มใน Expander ให้สีตัดกันชัดเจน */
-    .btn-action { 
-        display: block; 
-        width: 100%; 
-        padding: 10px; 
-        text-align: center; 
-        background: #FFD700; 
-        color: #004D40; 
+
+    /* ปรับแต่ง Scrollbar ให้ดูเนียนไปกับ Theme */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-thumb { 
+        background: rgba(255, 255, 255, 0.1); 
         border-radius: 10px; 
-        text-decoration: none; 
-        font-weight: bold; 
-        margin-top: 5px;
     }
-    .btn-action:hover { background: #fff; transform: scale(1.02); }
+    ::-webkit-scrollbar-thumb:hover { background: #FFD700; }
 </style>
-""", unsafe_allow_html=True)
+""", unsafe_allow_html=True)True)
 
 # --- 5. จัดการ API (คงโมเดลเดิมไว้) ---
 api_key = st.secrets.get("GEMINI_API_KEY")
