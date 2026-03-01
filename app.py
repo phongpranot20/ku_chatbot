@@ -249,9 +249,6 @@ html, body, [class*="css"] {
     50% { transform: scale(1.02); opacity: 0.2; } /* ขยายตัวและจางลงเล็กน้อย */
 }
 
-.stApp::before {
-    animation: character-breathe 8s infinite ease-in-out; /* ปรับเวลาตามต้องการ (เช่น 8s) */
-}
 
 </style>
 """, unsafe_allow_html=True)
