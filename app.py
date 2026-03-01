@@ -180,6 +180,15 @@ st.markdown("""
     margin-bottom: 10px !important;
     box-shadow: 0 4px 10px rgba(0,0,0,0.03);
 }
+@keyframes wave-dance {
+        0%, 100% { transform: rotate(0deg); }
+        50% { transform: rotate(25deg); }
+    }
+    .dino-head {
+        display: inline-block;
+        animation: wave-dance 2s infinite ease-in-out;
+        margin-right: 10px;
+    }
 
 </style>
 """, unsafe_allow_html=True)
@@ -240,22 +249,10 @@ with st.sidebar:
             st.markdown(f'<div class="form-row"><div class="form-label">{name}</div><a href="{link}" target="_blank" class="btn-action">{curr["btn_download"]}</a></div>', unsafe_allow_html=True)
 
 # แก้ไขบรรทัดที่แสดงหัวข้อ AI KUSRC
-st.markdown("""
-    <style>
-        @keyframes wave {
-            0%, 100% { transform: rotate(0deg); }
-            50% { transform: rotate(20deg); }
-        }
-        .dino-icon {
-            display: inline-block;
-            animation: wave 1.5s infinite ease-in-out;
-            margin-right: 10px;
-        }
-    </style>
-    <h2 style='color: #004D40;'>
-        <span class="dino-icon">🦖</span> AI KUSRC
-    </h2>
-""", unsafe_allow_html=True)
+current_title = st.session_state.current_chat_id if st.session_state.current_chat_id else ( "แชทใหม่" if st.session_state.lang == "TH" else "New Chat")
+
+st.markdown(f"<h2 style='color: #004D40;'><span class='dino-head'>🦖</span> AI KUSRC</h2>", unsafe_allow_html=True)
+st.caption(f"👤 {curr['welcome']} {st.session_state.global_user_nickname} | {curr['topic']}: {current_title}")
 
 # แสดงข้อความ
 for message in st.session_state.messages:
