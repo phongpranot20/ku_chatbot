@@ -802,4 +802,3 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 # ส่วนรับ Input
-if prompt := st.chat
