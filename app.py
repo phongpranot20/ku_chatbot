@@ -189,10 +189,14 @@ html, body, [class*="css"] {
         z-index: 0;
         pointer-events: none;
     }
-    /* เพิ่มในส่วนสไตล์ของคุณ */
-.main {
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
+.main .block-container {
+        padding-top: 1rem !important; 
+    }
+
+h2 {
+    margin-top: -1.5rem !important;
+    margin-bottom: 0.5rem !important; /* เพิ่มระยะห่างระหว่างหัวข้อกับคำบรรยายใต้ภาพ */
+    padding-top: 0 !important;
 }
 
 /* ทำให้ช่อง Chat กว้างและดูสะอาดขึ้น */
