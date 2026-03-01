@@ -4,10 +4,10 @@ import os
 import base64
 import re
 
-# --- 1. ตั้งค่าหน้าจอ (คงเดิม) ---
+# --- 1. ตั้งค่าหน้าจอ ---
 st.set_page_config(page_title="AI KUSRC", page_icon="🦖", layout="wide")
 
-# --- 2. ระบบจัดการภาษา (ตรวจสอบ Key ให้ตรงกัน 100% เพื่อแก้ KeyError) ---
+# --- 2. ระบบจัดการภาษา (ตรวจสอบ Key ให้ตรงกัน 100% เพื่อป้องกัน KeyError) ---
 if "lang" not in st.session_state:
     st.session_state.lang = "TH"
 
@@ -44,7 +44,7 @@ translation = {
 }
 curr = translation[st.session_state.lang]
 
-# --- 3. ฟังก์ชันจัดการข้อมูล (คงเดิม) ---
+# --- 3. ฟังก์ชันจัดการข้อมูล ---
 def get_image_base64(path):
     if os.path.exists(path):
         with open(path, "rb") as img_file:
@@ -57,12 +57,12 @@ def get_room_info(room_code):
         return f"📍 ข้อมูลสถานที่: **ตึก {code[:2]} ชั้น {code[2]} ห้อง {code[3:]}**"
     return None
 
-# --- 4. CSS (เจาะจงลบไอคอนสีแดง/ส้มทิ้ง 100% และคุมโทน Gemini) ---
+# --- 4. CSS (เจาะจงลบไอคอนสีแดง/ส้มทิ้ง 100% และล็อค UI ให้โปร) ---
 st.markdown(f"""
 <style>
     .stApp {{ background-color: #FFFFFF; color: #1f1f1f; }}
     
-    /* ลบไอคอนวงกลมสีแดง/ส้ม (Avatar) และ Emoji ทุกจุด */
+    /* ลบไอคอนวงกลมสีแดง/ส้ม (Avatar) และทุกส่วนที่วงมาทิ้งทั้งหมด */
     [data-testid="chatAvatarIcon-user"], 
     [data-testid="chatAvatarIcon-assistant"],
     div[data-testid="stChatMessage"] figure,
@@ -86,7 +86,7 @@ st.markdown(f"""
         border: none !important;
     }}
 
-    /* ปรับแต่ง Sidebar และ Logo */
+    /* ปรับแต่ง Sidebar และล็อคขนาด Logo */
     .sidebar-header {{ text-align: center; padding: 20px 0; }}
     .logo-img {{ width: 100px !important; height: auto; margin-bottom: 10px; }}
     .univ-name {{ color: #006861 !important; font-size: 18px; font-weight: bold; line-height: 1.2; }}
@@ -97,14 +97,14 @@ st.markdown(f"""
 </style>
 """, unsafe_allow_html=True)
 
-# --- 5. จัดการ API (คืนค่า Logic เดิมเพื่อให้คุยได้ปกติ 100%) ---
+# --- 5. จัดการ API (ใช้ Logic เดิมเพื่อให้คุยได้ปกติ 100%) ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 if api_key: genai.configure(api_key=api_key)
 
 @st.cache_resource
 def load_model():
     try:
-        # ใช้ระบบค้นหาชื่อโมเดลแบบเดิมที่คุณเขียนไว้ในชุดแรก เพื่อป้องกัน Error 404
+        # ใช้ Logic ดั้งเดิมเพื่อป้องกัน Error 404 Model Not Found
         available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
         selected = next((m for m in available_models if "1.5-flash" in m), available_models[0])
         return genai.GenerativeModel(model_name=selected)
@@ -116,7 +116,7 @@ if "all_chats" not in st.session_state: st.session_state.all_chats = {}
 if "messages" not in st.session_state: st.session_state.messages = []
 if "current_chat_id" not in st.session_state: st.session_state.current_chat_id = None
 
-# --- 7. Sidebar (ฟีเจอร์ครบ 100% ไม่หาย) ---
+# --- 7. Sidebar (ฟีเจอร์ครบ 100% ตามรูปเดิม) ---
 with st.sidebar:
     st.markdown('<div class="sidebar-header">', unsafe_allow_html=True)
     logo_data = get_image_base64("logo_ku.png")
@@ -166,7 +166,7 @@ if prompt := st.chat_input(curr["input_placeholder"]):
             if os.path.exists("ku_data.txt"):
                 with open("ku_data.txt", "r", encoding="utf-8") as f: kb = f.read()
             
-            # รักษา Logic ประวัติการแชทเดิม
+            # รักษา Logic ประวัติการแชทเดิมของคุณ
             history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} for m in st.session_state.messages[-6:-1]]
             chat_session = model.start_chat(history=history)
             
