@@ -55,12 +55,6 @@ translation = {
         "greeting_afternoon": "☀️ สวัสดีตอนบ่าย",
         "greeting_evening": "🌙 สวัสดีตอนเย็น",
         "greeting_night": "✨ ราตรีสวัสดิ์",
-        "quick_questions": "📌 คำถามที่พบบ่อย",
-        "ask_room": "ห้องเรียนอยู่ตึกอะไร?",
-        "ask_exam": "ตารางสอบดูที่ไหน?",
-        "ask_gpa": "วิธีคิดเกรด",
-        "ask_register": "ลงทะเบียนยังไง?",
-        "ask_library": "ยืมหนังสือ",
         "dino_tip1": "🦖 นนทรีเป็นไดโนเสาร์พันธุ์ซอโรพอดที่กินพืชเป็นอาหาร",
         "dino_tip2": "📚 คำว่า 'นนทรี' มาจากต้นไม้ประจำมหาวิทยาลัย",
         "dino_tip3": "⭐ KU มีทั้งหมด 4 วิทยาเขต"
@@ -91,12 +85,6 @@ translation = {
         "greeting_afternoon": "☀️ Good Afternoon",
         "greeting_evening": "🌙 Good Evening",
         "greeting_night": "✨ Good Night",
-        "quick_questions": "📌 Quick Questions",
-        "ask_room": "Where is the classroom?",
-        "ask_exam": "Exam schedule?",
-        "ask_gpa": "GPA calculation?",
-        "ask_register": "How to register?",
-        "ask_library": "Borrow books",
         "dino_tip1": "🦖 Nontri is a herbivorous sauropod dinosaur",
         "dino_tip2": "📚 'Nontri' comes from the university's tree",
         "dino_tip3": "⭐ KU has 4 campuses"
@@ -154,8 +142,6 @@ light_theme_css = """
         --message-user: #E9ECEF;
         --message-bot: #FFFFFF;
         --border-color: #E2E8F0;
-        --text-light: #FFFFFF;
-        --text-dark: #000000;
     }
 """
 
@@ -176,8 +162,6 @@ dark_theme_css = """
         --message-user: #4A5568;
         --message-bot: #2D3748;
         --border-color: #4A5568;
-        --text-light: #FFFFFF;
-        --text-dark: #000000;
     }
 """
 
@@ -238,14 +222,14 @@ st.markdown(f"""
         z-index: 1;
     }}
     
-    /* Header Animation */
+    /* Header Animation - ปรับ margin */
     .custom-header {{ 
         display: flex; 
         flex-direction: column; 
         align-items: center; 
         text-align: center; 
-        padding: 20px; 
-        margin: -20px -20px 20px -20px;
+        padding: 15px 20px; 
+        margin: -10px -20px 15px -20px;
         background: rgba(255,255,255,0.1);
         backdrop-filter: blur(10px);
         border-bottom: 1px solid rgba(255,255,255,0.2);
@@ -258,7 +242,7 @@ st.markdown(f"""
     }}
     
     .header-logo-img {{ 
-        width: 100px; 
+        width: 80px; 
         height: auto; 
         filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
         animation: pulse 2s infinite;
@@ -272,21 +256,21 @@ st.markdown(f"""
     
     .univ-name {{ 
         color: white !important; 
-        font-size: 20px; 
+        font-size: 18px; 
         font-weight: 700; 
         line-height: 1.3; 
-        margin-top: 10px;
+        margin-top: 8px;
         text-shadow: 0 2px 4px rgba(0,0,0,0.3);
     }}
     
     .greeting-badge {{
         background: var(--gradient-gold);
         color: var(--accent-primary);
-        padding: 5px 15px;
+        padding: 4px 12px;
         border-radius: 50px;
-        font-size: 14px;
+        font-size: 12px;
         font-weight: 600;
-        margin-top: 10px;
+        margin-top: 8px;
         animation: shimmer 2s infinite;
         background-size: 200% 100%;
     }}
@@ -296,16 +280,17 @@ st.markdown(f"""
         100% {{ background-position: -200% 0; }}
     }}
     
-    /* Language Toggle Styling */
+    /* Language Toggle Styling - ปรับตำแหน่ง */
     div[data-testid="column"]:nth-of-type(1) button,
     div[data-testid="column"]:nth-of-type(2) button {{
         background: rgba(255,255,255,0.2) !important;
         border: 1px solid rgba(255,255,255,0.3) !important;
         color: white !important;
         font-size: 14px !important;
-        padding: 5px 10px !important;
+        padding: 4px 8px !important;
         border-radius: 20px !important;
-        min-width: 50px !important;
+        min-width: 45px !important;
+        margin-bottom: 5px !important;
     }}
     
     /* Button Styling */
@@ -315,12 +300,13 @@ st.markdown(f"""
         background: rgba(255,255,255,0.15) !important; 
         color: white !important; 
         border: 1px solid rgba(255, 255, 255, 0.3) !important; 
-        padding: 10px 20px !important; 
+        padding: 8px 15px !important; 
         font-weight: 500 !important;
         backdrop-filter: blur(5px);
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
         position: relative;
         overflow: hidden;
+        font-size: 14px !important;
     }}
     
     div.stButton > button::before {{
@@ -381,24 +367,24 @@ st.markdown(f"""
     /* Expander UI */
     div[data-testid="stExpander"] {{ 
         background: rgba(255,255,255,0.1) !important; 
-        border-radius: 15px !important; 
+        border-radius: 12px !important; 
         border: 1px solid rgba(255,255,255,0.2) !important;
-        margin-bottom: 15px !important;
+        margin-bottom: 10px !important;
         backdrop-filter: blur(5px);
         overflow: hidden;
         transition: all 0.3s ease;
     }}
     
     div[data-testid="stExpander"]:hover {{
-        transform: translateX(5px);
+        transform: translateX(3px);
         box-shadow: var(--shadow-md);
     }}
     
     div[data-testid="stExpander"] summary {{
         font-weight: 600 !important;
         color: white !important;
-        padding: 15px !important;
-        font-size: 16px !important;
+        padding: 12px 15px !important;
+        font-size: 14px !important;
     }}
     
     /* Form row styling */
@@ -406,23 +392,23 @@ st.markdown(f"""
         display: flex; 
         justify-content: space-between; 
         align-items: center; 
-        padding: 12px;
+        padding: 10px 12px;
         border-bottom: 1px solid rgba(255,255,255,0.1);
     }}
     
     .form-label {{ 
         color: white !important; 
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 500;
     }}
     
     .btn-action {{ 
         background: var(--gradient-gold);
         color: var(--accent-primary) !important; 
-        padding: 6px 15px; 
+        padding: 4px 12px; 
         border-radius: 20px; 
         text-decoration: none; 
-        font-size: 12px; 
+        font-size: 11px; 
         font-weight: bold;
         transition: 0.3s;
         border: none;
@@ -439,7 +425,7 @@ st.markdown(f"""
         display: flex;
         align-items: center;
         gap: 8px;
-        padding: 15px 20px;
+        padding: 12px 18px;
         background: var(--message-bot);
         border-radius: 20px;
         width: fit-content;
@@ -448,8 +434,8 @@ st.markdown(f"""
     }}
     
     .typing-dot {{
-        width: 10px;
-        height: 10px;
+        width: 8px;
+        height: 8px;
         background: var(--accent-primary);
         border-radius: 50%;
         animation: typingBounce 1.4s infinite ease-in-out;
@@ -469,14 +455,14 @@ st.markdown(f"""
         position: fixed;
         bottom: 25px;
         right: 25px;
-        width: 65px;
-        height: 65px;
+        width: 60px;
+        height: 60px;
         background: var(--gradient-primary);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 35px;
+        font-size: 32px;
         box-shadow: var(--shadow-lg);
         cursor: pointer;
         animation: floatDino 3s ease-in-out infinite;
@@ -499,22 +485,22 @@ st.markdown(f"""
     
     @keyframes floatDino {{
         0% {{ transform: translateY(0px); }}
-        50% {{ transform: translateY(-15px); }}
+        50% {{ transform: translateY(-12px); }}
         100% {{ transform: translateY(0px); }}
     }}
     
     .floating-dino:hover {{
         transform: scale(1.1);
-        box-shadow: var(--shadow-lg), 0 0 25px var(--accent-gold);
+        box-shadow: var(--shadow-lg), 0 0 20px var(--accent-gold);
         border-color: white;
     }}
     
     /* Stats Cards */
     .stat-card {{
         background: rgba(255,255,255,0.15);
-        border-radius: 15px;
-        padding: 15px;
-        margin: 10px 0;
+        border-radius: 12px;
+        padding: 12px;
+        margin: 8px 0;
         backdrop-filter: blur(5px);
         border: 1px solid rgba(255,255,255,0.2);
         animation: slideInRight 0.5s ease;
@@ -526,14 +512,14 @@ st.markdown(f"""
     }}
     
     .stat-value {{
-        font-size: 28px;
+        font-size: 24px;
         font-weight: 700;
         color: var(--accent-gold);
         line-height: 1.2;
     }}
     
     .stat-label {{
-        font-size: 13px;
+        font-size: 12px;
         color: rgba(255,255,255,0.9);
         font-weight: 500;
     }}
@@ -543,35 +529,37 @@ st.markdown(f"""
         background: rgba(255,255,255,0.15) !important;
         color: white !important;
         border: 1px solid rgba(255,255,255,0.2) !important;
-        border-radius: 15px !important;
+        border-radius: 12px !important;
+        font-size: 13px !important;
+        padding: 10px !important;
     }}
     
     /* Sidebar title */
     .sidebar-title {{ 
         color: rgba(255,255,255,0.9) !important; 
-        font-size: 14px; 
+        font-size: 13px; 
         text-transform: uppercase; 
-        letter-spacing: 1.5px;
-        margin: 20px 0 15px 10px;
+        letter-spacing: 1px;
+        margin: 15px 0 10px 8px;
         font-weight: 600;
     }}
     
     /* Main title styling */
     .main-title {{
         color: var(--accent-primary);
-        font-size: 32px;
+        font-size: 28px;
         font-weight: 700;
-        margin-bottom: 10px;
+        margin-bottom: 5px;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
     }}
     
     .beta-badge {{
-        font-size: 14px;
+        font-size: 12px;
         background: var(--gradient-gold);
         color: var(--accent-primary);
-        padding: 5px 15px;
+        padding: 4px 12px;
         border-radius: 30px;
         font-weight: 600;
         display: inline-block;
@@ -580,20 +568,20 @@ st.markdown(f"""
     /* Caption styling */
     .stCaption {{
         color: var(--text-secondary) !important;
-        font-size: 14px !important;
-        padding: 10px 0;
+        font-size: 13px !important;
+        padding: 5px 0 10px 0;
         border-bottom: 1px solid var(--border-color);
-        margin-bottom: 20px;
+        margin-bottom: 15px;
     }}
     
     /* Progress Bar */
     .progress-container {{
         width: 100%;
-        height: 4px;
+        height: 3px;
         background: rgba(255,255,255,0.2);
         border-radius: 2px;
         overflow: hidden;
-        margin: 10px 0;
+        margin: 8px 0;
     }}
     
     .progress-bar {{
@@ -617,20 +605,20 @@ st.markdown(f"""
     
     .tooltip .tooltiptext {{
         visibility: hidden;
-        width: 120px;
+        width: 100px;
         background-color: var(--accent-primary);
         color: white;
         text-align: center;
         border-radius: 6px;
-        padding: 5px;
+        padding: 4px;
         position: absolute;
         z-index: 1001;
         bottom: 125%;
         left: 50%;
-        margin-left: -60px;
+        margin-left: -50px;
         opacity: 0;
         transition: opacity 0.3s;
-        font-size: 12px;
+        font-size: 11px;
         pointer-events: none;
     }}
     
@@ -644,7 +632,7 @@ st.markdown(f"""
         .custom-header {{ padding: 10px; }}
         .header-logo-img {{ width: 60px; }}
         .univ-name {{ font-size: 16px; }}
-        .main-title {{ font-size: 24px; }}
+        .main-title {{ font-size: 22px; }}
     }}
 </style>
 
@@ -653,18 +641,18 @@ st.markdown(f"""
 <script>
     particlesJS('particles-js', {{
         particles: {{
-            number: {{ value: 50, density: {{ enable: true, value_area: 800 }} }},
+            number: {{ value: 40, density: {{ enable: true, value_area: 800 }} }},
             color: {{ value: '#{"FFD700" if st.session_state.theme == "light" else "FFC107"}' }},
             shape: {{ type: 'circle' }},
-            opacity: {{ value: 0.3, random: true }},
+            opacity: {{ value: 0.2, random: true }},
             size: {{ value: 2, random: true }},
-            line_linked: {{ enable: true, distance: 150, color: '#{"004D40" if st.session_state.theme == "light" else "006861"}', opacity: 0.2, width: 1 }},
+            line_linked: {{ enable: true, distance: 150, color: '#{"004D40" if st.session_state.theme == "light" else "006861"}', opacity: 0.15, width: 1 }},
             move: {{ enable: true, speed: 1, direction: 'none', random: true, straight: false, out_mode: 'out' }}
         }},
         interactivity: {{
             detect_on: 'canvas',
             events: {{ onhover: {{ enable: true, mode: 'repulse' }}, onclick: {{ enable: true, mode: 'push' }}, resize: true }},
-            modes: {{ repulse: {{ distance: 100, duration: 0.4 }}, push: {{ particles_nb: 2 }} }}
+            modes: {{ repulse: {{ distance: 80, duration: 0.4 }}, push: {{ particles_nb: 2 }} }}
         }},
         retina_detect: true
     }});
@@ -702,7 +690,7 @@ st.markdown(f'''
 
 # --- 8. Sidebar ---
 with st.sidebar:
-    # Theme Toggle and Language Toggle - ปรับให้สมดุล
+    # Theme Toggle and Language Toggle
     col1, col2 = st.columns([1, 1])
     with col1:
         theme_icon = "🌙" if st.session_state.theme == "light" else "☀️"
@@ -730,7 +718,6 @@ with st.sidebar:
     
     # Stats Cards
     st.markdown('<div class="stat-card"><div class="stat-value">' + str(len(st.session_state.all_chats)) + '</div><div class="stat-label">' + curr["chat_hist"] + '</div></div>', unsafe_allow_html=True)
-    st.markdown('<div class="stat-card"><div class="stat-value">' + str(st.session_state.total_questions) + '</div><div class="stat-label">' + curr["quick_questions"] + '</div></div>', unsafe_allow_html=True)
     
     # Dino Fact
     st.info(f"🦖 {get_dino_fact()}")
@@ -750,7 +737,7 @@ with st.sidebar:
             st.session_state.messages = []
             st.rerun()
     
-    # Chat History with Animation
+    # Chat History
     if st.session_state.all_chats:
         st.markdown(f'<p class="sidebar-title">{curr["chat_hist"]}</p>', unsafe_allow_html=True)
         for i, chat_id in enumerate(list(st.session_state.all_chats.keys())):
@@ -758,21 +745,10 @@ with st.sidebar:
                 st.session_state.current_chat_id = chat_id
                 st.session_state.messages = st.session_state.all_chats[chat_id]
                 st.rerun()
-
-    # Quick Questions Grid
-    st.markdown(f'<p class="sidebar-title">{curr["quick_questions"]}</p>', unsafe_allow_html=True)
-    cols = st.columns(2)
-    questions = [curr["ask_room"], curr["ask_exam"], curr["ask_gpa"], curr["ask_register"], curr["ask_library"]]
-    
-    for idx, question in enumerate(questions):
-        with cols[idx % 2]:
-            if st.button(question, key=f"qq_{idx}"):
-                st.session_state.messages.append({"role": "user", "content": question})
-                st.rerun()
     
     st.markdown("---")
     
-    # Quick Links with Progress Animation
+    # Quick Links
     st.markdown(f'<p class="sidebar-title">Quick Links</p>', unsafe_allow_html=True)
     
     with st.expander(curr["exam_table"], expanded=False):
@@ -802,3 +778,39 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 # ส่วนรับ Input
+if prompt := st.chat_input(curr["input_placeholder"]):
+    st.session_state.total_questions += 1
+    
+    if st.session_state.current_chat_id is None:
+        st.session_state.current_chat_id = prompt[:20]
+
+    st.chat_message("user", avatar="🧑‍🎓").markdown(prompt)
+    st.session_state.messages.append({"role": "user", "content": prompt})
+
+    with st.chat_message("assistant", avatar="🦖"):
+        # Typing Indicator
+        typing_placeholder = st.empty()
+        typing_placeholder.markdown(f'''
+            <div class="typing-indicator">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <span style="margin-left: 10px; color: var(--text-secondary);">{curr["typing"]}</span>
+            </div>
+        ''', unsafe_allow_html=True)
+        
+        time.sleep(1)
+        
+        room_info = get_room_info(prompt)
+        if room_info:
+            typing_placeholder.empty()
+            full_response = room_info
+            st.markdown(full_response)
+        else:
+            try:
+                knowledge_base = ""
+                if os.path.exists("ku_data.txt"):
+                    with open("ku_data.txt", "r", encoding="utf-8") as f: 
+                        knowledge_base = f.read()
+                
+                history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} for m
