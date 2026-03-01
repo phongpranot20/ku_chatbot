@@ -639,14 +639,6 @@ st.markdown(f"""
         opacity: 1;
     }}
     
-    /* Quick Questions Grid */
-    .quick-questions-grid {{
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-        margin: 15px 0;
-    }}
-    
     /* Responsive Design */
     @media (max-width: 768px) {{
         .custom-header {{ padding: 10px; }}
@@ -720,7 +712,7 @@ with st.sidebar:
     
     with col2:
         lang_text = "TH" if st.session_state.lang == "EN" else "EN"
-        if st.button(f"{lang_text}", key="lang_toggle"):
+        if st.button(lang_text, key="lang_toggle"):
             toggle_language()
             st.rerun()
     
@@ -805,4 +797,9 @@ st.caption(f"👤 {curr['welcome']} **{st.session_state.global_user_nickname}** 
 
 # แสดงข้อความ
 for message in st.session_state.messages:
-    avatar = "🧑‍🎓" if message["role
+    avatar = "🧑‍🎓" if message["role"] == "user" else "🦖"
+    with st.chat_message(message["role"], avatar=avatar):
+        st.markdown(message["content"])
+
+# ส่วนรับ Input
+if prompt := st.chat
