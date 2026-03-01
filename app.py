@@ -56,75 +56,70 @@ def get_room_info(room_code):
         return f"📍 ข้อมูลสถานที่: **ตึก {code[:2]} ชั้น {code[2]} ห้อง {code[3:]}**" if st.session_state.lang == "TH" else f"📍 Location: **Building {code[:2]}, Floor {code[2]}, Room {code[3:]}**"
     return None
 
-# --- 4. CSS (Professional & Gemini Look) ---
+# --- 4. CSS (Professional & No Colored Icons) ---
 st.markdown(f"""
 <style>
-    /* พื้นหลังหลัก */
     .stApp {{ background-color: #FFFFFF; color: #1f1f1f; }}
+    [data-testid="stSidebar"] {{ background-color: #f8f9fa !important; border-right: 1px solid #e0e0e0; }}
     
-    /* Sidebar: เน้นคลีนสีเทาอ่อน */
-    [data-testid="stSidebar"] {{ 
-        background-color: #f8f9fa !important; 
-        border-right: 1px solid #e0e0e0; 
-    }}
-    
-    /* ล็อคขนาด Logo ให้กลับมาใหญ่เท่าเดิม */
+    /* จัดการขนาด Logo ให้คงที่ */
     .sidebar-header {{ text-align: center; padding: 20px 0; }}
     .logo-img {{ width: 100px !important; height: auto; margin-bottom: 10px; }}
     .univ-name {{ color: #006861 !important; font-size: 18px; font-weight: bold; line-height: 1.2; }}
 
-    /* ปุ่มใน Sidebar: เรียบหรู ไม่มีขอบแดง */
+    /* ปุ่มใน Sidebar */
     div.stButton > button {{
         width: 100% !important; border-radius: 12px !important; border: 1px solid #e0e0e0 !important;
         background-color: white !important; color: #444746 !important;
-        text-align: left !important; padding: 10px 15px !important; transition: 0.2s;
+        text-align: left !important; padding: 10px 15px !important;
     }}
     div.stButton > button:hover {{ background-color: #f1f3f4 !important; border-color: #006861 !important; }}
-    
-    /* ปุ่ม 'แชทใหม่' สีฟ้าอ่อนแบบ Gemini */
     .st-key-new_chat_btn button {{ background-color: #c2e7ff !important; color: #001d35 !important; font-weight: bold !important; border: none !important; }}
 
-    /* กล่องแชทแบบ Gemini: ไม่มีสีแดงเหลือง ไม่มีสติกเกอร์ */
+    /* หน้าตาแชทแบบ Professional (No Red/Yellow Icons) */
     .stChatMessage {{ 
         background-color: transparent !important; 
-        max-width: 800px !important; 
+        max-width: 850px !important; 
         margin: 0 auto !important; 
+        border: none !important;
     }}
     
-    /* กล่อง AI: พื้นหลังเทาอ่อนโค้งมนแบบมืออาชีพ */
+    /* ซ่อน Avatar icon เดิมที่ Streamlit ใส่มาให้ เพื่อลบสีแดง/เหลือง */
+    [data-testid="chatAvatarIcon-user"], [data-testid="chatAvatarIcon-assistant"] {{
+        display: none !important;
+    }}
+    
+    /* ปรับแต่งกล่อง Assistant ให้ดูแพงแบบ Gemini */
     [data-testid="stChatMessageAssistant"] {{
         background-color: #f0f4f9 !important;
         border-radius: 24px !important;
         padding: 20px !important;
-        border: none !important;
     }}
     
-    /* ช่อง Input ด้านล่าง */
+    /* ปรับแต่งช่อง Input */
     div[data-testid="stChatInput"] {{
         border: none !important;
         background-color: #f0f4f9 !important;
         border-radius: 30px !important;
-        max-width: 800px !important;
+        max-width: 850px !important;
         margin: 0 auto !important;
     }}
-
-    /* Expander เมนูย่อย */
-    div[data-testid="stExpander"] {{ border: none !important; background: transparent !important; }}
-    .form-row {{ display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }}
-    .btn-action {{ background-color: #006861; color: white !important; padding: 5px 12px; border-radius: 8px; text-decoration: none; font-size: 12px; }}
+    
+    /* Expander เมนูเสริม */
+    .form-row {{ display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }}
+    .btn-action {{ background-color: #006861; color: white !important; padding: 4px 12px; border-radius: 8px; text-decoration: none; font-size: 12px; }}
 </style>
 """, unsafe_allow_html=True)
 
-# --- 5. จัดการ API ---
+# --- 5. จัดการ API (แก้ Logic ให้คุยได้ปกติ) ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 if api_key: genai.configure(api_key=api_key)
 
 @st.cache_resource
 def load_model():
     try:
-        available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-        selected = next((m for m in available_models if "1.5-flash" in m), available_models[0])
-        return genai.GenerativeModel(model_name=selected)
+        # ดึงโมเดล 1.5-flash มาใช้งาน
+        return genai.GenerativeModel(model_name="gemini-1.5-flash")
     except: return None
 model = load_model()
 
@@ -133,9 +128,8 @@ if "all_chats" not in st.session_state: st.session_state.all_chats = {}
 if "messages" not in st.session_state: st.session_state.messages = []
 if "current_chat_id" not in st.session_state: st.session_state.current_chat_id = None
 
-# --- 7. Sidebar (ฟีเจอร์ครบถ้วน) ---
+# --- 7. Sidebar ---
 with st.sidebar:
-    # ส่วนหัวและโลโก้ (ล็อคขนาด 100px)
     st.markdown('<div class="sidebar-header">', unsafe_allow_html=True)
     logo_data = get_image_base64("logo_ku.png")
     if logo_data:
@@ -159,7 +153,6 @@ with st.sidebar:
                 st.rerun()
 
     st.markdown("---")
-    # เมนูที่หายไปเอากลับมาครบ
     with st.expander(curr["exam_table"]):
         st.markdown(f'<div class="form-row"><span>KU Exam</span><a href="https://reg2.src.ku.ac.th/table_test/" target="_blank" class="btn-action">{curr["btn_find"]}</a></div>', unsafe_allow_html=True)
     with st.expander(curr["gpa_calc"]):
@@ -173,16 +166,20 @@ with st.sidebar:
 if not st.session_state.messages:
     st.markdown(f"<h1 style='text-align: center; color: #006861; margin-top: 15vh;'>{curr['welcome']}</h1>", unsafe_allow_html=True)
 else:
-    # แสดงประวัติแชท (เอา Icon สีแดงเหลืองออกตามสั่ง)
     for message in st.session_state.messages:
+        # แสดงแชทโดยไม่มี Avatar สีแดง/เหลือง
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
 if prompt := st.chat_input(curr["input_placeholder"]):
     if st.session_state.current_chat_id is None: st.session_state.current_chat_id = prompt[:20]
-    st.chat_message("user").markdown(prompt)
+    
+    # แสดงข้อความฝั่ง User
+    with st.chat_message("user"):
+        st.markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
+    # ส่วนตอบกลับของ AI
     with st.chat_message("assistant"):
         placeholder = st.empty()
         placeholder.markdown(curr["loading"])
@@ -197,18 +194,24 @@ if prompt := st.chat_input(curr["input_placeholder"]):
                 if os.path.exists("ku_data.txt"):
                     with open("ku_data.txt", "r", encoding="utf-8") as f: kb = f.read()
                 
-                history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} for m in st.session_state.messages[-6:-1]]
+                # แก้ไข Logic การสร้าง History ให้ Gemini เข้าใจ
+                history = []
+                for m in st.session_state.messages[:-1]:
+                    role = "user" if m["role"] == "user" else "model"
+                    history.append({"role": role, "parts": [m["content"]]})
+                
                 chat_session = model.start_chat(history=history)
                 full_context = f"{curr['ai_identity']}\nข้อมูลมหาลัย: {kb}\nคำถาม: {prompt}"
-                response = chat_session.send_message(full_context, stream=True)
                 
+                response = chat_session.send_message(full_context, stream=True)
                 full_response = ""
                 for chunk in response:
-                    full_response += chunk.text
-                    placeholder.markdown(full_response + "▌")
+                    if chunk.text:
+                        full_response += chunk.text
+                        placeholder.markdown(full_response + "▌")
                 placeholder.markdown(full_response)
             except Exception as e:
-                full_response = f"Error: {e}"
+                full_response = f"ขออภัยครับ เกิดข้อผิดพลาดทางเทคนิค: {e}"
                 st.error(full_response)
         
         st.session_state.messages.append({"role": "assistant", "content": full_response})
