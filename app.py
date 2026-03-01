@@ -7,7 +7,7 @@ import re
 # --- 1. ตั้งค่าหน้าจอ (คงเดิม) ---
 st.set_page_config(page_title="AI KUSRC", page_icon="🦖", layout="wide")
 
-# --- 2. ระบบจัดการภาษา (คงเดิมของคุณ 100%) ---
+# --- 2. ระบบจัดการภาษา (ตรวจสอบ Key ครบทุกจุด 100%) ---
 if "lang" not in st.session_state:
     st.session_state.lang = "TH"
 
@@ -38,6 +38,7 @@ translation = {
         "input_placeholder": "Ask Nontri anything...",
         "welcome": "How can I help you today?",
         "loading": "*(Thinking...)*",
+        "btn_find": "Search", "btn_open": "Open", "btn_download": "Get",
         "ai_identity": "You are a friendly KU Sriracha senior. Please respond in English."
     }
 }
@@ -56,66 +57,56 @@ def get_room_info(room_code):
         return f"📍 ข้อมูลสถานที่: **ตึก {code[:2]} ชั้น {code[2]} ห้อง {code[3:]}**"
     return None
 
-# --- 4. CSS แก้ไขใหม่ (ลบไอคอนแดง/ส้ม และปรับ UI ให้คลีน) ---
+# --- 4. CSS (เจาะจงลบไอคอน และลบสีแดง/ส้มทิ้ง 100%) ---
 st.markdown(f"""
 <style>
-    /* 1. ลบไอคอนสีแดง (User) และสีส้ม (Assistant) ออกแบบถาวร */
+    .stApp {{ background-color: #FFFFFF; }}
+    [data-testid="stSidebar"] {{ background-color: #f8f9fa !important; border-right: 1px solid #e0e0e0; }}
+    
+    /* ล้างสีไอคอนและตัวไอคอนออกทั้งหมด (ลบวงกลมแดง/ส้ม) */
     [data-testid="chatAvatarIcon-user"], 
     [data-testid="chatAvatarIcon-assistant"],
-    div[data-testid="stChatMessage"] figure {{
+    div[data-testid="stChatMessage"] figure,
+    .st-emotion-cache-kgp7id, .st-emotion-cache-12w0qpk {{
         display: none !important;
     }}
     
-    /* 2. จัดระเบียบช่องว่างหลังลบไอคอน */
-    div[data-testid="stChatMessage"] {{
-        padding-left: 0px !important;
-        margin-left: 0px !important;
-        max-width: 850px !important;
-        margin: 0 auto !important;
-    }}
+    /* ปรับ Layout แชทใหม่ให้ไม่มีช่องว่างไอคอน */
+    div[data-testid="stChatMessage"] {{ padding-left: 0px !important; margin: 0 auto !important; max-width: 850px !important; }}
 
-    /* 3. ปรับแต่งกล่องข้อความ AI ให้ดู Pro แบบ Gemini (พื้นหลังเทาอ่อน) */
-    [data-testid="stChatMessageAssistant"] {{
-        background-color: #f0f4f9 !important;
-        border-radius: 20px !important;
-        padding: 1.5rem !important;
-        border: none !important;
-    }}
+    /* กล่อง Assistant สไตล์ Gemini Professional */
+    [data-testid="stChatMessageAssistant"] {{ background-color: #f0f4f9 !important; border-radius: 20px !important; padding: 20px !important; }}
 
-    /* 4. จัดการ Sidebar และ Logo ให้ขนาดคงที่ */
-    .sidebar-header {{ text-align: center; padding: 20px 0; }}
+    /* ส่วนหัว Logo */
+    .sidebar-header {{ text-align: center; padding: 10px; }}
     .logo-img {{ width: 100px !important; height: auto; }}
-    .univ-name {{ color: #006861 !important; font-size: 18px; font-weight: bold; }}
-
-    /* 5. ปรับแต่งช่อง Input ด้านล่าง */
-    div[data-testid="stChatInput"] {{
-        border: 1px solid #e0e0e0 !important;
-        border-radius: 30px !important;
-        background-color: #f8f9fa !important;
-    }}
+    .univ-name {{ color: #006861 !important; font-size: 18px; font-weight: bold; line-height: 1.2; }}
+    
+    /* ปุ่ม UI */
+    .btn-action {{ background-color: #006861; color: white !important; padding: 4px 12px; border-radius: 8px; text-decoration: none; font-size: 12px; }}
+    .form-row {{ display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }}
 </style>
 """, unsafe_allow_html=True)
 
-# --- 5. จัดการ API (คืนค่า Logic เดิมที่คุณเขียนไว้เพื่อให้คุยได้ปกติ) ---
+# --- 5. จัดการ API (คงเดิม 100% เพื่อให้ใช้งานได้จริง) ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 if api_key: genai.configure(api_key=api_key)
 
 @st.cache_resource
 def load_model():
     try:
-        # ใช้ Logic การดึงชื่อโมเดลแบบเดิมที่ทำงานได้ชัวร์
         available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
         selected = next((m for m in available_models if "1.5-flash" in m), available_models[0])
         return genai.GenerativeModel(model_name=selected)
     except: return None
 model = load_model()
 
-# --- 6. จัดการ State ---
-if "all_chats" not in st.session_state: st.session_state.all_chats = {} 
+# --- 6. State Management ---
+if "all_chats" not in st.session_state: st.session_state.all_chats = {}
 if "messages" not in st.session_state: st.session_state.messages = []
 if "current_chat_id" not in st.session_state: st.session_state.current_chat_id = None
 
-# --- 7. Sidebar (ฟีเจอร์ครบ 100% ไม่ลบโค้ดส่วนไหนออก) ---
+# --- 7. Sidebar (ฟีเจอร์ครบ 100%) ---
 with st.sidebar:
     st.markdown('<div class="sidebar-header">', unsafe_allow_html=True)
     logo_data = get_image_base64("logo_ku.png")
@@ -132,7 +123,6 @@ with st.sidebar:
         st.rerun()
 
     st.markdown("---")
-    # เมนูส่วนตัวที่คุณใส่ไว้ กลับมาครบแน่นอน
     with st.expander(curr["exam_table"]):
         st.markdown(f'<div class="form-row"><span>KU Exam</span><a href="https://reg2.src.ku.ac.th/table_test/" target="_blank" class="btn-action">{curr["btn_find"]}</a></div>', unsafe_allow_html=True)
     with st.expander(curr["gpa_calc"]):
@@ -162,15 +152,14 @@ if prompt := st.chat_input(curr["input_placeholder"]):
         placeholder.markdown(curr["loading"])
         
         try:
-            knowledge_base = ""
+            kb = ""
             if os.path.exists("ku_data.txt"):
-                with open("ku_data.txt", "r", encoding="utf-8") as f: knowledge_base = f.read()
+                with open("ku_data.txt", "r", encoding="utf-8") as f: kb = f.read()
             
-            # คืนค่า Logic History เดิมที่คุณเขียนไว้ในชุดแรก
             history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} for m in st.session_state.messages[-6:-1]]
             chat_session = model.start_chat(history=history)
             
-            full_context = f"{curr['ai_identity']}\nข้อมูลมหาลัย: {knowledge_base}\nคำถาม: {prompt}"
+            full_context = f"{curr['ai_identity']}\nข้อมูลมหาลัย: {kb}\nคำถาม: {prompt}"
             response = chat_session.send_message(full_context, stream=True)
             
             full_response = ""
@@ -179,7 +168,7 @@ if prompt := st.chat_input(curr["input_placeholder"]):
                 placeholder.markdown(full_response + "▌")
             placeholder.markdown(full_response)
         except Exception as e:
-            st.error(f"เกิดข้อผิดพลาด: {e}")
+            st.error(f"Error: {e}")
         
         st.session_state.messages.append({"role": "assistant", "content": full_response})
         st.rerun()
