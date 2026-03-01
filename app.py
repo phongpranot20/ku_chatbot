@@ -92,30 +92,32 @@ st.markdown("""
         border-right: 1px solid rgba(0,0,0,0.05);
     }
     
-   /* แก้ไข Header ใน Sidebar ให้กระชับขึ้น */
+/* แก้ไข Header ให้รองรับ Flexbox เพื่อวางโลโก้และชื่อบรรทัดเดียวกัน */
 .custom-header { 
-    padding: 10px !important; /* ลด padding จาก 20px เหลือ 10px */
+    display: flex;
+    align-items: center; /* จัดให้อยู่กึ่งกลางในแนวตั้ง */
+    gap: 15px; /* ระยะห่างระหว่างรูปกับตัวอักษร */
+    padding: 10px !important;
+    background: rgba(255, 255, 255, 0.9); /* เปลี่ยนพื้นหลังเป็นขาวแบบโปร่งแสง */
     border-radius: 15px !important;
-    text-align: center;
-    margin-bottom: 15px !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* เพิ่มเงาให้มีมิติ */
 }
 
-/* จำกัดขนาดรูปโลโก้ */
+/* ปรับขนาดโลโก้ให้ใหญ่ขึ้นเล็กน้อย */
 .header-logo-img {
-    max-width: 80px !important; /* บังคับขนาดรูปไม่ให้ใหญ่เกินไป */
+    max-width: 60px !important; /* ปรับจาก 80px เป็น 60px เพื่อให้ไม่เบียดชื่อจนเกินไป */
     height: auto !important;
-    display: block;
-    margin: 0 auto;
 }
 
-/* ปรับขนาดตัวอักษรชื่อมหาลัยให้เล็กลงนิดนึง */
+/* ชื่อมหาลัยสีดำ มีมิติ (Text Shadow) */
 .univ-name { 
-    color: white !important; 
-    font-size: 1rem !important; /* ลดขนาด font ลง */
-    font-weight: 600; 
-    margin-top: 5px !important; 
+    color: #333333 !important; /* สีดำเข้ม */
+    font-size: 1.1rem !important; 
+    font-weight: 700;
+    line-height: 1.2;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1); /* เพิ่มเงาให้ตัวอักษรมีมิติ */
+    margin-top: 0 !important;
 }
-
     /* ปุ่มแบบ Modern */
     div.stButton > button { 
         border-radius: 50px !important; 
@@ -236,7 +238,7 @@ with st.sidebar:
         img_data = get_image_base64("logo_ku.png")
         st.markdown(f'<div class="custom-header"><img src="data:image/png;base64,{img_data}" class="header-logo-img"><div class="univ-name">{curr["univ_name"]}</div></div>', unsafe_allow_html=True)
     
-    st.markdown("<br>", unsafe_allow_html=True)
+  st.markdown("", unsafe_allow_html=True)
     
     # บรรทัดถัดไปต้องเคาะย่อหน้าให้ตรงกับบรรทัด if หรือคำสั่งด้านบน
     if st.button(curr["new_chat"], key="new_chat_btn"):
