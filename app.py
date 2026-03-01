@@ -91,12 +91,19 @@ html, body, [class*="css"] {
     line-height: 1.7 !important;
     font-weight: 400 !important;
 }
-    /* Sidebar แบบกระจก */
-    [data-testid="stSidebar"] { 
-        background: rgba(255, 255, 255, 0.7) !important;
-        backdrop-filter: blur(15px);
-        border-right: 1px solid rgba(0,0,0,0.05);
-    }
+   /* ปรับแต่ง Sidebar ให้มีมิติชัดเจน */
+[data-testid="stSidebar"] { 
+    background: rgba(248, 249, 250, 0.8) !important; /* ปรับสีให้ทึบขึ้นเล็กน้อย */
+    backdrop-filter: blur(15px);
+    border-right: 1px solid rgba(0,0,0,0.1); /* เส้นขอบที่ชัดขึ้น */
+    box-shadow: 5px 0 15px rgba(0,0,0,0.05); /* เพิ่มเงาด้านขวาเพื่อให้ลอยเด่นขึ้นมา */
+    z-index: 100;
+}
+
+/* เพิ่มส่วนแบ่ง Visual ให้ชัดเจนขึ้นด้วยเงาที่ขอบ */
+[data-testid="stSidebar"] > div:first-child {
+    padding-right: 10px;
+}
     
 /* แก้ไข Header ให้รองรับ Flexbox เพื่อวางโลโก้และชื่อบรรทัดเดียวกัน */
 .custom-header { 
