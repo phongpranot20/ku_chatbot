@@ -249,7 +249,11 @@ html, body, [class*="css"] {
     50% { transform: scale(1.02); opacity: 0.2; } /* ขยายตัวและจางลงเล็กน้อย */
 }
 
-
+ .stApp { 
+        background: radial-gradient(circle at 10% 20%, rgba(0, 77, 64, 0.05) 0%, transparent 40%),
+                    radial-gradient(circle at 90% 80%, rgba(255, 215, 0, 0.05) 0%, transparent 40%),
+                    #F4F7F6;
+    }
 </style>
 """, unsafe_allow_html=True)
 # --- 5. จัดการ API (คงโมเดลเดิมไว้) ---
