@@ -91,14 +91,6 @@ html, body, [class*="css"] {
     line-height: 1.7 !important;
     font-weight: 400 !important;
 }
-
-    /* พื้นหลังแบบมีลูกเล่นเบลอๆ */
-    .stApp { 
-        background: radial-gradient(circle at 10% 20%, rgba(0, 77, 64, 0.05) 0%, transparent 40%),
-                    radial-gradient(circle at 90% 80%, rgba(255, 215, 0, 0.05) 0%, transparent 40%),
-                    #F4F7F6;
-    }
-
     /* Sidebar แบบกระจก */
     [data-testid="stSidebar"] { 
         background: rgba(255, 255, 255, 0.7) !important;
@@ -218,42 +210,7 @@ html, body, [class*="css"] {
         animation: wave-dance 2s infinite ease-in-out;
         margin-right: 10px;
     }
-    /* --- การ์ตูนน่ารักๆ (Decorations & Character Background) --- */
-.stApp {
-    position: relative; /* เพื่อกำหนดตำแหน่งตัวละครเทียบกับหน้าต่าง */
-}
 
-/* สร้างภาพอักขระเบลอๆ ที่มุมขวา */
-.stApp::before {
-    content: ""; /* ไม่ใส่ข้อความ */
-    position: fixed;
-    bottom: -30px; /* ขยับลงด้านล่างเล็กน้อยให้พอยืนเด่น */
-    right: -30px;  /* ขยับไปทางขวาเล็กน้อย */
-    width: 300px;  /* กำหนดความกว้างของตัวละคร (ปรับตามชอบ) */
-    height: 400px; /* กำหนดความสูงของตัวละคร */
-    background-image: url('data:image/png;base64,...'); /* ใส่ Base64 ของรูป Dino ของคุณ */
-    background-size: contain; /* ปรับขนาดรูปให้พอดีกับพื้นที่ */
-    background-repeat: no-repeat;
-    
-    /* เอฟเฟกต์เบลอและโปร่งแสง */
-    filter: blur(15px); /* ปรับระดับความเบลอตามต้องการ */
-    opacity: 0.15;      /* ปรับระดับความโปร่งแสงตามต้องการ (แนะนำให้จางๆ) */
-    
-    z-index: -1; /* วางไว้หลังเนื้อหาแชท */
-    pointer-events: none; /* ห้ามให้คลิกผ่านตัวละคร */
-}
-
-/* เพิ่ม Animation ให้ตัวละครเบลอๆ ขยับเบาๆ */
-@keyframes character-breathe {
-    0%, 100% { transform: scale(1); opacity: 0.15; }
-    50% { transform: scale(1.02); opacity: 0.2; } /* ขยายตัวและจางลงเล็กน้อย */
-}
-
- .stApp { 
-        background: radial-gradient(circle at 10% 20%, rgba(0, 77, 64, 0.05) 0%, transparent 40%),
-                    radial-gradient(circle at 90% 80%, rgba(255, 215, 0, 0.05) 0%, transparent 40%),
-                    #F4F7F6;
-    }
 </style>
 """, unsafe_allow_html=True)
 # --- 5. จัดการ API (คงโมเดลเดิมไว้) ---
