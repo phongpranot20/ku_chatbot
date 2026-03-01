@@ -180,35 +180,7 @@ st.markdown("""
     margin-bottom: 10px !important;
     box-shadow: 0 4px 10px rgba(0,0,0,0.03);
 }
-/* --- การ์ตูนน่ารักๆ (ขยับตลอดเวลา) --- */
-.stApp::before {
-    content: "🦖";
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    font-size: 80px;
-    opacity: 0.6;
-    z-index: 0;
-    pointer-events: none;
-    
-    /* เพิ่ม Animation เข้าไป */
-    animation: dino-dance 2s ease-in-out infinite;
-}
 
-@keyframes dino-dance {
-    0%, 100% { 
-        transform: translateY(0) rotate(0deg); 
-    }
-    25% { 
-        transform: translateY(-15px) rotate(-5deg); 
-    }
-    50% { 
-        transform: translateY(0) rotate(0deg); 
-    }
-    75% { 
-        transform: translateY(-10px) rotate(5deg); 
-    }
-}
 </style>
 """, unsafe_allow_html=True)
 # --- 5. จัดการ API (คงโมเดลเดิมไว้) ---
@@ -267,10 +239,23 @@ with st.sidebar:
         for name, link in forms:
             st.markdown(f'<div class="form-row"><div class="form-label">{name}</div><a href="{link}" target="_blank" class="btn-action">{curr["btn_download"]}</a></div>', unsafe_allow_html=True)
 
-# --- 8. หน้า Chat หลัก ---
-st.markdown(f"<h2 style='color: #004D40;'>🦖 AI KUSRC</h2>", unsafe_allow_html=True)
-current_title = st.session_state.current_chat_id if st.session_state.current_chat_id else ( "แชทใหม่" if st.session_state.lang == "TH" else "New Chat")
-st.caption(f"👤 {curr['welcome']} {st.session_state.global_user_nickname} | {curr['topic']}: {current_title}")
+# แก้ไขบรรทัดที่แสดงหัวข้อ AI KUSRC
+st.markdown("""
+    <style>
+        @keyframes wave {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(20deg); }
+        }
+        .dino-icon {
+            display: inline-block;
+            animation: wave 1.5s infinite ease-in-out;
+            margin-right: 10px;
+        }
+    </style>
+    <h2 style='color: #004D40;'>
+        <span class="dino-icon">🦖</span> AI KUSRC
+    </h2>
+""", unsafe_allow_html=True)
 
 # แสดงข้อความ
 for message in st.session_state.messages:
