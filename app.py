@@ -191,8 +191,8 @@ html, body, [class*="css"] {
     }
     /* เพิ่มในส่วนสไตล์ของคุณ */
 .main {
-    padding-left: 2rem !important;
-    padding-right: 2rem !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
 }
 
 /* ทำให้ช่อง Chat กว้างและดูสะอาดขึ้น */
