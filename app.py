@@ -180,6 +180,29 @@ st.markdown("""
     margin-bottom: 10px !important;
     box-shadow: 0 4px 10px rgba(0,0,0,0.03);
 }
+/* สร้าง Animation สำหรับไดโนเสาร์ */
+@keyframes jump {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(-10deg); }
+}
+
+/* นำมาใส่กับตัว decoration ที่มุมขวา */
+.stApp::before {
+    content: "🦖";
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    font-size: 80px;
+    opacity: 0.3; /* เพิ่มความชัดขึ้นนิดนึงให้เห็นตอนขยับ */
+    z-index: 0;
+    pointer-events: none;
+    animation: jump 3s infinite ease-in-out; /* เรียกใช้ animation */
+}
+
+/* ถ้าอยากให้มันขยับเฉพาะตอนเอาเมาส์ไปชี้ (Interactive) */
+.stApp::before:hover {
+    animation: jump 0.5s infinite;
+}
 </style>
 """, unsafe_allow_html=True)
 # --- 5. จัดการ API (คงโมเดลเดิมไว้) ---
