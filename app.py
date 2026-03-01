@@ -69,115 +69,100 @@ def get_room_info(room_code):
     return None
 
 # --- 4. CSS (Updated UI Modern/Minimal) ---
+# --- 4. CSS (Updated UI Modern/Glassmorphism) ---
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
     
     html, body, [class*="css"] {
-        font-family: 'Sarabun', sans-serif;
+        font-family: 'Kanit', sans-serif;
     }
 
+    /* พื้นหลังแบบมีลูกเล่นเบลอๆ */
     .stApp { 
-        background-color: #F8F9FA; 
+        background: radial-gradient(circle at 10% 20%, rgba(0, 77, 64, 0.05) 0%, transparent 40%),
+                    radial-gradient(circle at 90% 80%, rgba(255, 215, 0, 0.05) 0%, transparent 40%),
+                    #F4F7F6;
     }
 
-    /* Sidebar Styling */
+    /* Sidebar แบบกระจก */
     [data-testid="stSidebar"] { 
-        background-color: #004D40 !important; 
-        background-image: linear-gradient(180deg, #004D40 0%, #006861 100%) !important;
-        border-right: 1px solid rgba(255,255,255,0.1);
+        background: rgba(255, 255, 255, 0.7) !important;
+        backdrop-filter: blur(15px);
+        border-right: 1px solid rgba(0,0,0,0.05);
     }
     
-    [data-testid="stSidebarContent"] { padding-top: 1rem !important; }
-
     .custom-header { 
-        display: flex; 
-        flex-direction: column; 
-        align-items: center; 
-        text-align: center; 
-        padding: 20px 10px; 
-        margin-top: -20px; 
-        background: rgba(255,255,255,0.05);
-        border-radius: 0 0 20px 20px;
-        margin-bottom: 20px;
+        padding: 20px;
+        background: linear-gradient(135deg, #004D40 0%, #00796B 100%);
+        border-radius: 20px;
+        margin-bottom: 25px;
+        box-shadow: 0 10px 20px rgba(0,77,64,0.2);
+        text-align: center;
     }
     
-    .header-logo-img { width: 80px; height: auto; filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.3)); }
-    .univ-name { color: white !important; font-size: 18px; font-weight: 600; line-height: 1.2; margin-top: 10px; }
-    
-    .sidebar-title { 
-        color: rgba(255,255,255,0.7) !important; 
-        font-size: 12px; 
-        text-transform: uppercase; 
-        letter-spacing: 1.2px;
-        margin: 20px 0 10px 10px;
-    }
+    .univ-name { color: white !important; font-size: 1.2rem; font-weight: 600; margin-top: 10px; }
 
-    /* Button Styling */
+    /* ปุ่มแบบ Modern */
     div.stButton > button { 
-        width: 100% !important; 
-        border-radius: 12px !important; 
-        background-color: rgba(255,255,255,0.1) !important; 
-        color: white !important; 
-        border: 1px solid rgba(255, 255, 255, 0.2) !important; 
-        padding: 8px 15px !important; 
+        border-radius: 50px !important; 
+        border: none !important;
+        background: white !important;
+        color: #004D40 !important;
+        font-weight: 600 !important;
         transition: all 0.3s ease !important;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     }
     
     div.stButton > button:hover { 
-        background-color: #FFD700 !important; 
-        color: #004D40 !important; 
-        border-color: #FFD700 !important;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        background: #004D40 !important; 
+        color: white !important;
+        transform: scale(1.02);
     }
 
-    /* Chat Messages */
+    /* Chat Messages Glassmorphism */
     .stChatMessage {
-        background-color: white !important;
-        border-radius: 15px !important;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05) !important;
-        border: 1px solid #E9ECEF !important;
-        margin-bottom: 15px !important;
+        background: rgba(255, 255, 255, 0.8) !important;
+        backdrop-filter: blur(5px);
+        border-radius: 20px !important;
+        border: 1px solid rgba(255,255,255,0.3) !important;
     }
 
-    /* Expander UI */
+    /* Expander สวยงาม */
     div[data-testid="stExpander"] { 
-        background-color: rgba(255,255,255,0.05) !important; 
-        border-radius: 12px !important; 
-        border: 1px solid rgba(255,255,255,0.1) !important;
-        margin-bottom: 10px !important; 
+        background: white !important;
+        border-radius: 15px !important; 
+        border: none !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
     }
-    
-    .form-row { 
-        display: flex; 
-        justify-content: space-between; 
-        align-items: center; 
-        padding: 10px;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-    
-    .form-label { color: #E0E0E0; font-size: 13px; }
-    
+
+    /* ปุ่ม Action สีสดใส */
     .btn-action { 
-        background-color: #FFD700; 
+        background: #FFD700; 
         color: #004D40 !important; 
-        padding: 5px 12px; 
-        border-radius: 8px; 
+        padding: 5px 15px; 
+        border-radius: 20px; 
         text-decoration: none; 
-        font-size: 11px; 
-        font-weight: bold;
+        font-size: 0.8rem;
+        font-weight: 700;
         transition: 0.3s;
     }
     
-    .btn-action:hover { opacity: 0.8; transform: scale(1.05); }
+    .btn-action:hover { background: #FFC107; transform: translateY(-2px); }
 
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-thumb { background: #CBD5E0; border-radius: 10px; }
+    /* การ์ตูนน่ารักๆ (Decorations) */
+    .stApp::before {
+        content: "🦖";
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        font-size: 80px;
+        opacity: 0.1;
+        z-index: 0;
+        pointer-events: none;
+    }
 </style>
 """, unsafe_allow_html=True)
-
 # --- 5. จัดการ API (คงโมเดลเดิมไว้) ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 if api_key: genai.configure(api_key=api_key)
