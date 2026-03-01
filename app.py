@@ -72,11 +72,25 @@ def get_room_info(room_code):
 # --- 4. CSS (Updated UI Modern/Glassmorphism) ---
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
-    
-    html, body, [class*="css"] {
-        font-family: 'Kanit', sans-serif;
-    }
+/* เปลี่ยนจาก Kanit เป็น Sarabun หรือ Prompt ที่ดูชัดเจนกว่า */
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap');
+
+html, body, [class*="css"] {
+    font-family: 'Sarabun', sans-serif !important;
+}
+
+/* เพิ่มความคมชัดของข้อความทั่วไป */
+.stMarkdown, .stText, p {
+    color: #2D3436 !important; /* เปลี่ยนเป็นสีเทาเข้มเกือบดำเพื่อให้สบายตาแต่คมชัด */
+    font-weight: 400;
+}
+
+/* เพิ่มความชัดเจนให้ข้อความใน Chat */
+.stChatMessageContent {
+    font-size: 1.1rem !important;
+    line-height: 1.7 !important;
+    font-weight: 400 !important;
+}
 
     /* พื้นหลังแบบมีลูกเล่นเบลอๆ */
     .stApp { 
