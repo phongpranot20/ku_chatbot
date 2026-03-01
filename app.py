@@ -231,10 +231,14 @@ with st.sidebar:
     with col_lang:
         st.button(f"🌐 {st.session_state.lang}", on_click=toggle_language)
 
-   if os.path.exists("logo_ku.png"):
-        img_data = get_image_base64("logo_ku.png") # ต้องเคาะย่อหน้าเข้าไป 8 ช่อง
-        st.markdown(f'<div class="custom-header"><img src="data:image/png;base64,{img_data}" class="header-logo-img"><div class="univ-name">{curr["univ_name"]}</div></div>', unsafe_allow_html=True) # ต้องเคาะย่อหน้าเข้าไป 8 ช่อง
+    # เช็คเงื่อนไขให้ตรงระดับย่อหน้า
+    if os.path.exists("logo_ku.png"):
+        img_data = get_image_base64("logo_ku.png")
+        st.markdown(f'<div class="custom-header"><img src="data:image/png;base64,{img_data}" class="header-logo-img"><div class="univ-name">{curr["univ_name"]}</div></div>', unsafe_allow_html=True)
     
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # บรรทัดถัดไปต้องเคาะย่อหน้าให้ตรงกับบรรทัด if หรือคำสั่งด้านบน
     if st.button(curr["new_chat"], key="new_chat_btn"):
         st.session_state.messages = []
         st.session_state.current_chat_id = None
