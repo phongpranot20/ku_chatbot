@@ -154,6 +154,8 @@ light_theme_css = """
         --message-user: #E9ECEF;
         --message-bot: #FFFFFF;
         --border-color: #E2E8F0;
+        --text-light: #FFFFFF;
+        --text-dark: #000000;
     }
 """
 
@@ -174,6 +176,8 @@ dark_theme_css = """
         --message-user: #4A5568;
         --message-bot: #2D3748;
         --border-color: #4A5568;
+        --text-light: #FFFFFF;
+        --text-dark: #000000;
     }
 """
 
@@ -292,6 +296,18 @@ st.markdown(f"""
         100% {{ background-position: -200% 0; }}
     }}
     
+    /* Language Toggle Styling */
+    div[data-testid="column"]:nth-of-type(1) button,
+    div[data-testid="column"]:nth-of-type(2) button {{
+        background: rgba(255,255,255,0.2) !important;
+        border: 1px solid rgba(255,255,255,0.3) !important;
+        color: white !important;
+        font-size: 14px !important;
+        padding: 5px 10px !important;
+        border-radius: 20px !important;
+        min-width: 50px !important;
+    }}
+    
     /* Button Styling */
     div.stButton > button {{ 
         width: 100% !important; 
@@ -344,18 +360,22 @@ st.markdown(f"""
         to {{ opacity: 1; transform: translateY(0); }}
     }}
     
-    [data-testid="stChatMessage"] {{
-        background-color: var(--message-bot) !important;
-        border-radius: 20px !important;
-        box-shadow: var(--shadow-sm) !important;
-        border: 1px solid var(--border-color) !important;
-        padding: 15px !important;
+    /* User message styling */
+    [data-testid="stChatMessage"][data-user="true"] {{
+        background: linear-gradient(135deg, #FFD700, #FFA500) !important;
+        color: #004D40 !important;
+        font-weight: 500 !important;
+        margin-left: 20% !important;
+        border-radius: 20px 20px 5px 20px !important;
     }}
     
-    [data-testid="stChatMessage"][data-user="true"] {{
-        background: var(--gradient-gold) !important;
-        color: var(--accent-primary) !important;
-        margin-left: 20% !important;
+    /* Bot message styling */
+    [data-testid="stChatMessage"]:not([data-user="true"]) {{
+        background-color: var(--message-bot) !important;
+        color: var(--text-primary) !important;
+        border-radius: 20px 20px 20px 5px !important;
+        box-shadow: var(--shadow-sm) !important;
+        border: 1px solid var(--border-color) !important;
     }}
     
     /* Expander UI */
@@ -378,42 +398,48 @@ st.markdown(f"""
         font-weight: 600 !important;
         color: white !important;
         padding: 15px !important;
+        font-size: 16px !important;
     }}
     
-    /* Quick Question Buttons */
-    .quick-question-btn {{
-        background: rgba(255,255,255,0.1);
-        border: 1px solid rgba(255,255,255,0.2);
-        border-radius: 12px;
-        padding: 10px;
-        margin: 5px;
-        color: white;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        animation: bounceIn 0.5s ease;
-        animation-fill-mode: both;
+    /* Form row styling */
+    .form-row {{ 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        padding: 12px;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
     }}
     
-    @keyframes bounceIn {{
-        0% {{ opacity: 0; transform: scale(0.3); }}
-        50% {{ opacity: 1; transform: scale(1.05); }}
-        70% {{ transform: scale(0.9); }}
-        100% {{ transform: scale(1); }}
+    .form-label {{ 
+        color: white !important; 
+        font-size: 14px;
+        font-weight: 500;
     }}
     
-    .quick-question-btn:hover {{
-        background: var(--accent-gold);
-        color: var(--accent-primary);
-        transform: translateY(-3px) scale(1.02);
-        box-shadow: var(--shadow-md);
+    .btn-action {{ 
+        background: var(--gradient-gold);
+        color: var(--accent-primary) !important; 
+        padding: 6px 15px; 
+        border-radius: 20px; 
+        text-decoration: none; 
+        font-size: 12px; 
+        font-weight: bold;
+        transition: 0.3s;
+        border: none;
+    }}
+    
+    .btn-action:hover {{ 
+        opacity: 0.9; 
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(255,215,0,0.3);
     }}
     
     /* Typing Indicator */
     .typing-indicator {{
         display: flex;
         align-items: center;
-        gap: 5px;
-        padding: 15px;
+        gap: 8px;
+        padding: 15px 20px;
         background: var(--message-bot);
         border-radius: 20px;
         width: fit-content;
@@ -422,8 +448,8 @@ st.markdown(f"""
     }}
     
     .typing-dot {{
-        width: 8px;
-        height: 8px;
+        width: 10px;
+        height: 10px;
         background: var(--accent-primary);
         border-radius: 50%;
         animation: typingBounce 1.4s infinite ease-in-out;
@@ -431,45 +457,61 @@ st.markdown(f"""
     
     .typing-dot:nth-child(1) {{ animation-delay: -0.32s; }}
     .typing-dot:nth-child(2) {{ animation-delay: -0.16s; }}
+    .typing-dot:nth-child(3) {{ animation-delay: 0; }}
     
     @keyframes typingBounce {{
         0%, 80%, 100% {{ transform: scale(0); }}
         40% {{ transform: scale(1); }}
     }}
     
-    /* Floating Dino */
+    /* Floating Dino - Centered Fix */
     .floating-dino {{
         position: fixed;
-        bottom: 20px;
-        right: 20px;
-        width: 60px;
-        height: 60px;
+        bottom: 25px;
+        right: 25px;
+        width: 65px;
+        height: 65px;
         background: var(--gradient-primary);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 30px;
+        font-size: 35px;
         box-shadow: var(--shadow-lg);
         cursor: pointer;
         animation: floatDino 3s ease-in-out infinite;
         z-index: 1000;
+        border: 3px solid var(--accent-gold);
+        line-height: 1;
+        padding: 0;
+        margin: 0;
+        text-align: center;
+    }}
+    
+    .floating-dino span {{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        transform: translateY(-2px);
     }}
     
     @keyframes floatDino {{
         0% {{ transform: translateY(0px); }}
-        50% {{ transform: translateY(-20px); }}
+        50% {{ transform: translateY(-15px); }}
         100% {{ transform: translateY(0px); }}
     }}
     
     .floating-dino:hover {{
         transform: scale(1.1);
-        box-shadow: var(--shadow-lg), 0 0 20px var(--accent-gold);
+        box-shadow: var(--shadow-lg), 0 0 25px var(--accent-gold);
+        border-color: white;
     }}
     
     /* Stats Cards */
     .stat-card {{
-        background: rgba(255,255,255,0.1);
+        background: rgba(255,255,255,0.15);
         border-radius: 15px;
         padding: 15px;
         margin: 10px 0;
@@ -484,47 +526,71 @@ st.markdown(f"""
     }}
     
     .stat-value {{
-        font-size: 24px;
+        font-size: 28px;
         font-weight: 700;
         color: var(--accent-gold);
+        line-height: 1.2;
     }}
     
     .stat-label {{
-        font-size: 12px;
-        color: rgba(255,255,255,0.7);
+        font-size: 13px;
+        color: rgba(255,255,255,0.9);
+        font-weight: 500;
     }}
     
-    /* Particle Background */
-    #particles-js {{
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: -1;
-        pointer-events: none;
+    /* Info box styling */
+    .stAlert {{
+        background: rgba(255,255,255,0.15) !important;
+        color: white !important;
+        border: 1px solid rgba(255,255,255,0.2) !important;
+        border-radius: 15px !important;
     }}
     
-    /* Loading Skeleton */
-    .skeleton {{
-        background: linear-gradient(90deg, var(--border-color) 25%, var(--bg-secondary) 50%, var(--border-color) 75%);
-        background-size: 200% 100%;
-        animation: loading 1.5s infinite;
-        border-radius: 10px;
-        height: 20px;
-        margin: 10px 0;
+    /* Sidebar title */
+    .sidebar-title {{ 
+        color: rgba(255,255,255,0.9) !important; 
+        font-size: 14px; 
+        text-transform: uppercase; 
+        letter-spacing: 1.5px;
+        margin: 20px 0 15px 10px;
+        font-weight: 600;
     }}
     
-    @keyframes loading {{
-        0% {{ background-position: 200% 0; }}
-        100% {{ background-position: -200% 0; }}
+    /* Main title styling */
+    .main-title {{
+        color: var(--accent-primary);
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }}
+    
+    .beta-badge {{
+        font-size: 14px;
+        background: var(--gradient-gold);
+        color: var(--accent-primary);
+        padding: 5px 15px;
+        border-radius: 30px;
+        font-weight: 600;
+        display: inline-block;
+    }}
+    
+    /* Caption styling */
+    .stCaption {{
+        color: var(--text-secondary) !important;
+        font-size: 14px !important;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 20px;
     }}
     
     /* Progress Bar */
     .progress-container {{
         width: 100%;
         height: 4px;
-        background: var(--border-color);
+        background: rgba(255,255,255,0.2);
         border-radius: 2px;
         overflow: hidden;
         margin: 10px 0;
@@ -558,12 +624,14 @@ st.markdown(f"""
         border-radius: 6px;
         padding: 5px;
         position: absolute;
-        z-index: 1;
+        z-index: 1001;
         bottom: 125%;
         left: 50%;
         margin-left: -60px;
         opacity: 0;
         transition: opacity 0.3s;
+        font-size: 12px;
+        pointer-events: none;
     }}
     
     .tooltip:hover .tooltiptext {{
@@ -571,11 +639,20 @@ st.markdown(f"""
         opacity: 1;
     }}
     
+    /* Quick Questions Grid */
+    .quick-questions-grid {{
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin: 15px 0;
+    }}
+    
     /* Responsive Design */
     @media (max-width: 768px) {{
         .custom-header {{ padding: 10px; }}
         .header-logo-img {{ width: 60px; }}
         .univ-name {{ font-size: 16px; }}
+        .main-title {{ font-size: 24px; }}
     }}
 </style>
 
@@ -584,18 +661,18 @@ st.markdown(f"""
 <script>
     particlesJS('particles-js', {{
         particles: {{
-            number: {{ value: 80, density: {{ enable: true, value_area: 800 }} }},
+            number: {{ value: 50, density: {{ enable: true, value_area: 800 }} }},
             color: {{ value: '#{"FFD700" if st.session_state.theme == "light" else "FFC107"}' }},
             shape: {{ type: 'circle' }},
-            opacity: {{ value: 0.5, random: true }},
-            size: {{ value: 3, random: true }},
-            line_linked: {{ enable: true, distance: 150, color: '#{"004D40" if st.session_state.theme == "light" else "006861"}', opacity: 0.4, width: 1 }},
-            move: {{ enable: true, speed: 2, direction: 'none', random: true, straight: false, out_mode: 'out' }}
+            opacity: {{ value: 0.3, random: true }},
+            size: {{ value: 2, random: true }},
+            line_linked: {{ enable: true, distance: 150, color: '#{"004D40" if st.session_state.theme == "light" else "006861"}', opacity: 0.2, width: 1 }},
+            move: {{ enable: true, speed: 1, direction: 'none', random: true, straight: false, out_mode: 'out' }}
         }},
         interactivity: {{
             detect_on: 'canvas',
             events: {{ onhover: {{ enable: true, mode: 'repulse' }}, onclick: {{ enable: true, mode: 'push' }}, resize: true }},
-            modes: {{ repulse: {{ distance: 100, duration: 0.4 }}, push: {{ particles_nb: 4 }} }}
+            modes: {{ repulse: {{ distance: 100, duration: 0.4 }}, push: {{ particles_nb: 2 }} }}
         }},
         retina_detect: true
     }});
@@ -626,19 +703,26 @@ if "total_questions" not in st.session_state: st.session_state.total_questions =
 # --- 7. Floating Dino Button ---
 st.markdown(f'''
     <div class="floating-dino tooltip" onclick="window.scrollTo({{top: document.body.scrollHeight, behavior: 'smooth'}});">
-        🦖
+        <span>🦖</span>
         <span class="tooltiptext">{curr["tip"]}</span>
     </div>
 ''', unsafe_allow_html=True)
 
 # --- 8. Sidebar ---
 with st.sidebar:
-    # Theme Toggle and Language Toggle
-    col1, col2, col3 = st.columns([1, 1, 2])
+    # Theme Toggle and Language Toggle - ปรับให้สมดุล
+    col1, col2 = st.columns([1, 1])
     with col1:
-        st.button(f"🌙" if st.session_state.theme == "light" else "☀️", on_click=toggle_theme)
+        theme_icon = "🌙" if st.session_state.theme == "light" else "☀️"
+        if st.button(theme_icon, key="theme_toggle"):
+            toggle_theme()
+            st.rerun()
+    
     with col2:
-        st.button(f"🌐 {st.session_state.lang}", on_click=toggle_language)
+        lang_text = "TH" if st.session_state.lang == "EN" else "EN"
+        if st.button(f"{lang_text}", key="lang_toggle"):
+            toggle_language()
+            st.rerun()
     
     # Header with Animation
     if os.path.exists("logo_ku.png"):
@@ -678,7 +762,6 @@ with st.sidebar:
     if st.session_state.all_chats:
         st.markdown(f'<p class="sidebar-title">{curr["chat_hist"]}</p>', unsafe_allow_html=True)
         for i, chat_id in enumerate(list(st.session_state.all_chats.keys())):
-            delay = i * 0.1
             if st.button(f"📄 {chat_id[:15]}...", key=f"hist_{chat_id}"):
                 st.session_state.current_chat_id = chat_id
                 st.session_state.messages = st.session_state.all_chats[chat_id]
@@ -702,84 +785,24 @@ with st.sidebar:
     
     with st.expander(curr["exam_table"], expanded=False):
         st.markdown('<div class="progress-container"><div class="progress-bar"></div></div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="form-row"><div class="form-label">KU Exam</div><a href="https://reg2.src.ku.ac.th/table_test/" target="_blank" class="btn-action">{curr["btn_find"]}</a></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="form-row"><span class="form-label">KU Exam</span><a href="https://reg2.src.ku.ac.th/table_test/" target="_blank" class="btn-action">{curr["btn_find"]}</a></div>', unsafe_allow_html=True)
     
     with st.expander(curr["gpa_calc"], expanded=False):
         st.markdown('<div class="progress-container"><div class="progress-bar"></div></div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="form-row"><div class="form-label">GPAX</div><a href="https://fna.csc.ku.ac.th/grade/" target="_blank" class="btn-action">{curr["btn_open"]}</a></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="form-row"><span class="form-label">GPAX</span><a href="https://fna.csc.ku.ac.th/grade/" target="_blank" class="btn-action">{curr["btn_open"]}</a></div>', unsafe_allow_html=True)
     
     with st.expander(curr["forms"], expanded=False):
         st.markdown('<div class="progress-container"><div class="progress-bar"></div></div>', unsafe_allow_html=True)
         forms = [("ใบคำร้องทั่วไป", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf")]
         for name, link in forms:
-            st.markdown(f'<div class="form-row"><div class="form-label">{name}</div><a href="{link}" target="_blank" class="btn-action">{curr["btn_download"]}</a></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="form-row"><span class="form-label">{name}</span><a href="{link}" target="_blank" class="btn-action">{curr["btn_download"]}</a></div>', unsafe_allow_html=True)
 
 # --- 9. หน้า Chat หลัก ---
-st.markdown(f"<h2 style='color: var(--accent-primary); animation: fadeIn 0.5s ease;'>🦖 AI KUSRC <span style='font-size: 14px; background: var(--gradient-gold); padding: 5px 10px; border-radius: 20px; margin-left: 10px;'>Beta</span></h2>", unsafe_allow_html=True)
+st.markdown(f'<div class="main-title">🦖 AI KUSRC <span class="beta-badge">Beta</span></div>', unsafe_allow_html=True)
 
 current_title = st.session_state.current_chat_id if st.session_state.current_chat_id else ( "แชทใหม่" if st.session_state.lang == "TH" else "New Chat")
 st.caption(f"👤 {curr['welcome']} **{st.session_state.global_user_nickname}** | {curr['topic']}: *{current_title}* | ⏰ {datetime.now().strftime('%H:%M')}")
 
 # แสดงข้อความ
 for message in st.session_state.messages:
-    avatar = "🧑‍🎓" if message["role"] == "user" else "🦖"
-    with st.chat_message(message["role"], avatar=avatar):
-        st.markdown(message["content"])
-
-# ส่วนรับ Input
-if prompt := st.chat_input(curr["input_placeholder"]):
-    st.session_state.total_questions += 1
-    
-    if st.session_state.current_chat_id is None:
-        st.session_state.current_chat_id = prompt[:20]
-
-    st.chat_message("user", avatar="🧑‍🎓").markdown(prompt)
-    st.session_state.messages.append({"role": "user", "content": prompt})
-
-    with st.chat_message("assistant", avatar="🦖"):
-        # Typing Indicator
-        typing_placeholder = st.empty()
-        typing_placeholder.markdown(f'''
-            <div class="typing-indicator">
-                <div class="typing-dot"></div>
-                <div class="typing-dot"></div>
-                <div class="typing-dot"></div>
-                <span style="margin-left: 10px; color: var(--text-secondary);">{curr["typing"]}</span>
-            </div>
-        ''', unsafe_allow_html=True)
-        
-        time.sleep(1)  # Simulate typing delay
-        
-        room_info = get_room_info(prompt)
-        if room_info:
-            typing_placeholder.empty()
-            full_response = room_info
-            st.markdown(full_response)
-        else:
-            try:
-                knowledge_base = ""
-                if os.path.exists("ku_data.txt"):
-                    with open("ku_data.txt", "r", encoding="utf-8") as f: 
-                        knowledge_base = f.read()
-                
-                history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} for m in st.session_state.messages[-6:-1]]
-                chat_session = model.start_chat(history=history)
-                
-                full_context = f"{curr['ai_identity']} คุยกับน้องชื่อ {st.session_state.global_user_nickname} ข้อมูลมหาลัย:\n{knowledge_base}\n\nคำถาม: {prompt}"
-                
-                response = chat_session.send_message(full_context, stream=True)
-                typing_placeholder.empty()
-                
-                full_response = ""
-                for chunk in response:
-                    full_response += chunk.text
-                    st.markdown(full_response + "▌")
-                st.markdown(full_response)
-                
-            except Exception as e:
-                typing_placeholder.empty()
-                full_response = f"😅 ขอโทษครับน้อง พี่ขอโทษด้วย ระบบมีปัญหาเล็กน้อย: {e}"
-                st.error(full_response)
-        
-        st.session_state.messages.append({"role": "assistant", "content": full_response})
-        st.session_state.all_ch
+    avatar = "🧑‍🎓" if message["role
