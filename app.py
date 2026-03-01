@@ -161,6 +161,25 @@ st.markdown("""
         z-index: 0;
         pointer-events: none;
     }
+    /* เพิ่มในส่วนสไตล์ของคุณ */
+.main {
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+}
+
+/* ทำให้ช่อง Chat กว้างและดูสะอาดขึ้น */
+.stChatMessageContent {
+    font-size: 1.05rem;
+    line-height: 1.6;
+}
+
+/* เพิ่มความโค้งมนให้ container ของแชท */
+[data-testid="stChatMessage"] {
+    border-radius: 15px !important;
+    padding: 15px !important;
+    margin-bottom: 10px !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+}
 </style>
 """, unsafe_allow_html=True)
 # --- 5. จัดการ API (คงโมเดลเดิมไว้) ---
