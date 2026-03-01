@@ -127,7 +127,7 @@ st.markdown("""
     }
     ::-webkit-scrollbar-thumb:hover { background: #FFD700; }
 </style>
-""", unsafe_allow_html=True)True)
+""", unsafe_allow_html=True)
 
 # --- 5. จัดการ API (คงโมเดลเดิมไว้) ---
 api_key = st.secrets.get("GEMINI_API_KEY")
