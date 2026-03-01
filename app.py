@@ -70,62 +70,110 @@ def get_room_info(room_code):
 # --- 4. CSS (Updated UI Modern/Luxury) ---
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap');
+    /* ตั้งค่า Font และพื้นหลัง */
+    @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700&display=swap');
     
-    /* สไตล์ Sidebar แบบมีมิติและแสง */
+    html, body, [class*="css"] {
+        font-family: 'Prompt', sans-serif;
+    }
+
+    .stApp { 
+        background: radial-gradient(circle at center, #FDFDFD, #F4F7F6); /* พื้นหลังไล่เฉดสีนุ่มนวล */
+    }
+
+    /* Sidebar - มิติกระจกแบบ "Sleek" */
     [data-testid="stSidebar"] { 
-        background: radial-gradient(circle at top right, #006064, #004D40, #00251A) !important;
-        box-shadow: 10px 0 30px rgba(0,0,0,0.5) !important;
+        background-image: linear-gradient(170deg, rgba(0, 77, 64, 0.98) 0%, rgba(0, 37, 26, 0.95) 100%) !important;
+        backdrop-filter: blur(15px); /* เอฟเฟกต์เบลอ */
+        border-right: 1px solid rgba(255, 255, 255, 0.03); /* เส้นขอบบางๆ */
+        box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1); /* เงาด้านข้าง */
     }
 
-    /* กล่อง Header ที่มีความเป็น Glassmorphism */
+    /* Custom Header - มิติและความหรูหรา */
     .custom-header { 
-        background: rgba(255, 255, 255, 0.08) !important;
-        backdrop-filter: blur(15px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important;
-        border-radius: 25px !important;
-        padding: 25px 15px !important;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important;
+        padding: 35px 15px;
+        background-color: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(5px);
+        border-radius: 20px;
+        margin-bottom: 25px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
-
-    /* Animation สำหรับโลโก้ */
+    
     .header-logo-img { 
-        filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5)); 
-        animation: float 3s ease-in-out infinite;
+        width: 100px;
+        filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.2)); /* แสงสีทองรอบโลโก้ */
+        transition: transform 0.4s ease;
     }
-    @keyframes float {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-10px); }
-    }
-
-    /* ปุ่มเมนูที่มีลูกเล่น Glow */
-    div.stButton > button { 
-        background: rgba(255, 255, 255, 0.03) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-    }
-    div.stButton > button:hover { 
-        background: #FFD700 !important; 
-        color: #00251A !important;
-        box-shadow: 0 0 20px rgba(255, 215, 0, 0.4) !important;
-        transform: translateX(5px) scale(1.02);
+    
+    .univ-name { 
+        color: #FFD700 !important; /* สีเหลืองทองเด่นชัด */
+        font-size: 20px; 
+        font-weight: 700; /* ตัวหนา */
+        margin-top: 15px; 
+        letter-spacing: 1px; /* ระยะห่างตัวอักษรแบบโมเดิร์น */
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* เงาบางๆ เพิ่มมิติ */
     }
 
-    /* Sidebar Title แบบหรูหรา */
+    /* Quick Links Title - เด่นและทันสมัย */
     .sidebar-title { 
-        color: #FFD700 !important;
-        text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
-        border-left: 3px solid #FFD700 !important;
-        padding-left: 10px !important;
+        color: rgba(255, 255, 255, 0.85) !important;
+        font-size: 14px; 
+        text-transform: uppercase; 
+        letter-spacing: 2px;
+        margin: 25px 0 15px 10px;
+        font-weight: 600;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 5px;
     }
 
-    /* ปรับแต่ง Scrollbar ให้ดูเนียนไปกับ Theme */
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-thumb { 
-        background: rgba(255, 255, 255, 0.1); 
-        border-radius: 10px; 
+    /* Button Styling - มิติและความหรูหราเมื่อ Hover */
+    div.stButton > button { 
+        width: calc(100% - 20px) !important;
+        margin-left: 10px !important;
+        border-radius: 12px !important; 
+        background-color: transparent !important;
+        color: white !important; 
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        padding: 10px 18px !important; 
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important; /* แอนิเมชั่นที่นุ่มนวล */
+        text-align: left !important;
+        display: flex !important;
+        align-items: center !important;
     }
-    ::-webkit-scrollbar-thumb:hover { background: #FFD700; }
+    
+    /* Hover Effect - มิติแบบลอยตัว */
+    div.stButton > button:hover { 
+        background-color: #FFD700 !important; /* สีเหลืองทองนุ่มนวล */
+        color: #004D40 !important; 
+        border-color: #FFD700 !important;
+        transform: translateX(4px) !important; /* เลื่อนไปทางขวาเล็กน้อย */
+        box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2) !important; /* เงาสีทองจางๆ */
+    }
+
+    /* Expander UI - ปรับให้เข้ากับสไตล์ภาพรวม */
+    div[data-testid="stExpander"] { 
+        background-color: transparent !important; 
+        border: none !important;
+        margin-bottom: 12px !important; 
+        padding: 0 5px !important;
+    }
+    
+    .stExpanderHeader {
+        background-color: rgba(255, 255, 255, 0.02) !important;
+        border-radius: 10px !important;
+        color: rgba(255, 255, 255, 0.9) !important;
+        transition: 0.3s !important;
+    }
+    
+    .stExpanderHeader:hover {
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        color: white !important;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.15); border-radius: 10px; }
 </style>
 """, unsafe_allow_html=True)
 
