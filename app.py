@@ -68,20 +68,113 @@ def get_room_info(room_code):
         return f"ห้องนี้คือ **ตึก {building} ชั้น {floor} ห้อง {room}** ครับผม" if st.session_state.lang == "TH" else f"It is **Building {building}, Floor {floor}, Room {room}**."
     return None
 
-# --- 4. CSS ---
+# --- 4. CSS (Updated UI Modern/Minimal) ---
 st.markdown("""
 <style>
-    .stApp { background-color: #FFFFFF; color: black; }
-    [data-testid="stSidebar"] { background-color: #006861 !important; }
-    [data-testid="stSidebarContent"] { padding-top: 0rem !important; }
-    .custom-header { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 5px; margin-top: -35px; border-bottom: 2px solid rgba(255,255,255,0.2); }
-    .header-logo-img { width: 90px; height: auto; margin-bottom: 10px; }
-    .univ-name { color: white !important; font-size: 22px; font-weight: bold; line-height: 1.2; }
-    .sidebar-title { color: white !important; font-size: 14px; font-weight: bold; margin-bottom: 5px; }
-    div.stButton > button { width: 100% !important; border-radius: 12px !important; background-color: transparent !important; color: white !important; border: 1px solid rgba(255, 255, 255, 0.3) !important; padding: 10px 15px !important; text-align: left !important; margin-bottom: 10px !important; }
-    div.stButton > button:hover { background-color: rgba(255, 255, 255, 0.2) !important; border-color: #FFD700 !important; }
-    div[data-testid="stExpander"] { background-color: #FFFFFF !important; border-radius: 12px !important; margin-bottom: 10px !important; border: none !important; }
-    .btn-action { background-color: #006861; color: white !important; padding: 4px 10px; border-radius: 6px; text-decoration: none; font-size: 10px; font-weight: bold; }
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap');
+    
+    html, body, [class*="css"] {
+        font-family: 'Sarabun', sans-serif;
+    }
+
+    .stApp { 
+        background-color: #F8F9FA; 
+    }
+
+    /* Sidebar Styling */
+    [data-testid="stSidebar"] { 
+        background-color: #004D40 !important; 
+        background-image: linear-gradient(180deg, #004D40 0%, #006861 100%) !important;
+        border-right: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    [data-testid="stSidebarContent"] { padding-top: 1rem !important; }
+
+    .custom-header { 
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+        text-align: center; 
+        padding: 20px 10px; 
+        margin-top: -20px; 
+        background: rgba(255,255,255,0.05);
+        border-radius: 0 0 20px 20px;
+        margin-bottom: 20px;
+    }
+    
+    .header-logo-img { width: 80px; height: auto; filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.3)); }
+    .univ-name { color: white !important; font-size: 18px; font-weight: 600; line-height: 1.2; margin-top: 10px; }
+    
+    .sidebar-title { 
+        color: rgba(255,255,255,0.7) !important; 
+        font-size: 12px; 
+        text-transform: uppercase; 
+        letter-spacing: 1.2px;
+        margin: 20px 0 10px 10px;
+    }
+
+    /* Button Styling */
+    div.stButton > button { 
+        width: 100% !important; 
+        border-radius: 12px !important; 
+        background-color: rgba(255,255,255,0.1) !important; 
+        color: white !important; 
+        border: 1px solid rgba(255, 255, 255, 0.2) !important; 
+        padding: 8px 15px !important; 
+        transition: all 0.3s ease !important;
+    }
+    
+    div.stButton > button:hover { 
+        background-color: #FFD700 !important; 
+        color: #004D40 !important; 
+        border-color: #FFD700 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    /* Chat Messages */
+    .stChatMessage {
+        background-color: white !important;
+        border-radius: 15px !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05) !important;
+        border: 1px solid #E9ECEF !important;
+        margin-bottom: 15px !important;
+    }
+
+    /* Expander UI */
+    div[data-testid="stExpander"] { 
+        background-color: rgba(255,255,255,0.05) !important; 
+        border-radius: 12px !important; 
+        border: 1px solid rgba(255,255,255,0.1) !important;
+        margin-bottom: 10px !important; 
+    }
+    
+    .form-row { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        padding: 10px;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .form-label { color: #E0E0E0; font-size: 13px; }
+    
+    .btn-action { 
+        background-color: #FFD700; 
+        color: #004D40 !important; 
+        padding: 5px 12px; 
+        border-radius: 8px; 
+        text-decoration: none; 
+        font-size: 11px; 
+        font-weight: bold;
+        transition: 0.3s;
+    }
+    
+    .btn-action:hover { opacity: 0.8; transform: scale(1.05); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-thumb { background: #CBD5E0; border-radius: 10px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -92,7 +185,6 @@ if api_key: genai.configure(api_key=api_key)
 @st.cache_resource
 def load_model():
     try:
-        # ใช้การค้นหาโมเดลแบบเดิมที่คุณเขียนไว้
         available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
         selected = next((m for m in available_models if "1.5-flash" in m), available_models[0])
         return genai.GenerativeModel(model_name=selected)
@@ -108,7 +200,9 @@ if "global_user_nickname" not in st.session_state: st.session_state.global_user_
 # --- 7. Sidebar (เพิ่มปุ่มสลับภาษา) ---
 with st.sidebar:
     # ปุ่มสลับภาษาบนสุด
-    st.button(f"🌐 {st.session_state.lang}", on_click=toggle_language)
+    col_lang, _ = st.columns([1, 2])
+    with col_lang:
+        st.button(f"🌐 {st.session_state.lang}", on_click=toggle_language)
 
     if os.path.exists("logo_ku.png"):
         img_data = get_image_base64("logo_ku.png")
@@ -130,25 +224,28 @@ with st.sidebar:
                 st.rerun()
 
     st.markdown("---")
+    st.markdown(f'<p class="sidebar-title">Quick Links</p>', unsafe_allow_html=True)
     with st.expander(curr["exam_table"], expanded=False):
-        st.markdown(f'<div class="white-card-content"><div class="form-row"><div class="form-label">KU Exam</div><a href="https://reg2.src.ku.ac.th/table_test/" target="_blank" class="btn-action">{curr["btn_find"]}</a></div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="form-row"><div class="form-label">KU Exam</div><a href="https://reg2.src.ku.ac.th/table_test/" target="_blank" class="btn-action">{curr["btn_find"]}</a></div>', unsafe_allow_html=True)
     with st.expander(curr["gpa_calc"], expanded=False):
-        st.markdown(f'<div class="white-card-content"><div class="form-row"><div class="form-label">GPAX</div><a href="https://fna.csc.ku.ac.th/grade/" target="_blank" class="btn-action">{curr["btn_open"]}</a></div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="form-row"><div class="form-label">GPAX</div><a href="https://fna.csc.ku.ac.th/grade/" target="_blank" class="btn-action">{curr["btn_open"]}</a></div>', unsafe_allow_html=True)
     with st.expander(curr["forms"], expanded=False):
         forms = [("ใบคำร้องทั่วไป", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf")]
         for name, link in forms:
             st.markdown(f'<div class="form-row"><div class="form-label">{name}</div><a href="{link}" target="_blank" class="btn-action">{curr["btn_download"]}</a></div>', unsafe_allow_html=True)
 
 # --- 8. หน้า Chat หลัก ---
-st.markdown(f"## 🦖 AI TEST")
+st.markdown(f"<h2 style='color: #004D40;'>🦖 AI KUSRC</h2>", unsafe_allow_html=True)
 current_title = st.session_state.current_chat_id if st.session_state.current_chat_id else ( "แชทใหม่" if st.session_state.lang == "TH" else "New Chat")
 st.caption(f"👤 {curr['welcome']} {st.session_state.global_user_nickname} | {curr['topic']}: {current_title}")
 
+# แสดงข้อความ
 for message in st.session_state.messages:
     avatar = "🧑‍🎓" if message["role"] == "user" else "🦖"
     with st.chat_message(message["role"], avatar=avatar):
         st.markdown(message["content"])
 
+# ส่วนรับ Input
 if prompt := st.chat_input(curr["input_placeholder"]):
     if st.session_state.current_chat_id is None: st.session_state.current_chat_id = prompt[:20]
 
@@ -171,7 +268,6 @@ if prompt := st.chat_input(curr["input_placeholder"]):
                 history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} for m in st.session_state.messages[-6:-1]]
                 chat_session = model.start_chat(history=history)
                 
-                # ปรับแต่งคำสั่ง (Instruction) ตามภาษาที่เลือก
                 full_context = f"{curr['ai_identity']} คุยกับน้องชื่อ {st.session_state.global_user_nickname} ข้อมูลมหาลัย:\n{knowledge_base}\n\nคำถาม: {prompt}"
                 
                 response = chat_session.send_message(full_context, stream=True)
