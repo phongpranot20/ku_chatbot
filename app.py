@@ -7,7 +7,7 @@ import re
 # --- 1. ตั้งค่าหน้าจอ (คงเดิม) ---
 st.set_page_config(page_title="AI KUSRC", page_icon="🦖", layout="wide")
 
-# --- 2. ระบบจัดการภาษา (ตรวจสอบ Key ครบทุกจุด 100%) ---
+# --- 2. ระบบจัดการภาษา (ตรวจสอบ Key ให้ตรงกัน 100% เพื่อแก้ KeyError) ---
 if "lang" not in st.session_state:
     st.session_state.lang = "TH"
 
@@ -57,13 +57,12 @@ def get_room_info(room_code):
         return f"📍 ข้อมูลสถานที่: **ตึก {code[:2]} ชั้น {code[2]} ห้อง {code[3:]}**"
     return None
 
-# --- 4. CSS (เจาะจงลบไอคอน และลบสีแดง/ส้มทิ้ง 100%) ---
+# --- 4. CSS (เจาะจงลบไอคอนสีแดง/ส้มทิ้ง 100% และคุมโทน Gemini) ---
 st.markdown(f"""
 <style>
-    .stApp {{ background-color: #FFFFFF; }}
-    [data-testid="stSidebar"] {{ background-color: #f8f9fa !important; border-right: 1px solid #e0e0e0; }}
+    .stApp {{ background-color: #FFFFFF; color: #1f1f1f; }}
     
-    /* ล้างสีไอคอนและตัวไอคอนออกทั้งหมด (ลบวงกลมแดง/ส้ม) */
+    /* ลบไอคอนวงกลมสีแดง/ส้ม (Avatar) และ Emoji ทุกจุด */
     [data-testid="chatAvatarIcon-user"], 
     [data-testid="chatAvatarIcon-assistant"],
     div[data-testid="stChatMessage"] figure,
@@ -71,30 +70,41 @@ st.markdown(f"""
         display: none !important;
     }}
     
-    /* ปรับ Layout แชทใหม่ให้ไม่มีช่องว่างไอคอน */
-    div[data-testid="stChatMessage"] {{ padding-left: 0px !important; margin: 0 auto !important; max-width: 850px !important; }}
+    /* จัด Layout แชทใหม่ให้ไม่มีช่องว่างของไอคอนที่ถูกลบ */
+    div[data-testid="stChatMessage"] {{
+        padding-left: 0px !important;
+        margin-left: 0px !important;
+        max-width: 850px !important;
+        margin: 0 auto !important;
+    }}
 
-    /* กล่อง Assistant สไตล์ Gemini Professional */
-    [data-testid="stChatMessageAssistant"] {{ background-color: #f0f4f9 !important; border-radius: 20px !important; padding: 20px !important; }}
+    /* กล่องแชท Assistant สไตล์ Gemini (เทาอ่อนโค้งมน) */
+    [data-testid="stChatMessageAssistant"] {{
+        background-color: #f0f4f9 !important;
+        border-radius: 24px !important;
+        padding: 20px !important;
+        border: none !important;
+    }}
 
-    /* ส่วนหัว Logo */
-    .sidebar-header {{ text-align: center; padding: 10px; }}
-    .logo-img {{ width: 100px !important; height: auto; }}
+    /* ปรับแต่ง Sidebar และ Logo */
+    .sidebar-header {{ text-align: center; padding: 20px 0; }}
+    .logo-img {{ width: 100px !important; height: auto; margin-bottom: 10px; }}
     .univ-name {{ color: #006861 !important; font-size: 18px; font-weight: bold; line-height: 1.2; }}
-    
-    /* ปุ่ม UI */
+
+    /* ปุ่มและ Expander */
     .btn-action {{ background-color: #006861; color: white !important; padding: 4px 12px; border-radius: 8px; text-decoration: none; font-size: 12px; }}
-    .form-row {{ display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }}
+    .form-row {{ display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }}
 </style>
 """, unsafe_allow_html=True)
 
-# --- 5. จัดการ API (คงเดิม 100% เพื่อให้ใช้งานได้จริง) ---
+# --- 5. จัดการ API (คืนค่า Logic เดิมเพื่อให้คุยได้ปกติ 100%) ---
 api_key = st.secrets.get("GEMINI_API_KEY")
 if api_key: genai.configure(api_key=api_key)
 
 @st.cache_resource
 def load_model():
     try:
+        # ใช้ระบบค้นหาชื่อโมเดลแบบเดิมที่คุณเขียนไว้ในชุดแรก เพื่อป้องกัน Error 404
         available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
         selected = next((m for m in available_models if "1.5-flash" in m), available_models[0])
         return genai.GenerativeModel(model_name=selected)
@@ -102,11 +112,11 @@ def load_model():
 model = load_model()
 
 # --- 6. State Management ---
-if "all_chats" not in st.session_state: st.session_state.all_chats = {}
+if "all_chats" not in st.session_state: st.session_state.all_chats = {} 
 if "messages" not in st.session_state: st.session_state.messages = []
 if "current_chat_id" not in st.session_state: st.session_state.current_chat_id = None
 
-# --- 7. Sidebar (ฟีเจอร์ครบ 100%) ---
+# --- 7. Sidebar (ฟีเจอร์ครบ 100% ไม่หาย) ---
 with st.sidebar:
     st.markdown('<div class="sidebar-header">', unsafe_allow_html=True)
     logo_data = get_image_base64("logo_ku.png")
@@ -132,7 +142,7 @@ with st.sidebar:
         for name, link in forms:
             st.markdown(f'<div class="form-row"><span>{name}</span><a href="{link}" target="_blank" class="btn-action">{curr["btn_download"]}</a></div>', unsafe_allow_html=True)
 
-# --- 8. หน้า Chat หลัก ---
+# --- 8. Main Chat Logic ---
 if not st.session_state.messages:
     st.markdown(f"<h1 style='text-align: center; color: #006861; margin-top: 15vh;'>{curr['welcome']}</h1>", unsafe_allow_html=True)
 else:
@@ -156,6 +166,7 @@ if prompt := st.chat_input(curr["input_placeholder"]):
             if os.path.exists("ku_data.txt"):
                 with open("ku_data.txt", "r", encoding="utf-8") as f: kb = f.read()
             
+            # รักษา Logic ประวัติการแชทเดิม
             history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} for m in st.session_state.messages[-6:-1]]
             chat_session = model.start_chat(history=history)
             
@@ -168,7 +179,7 @@ if prompt := st.chat_input(curr["input_placeholder"]):
                 placeholder.markdown(full_response + "▌")
             placeholder.markdown(full_response)
         except Exception as e:
-            st.error(f"Error: {e}")
+            st.error(f"เกิดข้อผิดพลาด: {e}")
         
         st.session_state.messages.append({"role": "assistant", "content": full_response})
         st.rerun()
