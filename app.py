@@ -2,11 +2,11 @@ import streamlit as st
 from styles import apply_custom_css, get_image_base64, translation
 from logic import get_room_info, load_model, get_knowledge_base
 
-# --- 1. การตั้งค่าเบื้องต้น (Setup) ---
+# --- 1. การตั้งค่าหน้าจอ (Setup) ---
 st.set_page_config(page_title="AI KUSRC", page_icon="🦖", layout="wide")
 apply_custom_css()
 
-# จัดการ State ของระบบ
+# จัดการ Session State
 if "lang" not in st.session_state: st.session_state.lang = "TH"
 if "all_chats" not in st.session_state: st.session_state.all_chats = {} 
 if "messages" not in st.session_state: st.session_state.messages = []
@@ -23,18 +23,18 @@ with st.sidebar:
         st.session_state.lang = "EN" if st.session_state.lang == "TH" else "TH"
         st.rerun()
 
-    # แสดงโลโก้และชื่อมหาลัย (เพิ่มระยะห่างตามที่ปรับใน styles.py)
+    # โลโก้และชื่อมหาลัย
     img_data = get_image_base64("logo_ku.png")
     if img_data:
         st.markdown(f'<div class="custom-header"><img src="data:image/png;base64,{img_data}" class="header-logo-img"><div class="univ-name">{curr["univ_name"]}</div></div>', unsafe_allow_html=True)
     
-    # ปุ่มเริ่มแชทใหม่
-    if st.button(curr["new_chat"]):
+    # ปุ่มแชทใหม่
+    if st.button(curr["new_chat"], key="new_chat_btn"):
         st.session_state.messages = []
         st.session_state.current_chat_id = None
         st.rerun()
     
-    # แสดงประวัติการแชท
+    # ประวัติการแชท (Chat History)
     if st.session_state.all_chats:
         st.markdown(f'<p style="font-weight:700; margin-top:10px;">{curr["chat_hist"]}</p>', unsafe_allow_html=True)
         for chat_id in list(st.session_state.all_chats.keys()):
@@ -54,16 +54,16 @@ with st.sidebar:
     with st.expander(curr["gpa_calc"], expanded=False):
         st.markdown(f'<div style="display:flex; justify-content:space-between; align-items:center;"><span>GPAX</span><a href="https://fna.csc.ku.ac.th/grade/" target="_blank" class="btn-action">{curr["btn_open"]}</a></div>', unsafe_allow_html=True)
     
-    # [Quick Link 3] ลิงก์แบบฟอร์มต่างๆ (ดึงข้อมูลตาม ku_data.txt)
+    # [Quick Link 3] ลิงก์แบบฟอร์มต่างๆ (ครบถ้วน 7 รายการตามไฟล์ ku_data.txt)
     with st.expander(curr["forms"], expanded=False):
         forms = [
-            ("ใบขอลงทะเบียนเรียน", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf"),
-            ("ใบคำร้องทั่วไป", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf"),
-            ("ใบผ่อนผันค่าเทอม", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Postpone-tuition-and-fee-payments.pdf"),
-            ("ใบลาพักการศึกษา", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/Request-for-Leave-of-Absence-Request.pdf"),
-            ("ใบลาออก", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/Resignation-Form.pdf"),
-            ("ใบลงทะเบียนเรียน (KU1)", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU1-Registration-Form.pdf"),
-            ("ใบเพิ่ม-ถอน (KU3)", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU3-Add-Drop-Form.pdf")
+            ("ใบขอลงทะเบียนเรียน", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Request-for-Registration.pdf"), #
+            ("ใบคำร้องทั่วไป", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/General-Request.pdf"), #
+            ("ใบผ่อนผันค่าเทอม", "https://registrar.ku.ac.th/wp-content/uploads/2024/11/Postpone-tuition-and-fee-payments.pdf"), #
+            ("ใบลาพักการศึกษา", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/Request-for-Leave-of-Absence-Request.pdf"), #
+            ("ใบลาออก", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/Resignation-Form.pdf"), #
+            ("ใบลงทะเบียนเรียน (KU1)", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU1-Registration-Form.pdf"), #
+            ("ใบเพิ่ม-ถอน (KU3)", "https://registrar.ku.ac.th/wp-content/uploads/2023/11/KU3-Add-Drop-Form.pdf") #
         ]
         for name, link in forms:
             st.markdown(f'''
@@ -78,12 +78,12 @@ current_title = st.session_state.current_chat_id if st.session_state.current_cha
 st.markdown(f"<h2 style='color: #004D40;'><span class='dino-head'>🦖</span> AI KUSRC</h2>", unsafe_allow_html=True)
 st.caption(f"👤 {curr['welcome']} {st.session_state.global_user_nickname} | {curr['topic']}: {current_title}")
 
-# แสดงข้อความแชทที่มีอยู่
+# แสดงข้อความ
 for message in st.session_state.messages:
     with st.chat_message(message["role"], avatar="🧑‍🎓" if message["role"] == "user" else "🦖"):
         st.markdown(message["content"])
 
-# ส่วนรับข้อความจากผู้ใช้
+# ส่วนรับ Input
 if prompt := st.chat_input(curr["input_placeholder"]):
     if st.session_state.current_chat_id is None: 
         st.session_state.current_chat_id = prompt[:20]
@@ -92,22 +92,32 @@ if prompt := st.chat_input(curr["input_placeholder"]):
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     with st.chat_message("assistant", avatar="🦖"):
-        # 1. เช็คข้อมูลห้องเรียนก่อน
-        room_info = get_room_info(prompt, st.session_state.lang)
+        # เช็คเลขห้องก่อน
+        room_info = get_room_info(prompt, st.session_state.lang) #
         if room_info:
             full_response = room_info
             st.markdown(full_response)
         else:
-            # 2. ถ้าไม่ใช่เรื่องห้อง ให้ AI ตอบโดยใช้ Knowledge Base (TXT + PDF ใน knowledge_pool)
             placeholder = st.empty()
             placeholder.markdown(curr["loading"])
             try:
+                # รวมข้อมูลจาก ku_data.txt และ PDF ใน knowledge_pool
                 kb = get_knowledge_base() 
+                
                 history = [{"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]} for m in st.session_state.messages[-6:-1]]
                 chat_session = model.start_chat(history=history)
                 
-                # รวมบริบททั้งหมดส่งให้ Gemini
-                full_context = f"{curr['ai_identity']} คุยกับน้องชื่อ {st.session_state.global_user_nickname} ข้อมูลมหาลัยและไฟล์ PDF:\n{kb}\n\nคำถาม: {prompt}"
+                # ปรับ Prompt ให้ AI ค้นหาใน PDF อย่างละเอียดขึ้น
+                full_context = f"""
+                {curr['ai_identity']} คุยกับน้องชื่อ {st.session_state.global_user_nickname}
+                
+                คำสั่ง: หากน้องถามเรื่องค่าเทอม ค่าธรรมเนียม หรือตารางรับสมัคร ให้หาจากข้อมูลด้านล่างนี้ (รวมไฟล์ PDF แล้ว)
+                
+                ความรู้:
+                {kb}
+                
+                คำถามจากน้อง: {prompt}
+                """
                 
                 response = chat_session.send_message(full_context, stream=True)
                 full_response = ""
@@ -119,7 +129,6 @@ if prompt := st.chat_input(curr["input_placeholder"]):
                 full_response = f"Error: {e}"
                 st.error(full_response)
         
-        # บันทึกประวัติการตอบ
         st.session_state.messages.append({"role": "assistant", "content": full_response})
         st.session_state.all_chats[st.session_state.current_chat_id] = st.session_state.messages
         st.rerun()
