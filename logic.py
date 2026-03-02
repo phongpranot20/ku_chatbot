@@ -28,23 +28,29 @@ def load_model():
     except: return None
 
 def get_pdf_content(directory="knowledge_pool"):
-    text = ""
+    """กวาดอ่านไฟล์ PDF ทั้งหมดและระบุแหล่งที่มา"""
+    combined_text = ""
     if not os.path.exists(directory): 
         os.makedirs(directory)
         return ""
     
-    for filename in os.listdir(directory):
-        if filename.endswith(".pdf"):
-            try:
-                with open(os.path.join(directory, filename), "rb") as f:
-                    pdf = PyPDF2.PdfReader(f)
-                    # เพิ่มชื่อไฟล์เข้าไปนำหน้าเนื้อหา
-                    text += f"\n--- เริ่มข้อมูลจากไฟล์: {filename} ---\n" [cite: 24]
-                    for page in pdf.pages:
-                        text += page.extract_text() + "\n"
-                    text += f"--- จบข้อมูลจากไฟล์: {filename} ---\n"
-            except: pass
-    return text
+    # ดึงรายชื่อไฟล์ PDF ทั้งหมดในโฟลเดอร์
+    pdf_files = [f for f in os.listdir(directory) if f.endswith(".pdf")]
+    
+    for filename in pdf_files:
+        try:
+            with open(os.path.join(directory, filename), "rb") as f:
+                pdf = PyPDF2.PdfReader(f)
+                # ใส่ Header กำกับชื่อไฟล์เพื่อให้ AI แยกแยะภาคปกติ/ภาคพิเศษได้ [cite: 10]
+                combined_text += f"\n\n--- ข้อมูลจากไฟล์: {filename} ---\n"
+                for i, page in enumerate(pdf.pages):
+                    page_text = page.extract_text()
+                    if page_text:
+                        combined_text += f"[หน้า {i+1}] {page_text}\n"
+        except Exception as e:
+            print(f"Error reading {filename}: {e}")
+            
+    return combined_text
 
 def get_knowledge_base():
     """รวมข้อมูล TXT และ PDF"""
