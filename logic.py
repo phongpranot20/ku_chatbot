@@ -28,24 +28,22 @@ def load_model():
     except: return None
 
 def get_pdf_content(directory="knowledge_pool"):
-    """ดึงข้อมูลจาก PDF ทั้งหมดในโฟลเดอร์"""
     text = ""
     if not os.path.exists(directory): 
         os.makedirs(directory)
         return ""
     
-    pdf_files = [f for f in os.listdir(directory) if f.endswith(".pdf")]
-    for filename in pdf_files:
-        try:
-            with open(os.path.join(directory, filename), "rb") as f:
-                pdf = PyPDF2.PdfReader(f)
-                text += f"\n--- ข้อมูลจากไฟล์ PDF: {filename} ---\n"
-                for page in pdf.pages:
-                    content = page.extract_text()
-                    if content:
-                        text += content + "\n"
-        except Exception as e:
-            print(f"Error reading {filename}: {e}")
+    for filename in os.listdir(directory):
+        if filename.endswith(".pdf"):
+            try:
+                with open(os.path.join(directory, filename), "rb") as f:
+                    pdf = PyPDF2.PdfReader(f)
+                    # เพิ่มชื่อไฟล์เข้าไปนำหน้าเนื้อหา
+                    text += f"\n--- เริ่มข้อมูลจากไฟล์: {filename} ---\n" [cite: 24]
+                    for page in pdf.pages:
+                        text += page.extract_text() + "\n"
+                    text += f"--- จบข้อมูลจากไฟล์: {filename} ---\n"
+            except: pass
     return text
 
 def get_knowledge_base():
