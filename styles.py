@@ -19,7 +19,8 @@ def apply_custom_css():
     .custom-header { 
         display: flex; align-items: center; gap: 15px; padding: 10px !important; 
         background: rgba(255, 255, 255, 0.9); border-radius: 15px !important; 
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px !important;
     }
     .header-logo-img { max-width: 60px !important; height: auto !important; }
     .univ-name { 
