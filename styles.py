@@ -3,34 +3,64 @@ import base64
 import os
 
 def apply_custom_css():
-    """จัดการ CSS ทั้งหมดของหน้าเว็บ"""
+    """จัดการ CSS ทั้งหมด (ย้ายมาจากส่วนที่ 4 ของไฟล์เดิม)"""
     st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap');
     html, body, [class*="css"] { font-family: 'Sarabun', sans-serif !important; }
     .stMarkdown, .stText, p { color: #2D3436 !important; font-weight: 400; }
     .stChatMessageContent { font-size: 1.1rem !important; line-height: 1.7 !important; font-weight: 400 !important; }
-    [data-testid="stSidebar"] { background: rgba(248, 249, 250, 0.8) !important; backdrop-filter: blur(15px); border-right: 1px solid rgba(0,0,0,0.1); box-shadow: 5px 0 15px rgba(0,0,0,0.05); }
-    .custom-header { display: flex; align-items: center; gap: 15px; padding: 10px !important; background: rgba(255, 255, 255, 0.9); border-radius: 15px !important; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    [data-testid="stSidebar"] { 
+        background: rgba(248, 249, 250, 0.8) !important; 
+        backdrop-filter: blur(15px); 
+        border-right: 1px solid rgba(0,0,0,0.1); 
+        box-shadow: 5px 0 15px rgba(0,0,0,0.05); 
+    }
+    .custom-header { 
+        display: flex; align-items: center; gap: 15px; padding: 10px !important; 
+        background: rgba(255, 255, 255, 0.9); border-radius: 15px !important; 
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+    }
     .header-logo-img { max-width: 60px !important; height: auto !important; }
-    .univ-name { color: #333333 !important; font-size: 1.1rem !important; font-weight: 700; line-height: 1.2; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); margin-top: 0 !important; }
-    div.stButton > button { border-radius: 50px !important; border: none !important; background: white !important; color: #004D40 !important; font-weight: 600 !important; transition: all 0.3s ease !important; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .univ-name { 
+        color: #333333 !important; font-size: 1.1rem !important; font-weight: 700; 
+        line-height: 1.2; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); margin-top: 0 !important; 
+    }
+    div.stButton > button { 
+        border-radius: 50px !important; border: none !important; 
+        background: white !important; color: #004D40 !important; 
+        font-weight: 600 !important; transition: all 0.3s ease !important; 
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+    }
     div.stButton > button:hover { background: #004D40 !important; color: white !important; transform: scale(1.02); }
-    .stChatMessage { background: rgba(255, 255, 255, 0.8) !important; backdrop-filter: blur(5px); border-radius: 20px !important; }
-    .btn-action { background: #FFD700; color: #004D40 !important; padding: 5px 15px; border-radius: 20px; text-decoration: none; font-size: 0.8rem; font-weight: 700; transition: 0.3s; }
+    .stChatMessage { 
+        background: rgba(255, 255, 255, 0.8) !important; 
+        backdrop-filter: blur(5px); border-radius: 20px !important; 
+        border: 1px solid rgba(255,255,255,0.3) !important; 
+    }
+    .btn-action { 
+        background: #FFD700; color: #004D40 !important; padding: 5px 15px; 
+        border-radius: 20px; text-decoration: none; font-size: 0.8rem; 
+        font-weight: 700; transition: 0.3s; 
+    }
     .btn-action:hover { background: #FFC107; transform: translateY(-2px); }
+    .stApp::before {
+        content: "🦖"; position: fixed; bottom: 20px; right: 20px; 
+        font-size: 80px; opacity: 0.1; z-index: 0; pointer-events: none;
+    }
     @keyframes wave-dance { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(25deg); } }
     .dino-head { display: inline-block; animation: wave-dance 2s infinite ease-in-out; margin-right: 10px; }
     </style>
     """, unsafe_allow_html=True)
 
 def get_image_base64(path):
-    """แปลงรูปภาพเป็น Base64 สำหรับแสดงผลใน HTML"""
+    """ฟังก์ชันจัดการรูปภาพ (ย้ายมาจากส่วนที่ 3)"""
     if os.path.exists(path):
         with open(path, "rb") as img_file:
             return base64.b64encode(img_file.read()).decode()
     return ""
 
+# พจนานุกรมภาษา (ย้ายมาจากส่วนที่ 2)
 translation = {
     "TH": {
         "univ_name": "มหาวิทยาลัย<br>เกษตรศาสตร์",
