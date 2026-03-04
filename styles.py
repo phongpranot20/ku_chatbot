@@ -3,54 +3,129 @@ import base64
 import os
 
 def apply_custom_css():
-    """จัดการ CSS ทั้งหมด (ย้ายมาจากส่วนที่ 4 ของไฟล์เดิม)"""
+    """จัดการ CSS ทั้งหมดเพื่อความหรูหราและพรีเมียม"""
     st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap');
-    html, body, [class*="css"] { font-family: 'Sarabun', sans-serif !important; }
-    .stMarkdown, .stText, p { color: #2D3436 !important; font-weight: 400; }
-    .stChatMessageContent { font-size: 1.1rem !important; line-height: 1.7 !important; font-weight: 400 !important; }
-    [data-testid="stSidebar"] { 
-        background: rgba(248, 249, 250, 0.8) !important; 
-        backdrop-filter: blur(15px); 
-        border-right: 1px solid rgba(0,0,0,0.1); 
-        box-shadow: 5px 0 15px rgba(0,0,0,0.05); 
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap');
+    
+    /* พื้นหลังหลักของ App */
+    .stApp {
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+        font-family: 'Sarabun', sans-serif !important;
     }
-    .custom-header { 
-        display: flex; align-items: center; gap: 15px; padding: 10px !important; 
-        background: rgba(255, 255, 255, 0.9); border-radius: 15px !important; 
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        margin-bottom: 20px !important;
+
+    /* ตัวอักษรทั่วไป */
+    .stMarkdown, .stText, p { 
+        color: #2D3436 !important; 
+        font-weight: 400; 
     }
-    .header-logo-img { max-width: 60px !important; height: auto !important; }
-    .univ-name { 
-        color: #333333 !important; font-size: 1.1rem !important; font-weight: 700; 
-        line-height: 1.2; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); margin-top: 0 !important; 
+
+    /* Sidebar แบบหรูหรา */
+    [data-testid="stSidebar"] {
+        background: rgba(255, 255, 255, 0.7) !important;
+        backdrop-filter: blur(20px);
+        border-right: 1px solid rgba(212, 175, 55, 0.3); /* เส้นขอบสีทองจางๆ */
+        box-shadow: 10px 0 30px rgba(0,0,0,0.05);
     }
-    div.stButton > button { 
-        border-radius: 50px !important; border: none !important; 
-        background: white !important; color: #004D40 !important; 
-        font-weight: 600 !important; transition: all 0.3s ease !important; 
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+
+    /* Header ของมหาวิทยาลัย */
+    .custom-header {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 20px !important;
+        background: white;
+        border-radius: 25px !important;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        margin-bottom: 30px !important;
+        border-left: 5px solid #D4AF37; /* แถบสีทองด้านข้าง */
     }
-    div.stButton > button:hover { background: #004D40 !important; color: white !important; transform: scale(1.02); }
-    .stChatMessage { 
-        background: rgba(255, 255, 255, 0.8) !important; 
-        backdrop-filter: blur(5px); border-radius: 20px !important; 
-        border: 1px solid rgba(255,255,255,0.3) !important; 
+
+    .univ-name {
+        color: #004D40 !important;
+        font-size: 1.2rem !important;
+        font-weight: 800;
+        line-height: 1.2;
+        letter-spacing: 0.5px;
     }
-    .btn-action { 
-        background: #FFD700; color: #004D40 !important; padding: 5px 15px; 
-        border-radius: 20px; text-decoration: none; font-size: 0.8rem; 
-        font-weight: 700; transition: 0.3s; 
+
+    /* ปุ่มกด (Buttons) สไตล์ Premium */
+    div.stButton > button {
+        border-radius: 12px !important;
+        border: 1px solid rgba(212, 175, 55, 0.5) !important;
+        background: white !important;
+        color: #004D40 !important;
+        font-weight: 600 !important;
+        padding: 10px 24px !important;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
     }
-    .btn-action:hover { background: #FFC107; transform: translateY(-2px); }
+
+    div.stButton > button:hover {
+        background: linear-gradient(135deg, #004D40 0%, #00695C 100%) !important;
+        color: #D4AF37 !important; /* อักษรสีทองตอน Hover */
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 77, 64, 0.2);
+    }
+
+    /* กล่องข้อความ Chat */
+    .stChatMessage {
+        background: rgba(255, 255, 255, 0.9) !important;
+        border-radius: 15px !important;
+        margin-bottom: 15px !important;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.02) !important;
+        border: 1px solid rgba(0,0,0,0.03) !important;
+    }
+
+    .stChatMessageContent {
+        font-size: 1.05rem !important;
+        line-height: 1.8 !important;
+    }
+
+    /* ปุ่ม Action ขนาดเล็ก (เช่น Search/Download) */
+    .btn-action {
+        background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%);
+        color: white !important;
+        padding: 6px 18px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: 0.3s;
+        display: inline-block;
+        box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3);
+    }
+
+    .btn-action:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 15px rgba(212, 175, 55, 0.4);
+    }
+
+    /* ปรับแต่ง Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #004D40; border-radius: 10px; }
+
+    /* ลูกเล่นไดโนเสาร์ */
     .stApp::before {
-        content: "🦖"; position: fixed; bottom: 20px; right: 20px; 
-        font-size: 80px; opacity: 0.1; z-index: 0; pointer-events: none;
+        content: "🦖";
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        font-size: 60px;
+        opacity: 0.07;
+        z-index: 0;
     }
-    @keyframes wave-dance { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(25deg); } }
-    .dino-head { display: inline-block; animation: wave-dance 2s infinite ease-in-out; margin-right: 10px; }
+    
+    @keyframes wave-dance {
+        0%, 100% { transform: rotate(-5deg); }
+        50% { transform: rotate(15deg); }
+    }
+    .dino-head { 
+        display: inline-block; 
+        animation: wave-dance 3s infinite ease-in-out; 
+        font-size: 1.5rem;
+    }
     </style>
     """, unsafe_allow_html=True)
 
