@@ -158,7 +158,7 @@ def get_image_base64(path):
 # พจนานุกรมภาษา (ย้ายมาจากส่วนที่ 2)
 translation = {
     "TH": {
-        "univ_name": "มหาวิทยาลัย<br>เกษตรศาสตร์",
+        "univ_name": "Kasetsart Universityร์",
         "new_chat": "➕ แชทใหม่",
         "chat_hist": "💬 ประวัติการแชท",
         "exam_table": "📅 ค้นหาตารางสอบ",
@@ -174,7 +174,7 @@ translation = {
         "ai_identity": "คุณคือรุ่นพี่ มก.ศรช. ใจดี ตอบเป็นภาษาไทยเป็นหลัก"
     },
     "EN": {
-        "univ_name": "Kasetsart<br>University",
+        "univ_name": "Kasetsart University",
         "new_chat": "➕ New Chat",
         "chat_hist": "💬 Chat History",
         "exam_table": "📅 Exam Schedule",
