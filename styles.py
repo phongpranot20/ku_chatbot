@@ -184,8 +184,10 @@ div.stButton > button:hover {
 }
 
     /* ปรับแต่ง Scrollbar ให้ดูเรียบที่สุด */
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-thumb { background: #E0E0E0; border-radius: 10px; }
+  /* เมื่อเอาเมาส์ไปวางที่แถบเลื่อน ให้สีเข้มขึ้นนิดนึงเพื่อให้รู้ว่ากำลังเลื่อนอยู่ */
+::-webkit-scrollbar-thumb:hover {
+    background: #D4AF37 !important; /* เปลี่ยนเป็นสีทองจางๆ เมื่อใช้งาน */
+}
 
     </style>
     """, unsafe_allow_html=True)
