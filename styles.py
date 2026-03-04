@@ -40,8 +40,8 @@ button[data-testid="stSidebarCollapseButton"] {
     .custom-header {
         display: flex;
         align-items: center;
-        gap: 25px;
-        padding: 25px !important;
+        gap: 30px;
+        padding: 30px !important;
         background: transparent; /* ตัดพื้นหลังสีขาวออกเพื่อให้กลืนไปกับจอ */
         border-bottom: 1px solid rgba(0,0,0,0.05); /* เพิ่มเส้นขีดจางๆ ใต้ Header */
         margin-bottom: 40px !important;
