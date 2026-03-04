@@ -18,11 +18,11 @@ header[data-testid="stHeader"] {
     background: rgba(255, 255, 255, 0.8) !important;
     backdrop-filter: blur(10px);
     /* สร้างเส้นขอบล่าง */
-    border-bottom: 20px solid !important;
+    border-bottom: 50px solid !important;
     /* กำหนดสีแบบไล่เฉด */
     border-image-source: linear-gradient(to right, #004D40, #D4AF37, #004D40) !important;
     border-image-slice: 1 !important;
-    height: 3.5rem; /* เพิ่มความสูงนิดหน่อยให้ดูไม่โล่ง */
+    height: 2rem; /* เพิ่มความสูงนิดหน่อยให้ดูไม่โล่ง */
 }
 
     /* 2. Sidebar ที่เน้นความโปร่ง (Luxury Minimalist) */
