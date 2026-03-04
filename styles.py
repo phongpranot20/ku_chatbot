@@ -13,6 +13,17 @@ def apply_custom_css():
         background: #FFFFFF; /* ขาวสะอาดตา */
         font-family: 'Sarabun', sans-serif !important;
     }
+    /* 2. เพิ่มลูกเล่น Top Bar (แก้ความโล่งด้านบน) */
+    header[data-testid="stHeader"] {
+        background: rgba(255, 255, 255, 0.8) !important;
+        backdrop-filter: blur(10px);
+        border-bottom: 2px solid transparent;
+        /* เพิ่มเส้นไล่เฉดสีทอง-เขียวที่ขอบบนสุด */
+        background-image: linear-gradient(white, white), 
+                          linear-gradient(to right, #004D40, #D4AF37, #004D40);
+        background-origin: border-box;
+        background-clip: padding-box, border-box;
+    }
 
     /* 2. Sidebar ที่เน้นความโปร่ง (Luxury Minimalist) */
     [data-testid="stSidebar"] {
