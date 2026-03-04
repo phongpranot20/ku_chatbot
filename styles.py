@@ -32,8 +32,8 @@ def apply_custom_css():
     .custom-header {
         display: flex;
         align-items: center;
-        gap: 20px;
-        padding: 20px !important;
+        gap: 15px;
+        padding: 10px !important;
         background: white;
         border-radius: 25px !important;
         box-shadow: 0 10px 25px rgba(0,0,0,0.05);
