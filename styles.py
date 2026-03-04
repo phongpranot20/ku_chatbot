@@ -62,6 +62,19 @@ header[data-testid="stHeader"] {
         letter-spacing: 1px;
         line-height: 1.3;
     }
+    /* ปรับแต่งช่อง Input ด้านล่าง */
+[data-testid="stChatInput"] {
+    border-radius: 20px !important;
+    border: 1px solid rgba(0, 77, 64, 0.1) !important;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    background: #ffffff !important;
+}
+
+[data-testid="stChatInput"]:focus-within {
+    border-color: #D4AF37 !important;
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.2) !important; /* แสงสีทองจางๆ */
+    transform: scale(1.01); /* ขยายใหญ่ขึ้นนิดเดียวให้ดูมีชีวิต */
+}
     /* 4. **ปรับปรุงส่วนที่คุณต้องการให้มีมิติ (ค้นหา, เปิดระบบ, โหลด)** */
     /* เน้น class .btn-action ที่ใช้ใน HTML สำหรับลิงก์เหล่านี้ */
     .btn-action {
@@ -105,12 +118,21 @@ header[data-testid="stHeader"] {
         transform: translateY(1px); /* ยุบตัวลงเล็กน้อย */
     }
 
-    div.stButton > button:hover {
-        background: #F8F9FA !important;
-        border-color: #D4AF37 !important; /* เปลี่ยนขอบเป็นสีทองจางๆ เมื่อชี้ */
-        color: #D4AF37 !important;
-        transform: translateX(5px); /* เลื่อนขวาเล็กน้อยเมื่อ Hover */
-    }
+    div.stButton > button {
+    border: none !important;
+    background: transparent !important;
+    transition: all 0.3s ease !important;
+    width: 100% !important;
+    text-align: left !important;
+    padding: 10px 15px !important;
+}
+
+div.stButton > button:hover {
+    background: rgba(212, 175, 55, 0.08) !important; /* สีทองจางๆ */
+    color: #004D40 !important;
+    padding-left: 25px !important; /* Slide effect */
+    border-left: 4px solid #D4AF37 !important; /* เส้นสีทองด้านข้าง */
+}
 
     /* 5. กล่อง Chat ที่ดูละมุนสายตา */
     .stChatMessage {
@@ -140,6 +162,28 @@ header[data-testid="stHeader"] {
         -webkit-text-fill-color: transparent;
         font-weight: 800 !important;
     }
+    .btn-action {
+    position: relative;
+    overflow: hidden; /* จำเป็นสำหรับ Shimmer */
+    /* ... (โค้ดเดิมของคุณ) ... */
+}
+
+.btn-action::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -60%;
+    width: 20%;
+    height: 200%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(30deg);
+    transition: none;
+}
+
+.btn-action:hover::after {
+    left: 120%;
+    transition: all 0.6s ease-in-out;
+}
 
     /* ปรับแต่ง Scrollbar ให้ดูเรียบที่สุด */
     ::-webkit-scrollbar { width: 4px; }
