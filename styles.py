@@ -44,7 +44,7 @@ button[data-testid="stSidebarCollapseButton"] {
         padding: 20px !important;
         background: transparent; /* ตัดพื้นหลังสีขาวออกเพื่อให้กลืนไปกับจอ */
         border-bottom: 1px solid rgba(0,0,0,0.05); /* เพิ่มเส้นขีดจางๆ ใต้ Header */
-        margin-bottom: 30px !important;
+        margin-bottom: 50px !important;
     }
 
     .header-logo-img { 
