@@ -3,129 +3,101 @@ import base64
 import os
 
 def apply_custom_css():
-    """จัดการ CSS ทั้งหมดเพื่อความหรูหราและพรีเมียม"""
+    """จัดการ CSS เพื่อความหรูหรา เน้น White Space และความสะอาดตา"""
     st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap');
     
-    /* พื้นหลังหลักของ App */
+    /* 1. จัดการพื้นหลังและ Font */
     .stApp {
-        background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+        background: #FFFFFF; /* ขาวสะอาดตา */
         font-family: 'Sarabun', sans-serif !important;
     }
 
-    /* ตัวอักษรทั่วไป */
-    .stMarkdown, .stText, p { 
-        color: #2D3436 !important; 
-        font-weight: 400; 
-    }
-
-    /* Sidebar แบบหรูหรา */
+    /* 2. Sidebar ที่เน้นความโปร่ง (Luxury Minimalist) */
     [data-testid="stSidebar"] {
-        background: rgba(255, 255, 255, 0.7) !important;
+        background: rgba(252, 252, 252, 0.95) !important;
         backdrop-filter: blur(20px);
-        border-right: 1px solid rgba(212, 175, 55, 0.3); /* เส้นขอบสีทองจางๆ */
-        box-shadow: 10px 0 30px rgba(0,0,0,0.05);
+        border-right: 1px solid rgba(0,0,0,0.03); 
+        padding-top: 2rem !important; /* เพิ่มพื้นที่ว่างด้านบน */
     }
 
-    /* Header ของมหาวิทยาลัย */
+    /* จัดการระยะห่างระหว่างปุ่มใน Sidebar */
+    [data-testid="stSidebar"] .stButton {
+        margin-bottom: 12px !important; /* เว้นระยะห่างระหว่างปุ่มไม่ให้เบียดกัน */
+    }
+
+    /* 3. Header ที่หรูหราและสะอาด (เน้นใช้ PNG โปร่งใส) */
     .custom-header {
         display: flex;
         align-items: center;
-        gap: 10px;
-        padding: 10px !important;
-        background: white;
-        border-radius: 10px !important;
-        box-shadow: 0 10px 10px rgba(0,0,0,0.05);
-        margin-bottom: 10px !important;
-        border-left: 2px solid #D4AF37; /* แถบสีทองด้านข้าง */
+        gap: 25px;
+        padding: 25px !important;
+        background: transparent; /* ตัดพื้นหลังสีขาวออกเพื่อให้กลืนไปกับจอ */
+        border-bottom: 1px solid rgba(0,0,0,0.05); /* เพิ่มเส้นขีดจางๆ ใต้ Header */
+        margin-bottom: 40px !important;
+    }
+
+    .header-logo-img { 
+        max-width: 75px !important; /* ปรับขนาดโลโก้ให้เด่นขึ้นแต่พอดี */
+        height: auto !important; 
+        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05)); /* เงาจางๆ ให้โลโก้ดูมีมิติ */
     }
 
     .univ-name {
-        color: #004D40 !important;
-        font-size: 1.2rem !important;
-        font-weight: 800;
-        line-height: 1.2;
-        letter-spacing: 0.5px;
+        color: #1A1A1A !important;
+        font-size: 1.3rem !important;
+        font-weight: 700;
+        letter-spacing: 1px;
+        line-height: 1.3;
     }
 
-    /* ปุ่มกด (Buttons) สไตล์ Premium */
+    /* 4. ปุ่มกด (Buttons) สไตล์ 'Quiet Luxury' */
     div.stButton > button {
-        border-radius: 12px !important;
-        border: 1px solid rgba(212, 175, 55, 0.5) !important;
-        background: white !important;
-        color: #004D40 !important;
-        font-weight: 600 !important;
-        padding: 10px 24px !important;
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        width: 100%; /* ให้ปุ่มใน Sidebar กว้างเท่ากันเพื่อความระเบียบ */
+        border-radius: 8px !important;
+        border: 1px solid #E0E0E0 !important;
+        background: #FFFFFF !important;
+        color: #444444 !important;
+        font-weight: 500 !important;
+        padding: 12px 20px !important;
+        transition: all 0.3s ease !important;
+        text-align: left !important; /* จัดชิดซ้ายให้ดูเหมือนเมนูโรงแรมหรู */
     }
 
     div.stButton > button:hover {
-        background: linear-gradient(135deg, #004D40 0%, #00695C 100%) !important;
-        color: #D4AF37 !important; /* อักษรสีทองตอน Hover */
-        transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(0, 77, 64, 0.2);
+        background: #F8F9FA !important;
+        border-color: #D4AF37 !important; /* เปลี่ยนขอบเป็นสีทองจางๆ เมื่อชี้ */
+        color: #D4AF37 !important;
+        transform: translateX(5px); /* เลื่อนขวาเล็กน้อยเมื่อ Hover */
     }
 
-    /* กล่องข้อความ Chat */
+    /* 5. กล่อง Chat ที่ดูละมุนสายตา */
     .stChatMessage {
-        background: rgba(255, 255, 255, 0.9) !important;
-        border-radius: 15px !important;
-        margin-bottom: 15px !important;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.02) !important;
-        border: 1px solid rgba(0,0,0,0.03) !important;
+        background: #F9F9F9 !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 20px !important;
+        margin-bottom: 20px !important;
     }
 
     .stChatMessageContent {
         font-size: 1.05rem !important;
-        line-height: 1.8 !important;
+        font-weight: 300 !important; /* ใช้ตัวบางเพื่อให้ดูแพง */
+        color: #333333 !important;
     }
 
-    /* ปุ่ม Action ขนาดเล็ก (เช่น Search/Download) */
-    .btn-action {
-        background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%);
-        color: white !important;
-        padding: 6px 18px;
-        border-radius: 10px;
-        text-decoration: none;
-        font-size: 0.85rem;
+    /* 6. ตัว Loading ที่ดู Smooth */
+    .stMarkdown em {
+        color: #D4AF37 !important;
+        font-style: normal !important;
         font-weight: 600;
-        transition: 0.3s;
-        display: inline-block;
-        box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3);
     }
 
-    .btn-action:hover {
-        transform: scale(1.05);
-        box-shadow: 0 6px 15px rgba(212, 175, 55, 0.4);
-    }
+    /* ปรับแต่ง Scrollbar ให้ดูเรียบที่สุด */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: #E0E0E0; border-radius: 10px; }
 
-    /* ปรับแต่ง Scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #004D40; border-radius: 10px; }
-
-    /* ลูกเล่นไดโนเสาร์ */
-    .stApp::before {
-        content: "🦖";
-        position: fixed;
-        bottom: 30px;
-        right: 30px;
-        font-size: 60px;
-        opacity: 0.07;
-        z-index: 0;
-    }
-    
-    @keyframes wave-dance {
-        0%, 100% { transform: rotate(-5deg); }
-        50% { transform: rotate(15deg); }
-    }
-    .dino-head { 
-        display: inline-block; 
-        animation: wave-dance 3s infinite ease-in-out; 
-        font-size: 1.5rem;
-    }
     </style>
     """, unsafe_allow_html=True)
 
