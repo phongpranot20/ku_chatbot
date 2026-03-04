@@ -35,7 +35,7 @@ def apply_custom_css():
         gap: 15px;
         padding: 10px !important;
         background: white;
-        border-radius: 25px !important;
+        border-radius: 15px !important;
         box-shadow: 0 10px 25px rgba(0,0,0,0.05);
         margin-bottom: 30px !important;
         border-left: 5px solid #D4AF37; /* แถบสีทองด้านข้าง */
