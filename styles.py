@@ -51,23 +51,47 @@ def apply_custom_css():
         letter-spacing: 1px;
         line-height: 1.3;
     }
-
-    /* 3. ปรับปรุงปุ่ม "ค้นหา", "เปิดระบบ", "โหลด" (จุดที่คุณวงไว้) */
-    /* เราจะเน้นที่ class .btn-action ที่คุณใช้ใน HTML */
+    /* 4. **ปรับปรุงส่วนที่คุณต้องการให้มีมิติ (ค้นหา, เปิดระบบ, โหลด)** */
+    /* เน้น class .btn-action ที่ใช้ใน HTML สำหรับลิงก์เหล่านี้ */
     .btn-action {
-        display: inline-block;
-        padding: 6px 20px !important;
-        background: linear-gradient(135deg, #004D40 0%, #00796B 100%); /* เขียวมรกตไล่เฉด */
+        display: inline-block !important;
+        padding: 8px 24px !important; /* เพิ่ม Padding ให้ดูเป็นปุ่มที่เต็มอิ่ม */
+        background: linear-gradient(135deg, #004D40 0%, #00695C 100%) !important; /* เขียวมรกตไล่เฉดสีเพิ่มมิติ */
         color: white !important;
-        border-radius: 50px !important; /* ทรงมนดูทันสมัย */
+        border-radius: 50px !important; /* ทรงมนดูทันสมัยและน่ากด */
         text-decoration: none !important;
         font-size: 0.85rem !important;
         font-weight: 600 !important;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 4px 12px rgba(0, 77, 64, 0.2); /* เพิ่มเงาให้ดูมีมิติสูงจากพื้นผิว */
-        border: 1px solid rgba(255,255,255,0.1);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        
+        /* เทคนิคสร้างมิติ (Shadow) */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), /* เงาหลักจางๆ */
+                    0 1px 3px rgba(0, 0, 0, 0.08) !important; /* เงาที่คมขึ้นที่ขอบ */
+                    
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important; /* อนิเมชั่นที่ Smooth */
+        border: 1px solid rgba(255, 255, 255, 0.1) !important; /* เส้นขอบบางๆ สีขาวช่วยให้ปุ่มดูคม */
         text-align: center;
-        min-width: 80px;
+        min-width: 100px;
+        margin-top: 10px; /* เว้นระยะจากข้อความด้านบน */
+    }
+
+    /* ลูกเล่นเมื่อเมาส์ไปวาง (Hover) */
+    .btn-action:hover {
+        background: linear-gradient(135deg, #00695C 0%, #004D40 100%) !important; /* สลับสีเฉดให้ดูเคลื่อนไหว */
+        color: #ffffff !important;
+        
+        /* ปรับเงาเมื่อ Hover ให้ดูเหมือนลอยขึ้น */
+        box-shadow: 0 7px 14px rgba(0, 0, 0, 0.15), 
+                    0 3px 6px rgba(0, 0, 0, 0.1) !important;
+        transform: translateY(-2px); /* ลอยขึ้นเล็กน้อย */
+    }
+
+    /* ลูกเล่นเมื่อกด (Active) */
+    .btn-action:active {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), 
+                    0 1px 2px rgba(0, 0, 0, 0.1) !important;
+        transform: translateY(1px); /* ยุบตัวลงเล็กน้อย */
     }
 
     div.stButton > button:hover {
