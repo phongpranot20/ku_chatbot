@@ -158,7 +158,7 @@ def get_image_base64(path):
 # พจนานุกรมภาษา (ย้ายมาจากส่วนที่ 2)
 translation = {
     "TH": {
-        "univ_name": "Kasetsart Universityร์",
+        "univ_name": "Kasetsart University",
         "new_chat": "➕ แชทใหม่",
         "chat_hist": "💬 ประวัติการแชท",
         "exam_table": "📅 ค้นหาตารางสอบ",
