@@ -52,17 +52,22 @@ def apply_custom_css():
         line-height: 1.3;
     }
 
-    /* 4. ปุ่มกด (Buttons) สไตล์ 'Quiet Luxury' */
-    div.stButton > button {
-        width: 100%; /* ให้ปุ่มใน Sidebar กว้างเท่ากันเพื่อความระเบียบ */
-        border-radius: 8px !important;
-        border: 1px solid #E0E0E0 !important;
-        background: #FFFFFF !important;
-        color: #444444 !important;
-        font-weight: 500 !important;
-        padding: 12px 20px !important;
-        transition: all 0.3s ease !important;
-        text-align: left !important; /* จัดชิดซ้ายให้ดูเหมือนเมนูโรงแรมหรู */
+    /* 3. ปรับปรุงปุ่ม "ค้นหา", "เปิดระบบ", "โหลด" (จุดที่คุณวงไว้) */
+    /* เราจะเน้นที่ class .btn-action ที่คุณใช้ใน HTML */
+    .btn-action {
+        display: inline-block;
+        padding: 6px 20px !important;
+        background: linear-gradient(135deg, #004D40 0%, #00796B 100%); /* เขียวมรกตไล่เฉด */
+        color: white !important;
+        border-radius: 50px !important; /* ทรงมนดูทันสมัย */
+        text-decoration: none !important;
+        font-size: 0.85rem !important;
+        font-weight: 600 !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 12px rgba(0, 77, 64, 0.2); /* เพิ่มเงาให้ดูมีมิติสูงจากพื้นผิว */
+        border: 1px solid rgba(255,255,255,0.1);
+        text-align: center;
+        min-width: 80px;
     }
 
     div.stButton > button:hover {
