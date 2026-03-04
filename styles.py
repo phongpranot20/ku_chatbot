@@ -13,25 +13,23 @@ def apply_custom_css():
         background: #FFFFFF; /* ขาวสะอาดตา */
         font-family: 'Sarabun', sans-serif !important;
     }
-   /* แก้ไข Top Bar ให้มีเส้นไล่เฉดสี */
+   /* แก้ไข Top Bar ให้ดูหรูและไม่ทับ Sidebar */
 header[data-testid="stHeader"] {
     background: rgba(255, 255, 255, 0.8) !important;
     backdrop-filter: blur(10px);
-    /* สร้างเส้นขอบล่าง */
-    border-bottom: 70px solid !important;
-    /* กำหนดสีแบบไล่เฉด */
-    border-image-source: linear-gradient(to right, #004D40, #D4AF37, #004D40) !important;
-    border-image-slice: 1 !important;
-    height: 2rem; /* เพิ่มความสูงนิดหน่อยให้ดูไม่โล่ง */
+    /* เปลี่ยนจาก border หนาๆ เป็นเส้นบางๆ ที่ดูแพง */
+    border-bottom: 3px solid !important;
+    border-image: linear-gradient(to right, #004D40, #D4AF37, #004D40) 1 !important;
+    height: 60px !important; /* กำหนดความสูงที่แน่นอน */
 }
 
-    /* 2. Sidebar ที่เน้นความโปร่ง (Luxury Minimalist) */
-    [data-testid="stSidebar"] {
-        background: rgba(252, 252, 252, 0.95) !important;
-        backdrop-filter: blur(20px);
-        border-right: 1px solid rgba(0,0,0,0.03); 
-        padding-top: 2rem !important; /* เพิ่มพื้นที่ว่างด้านบน */
-    }
+/* ปรับตำแหน่งปุ่ม Hamburger (เมนูซ้าย) ให้ลอยเด่นขึ้นมา */
+button[data-testid="stSidebarCollapseButton"] {
+    background-color: white !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
+    border-radius: 50% !important;
+    margin-left: 10px !important;
+}
 
     /* จัดการระยะห่างระหว่างปุ่มใน Sidebar */
     [data-testid="stSidebar"] .stButton {
