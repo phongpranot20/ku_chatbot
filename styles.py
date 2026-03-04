@@ -18,7 +18,7 @@ header[data-testid="stHeader"] {
     background: rgba(255, 255, 255, 0.8) !important;
     backdrop-filter: blur(10px);
     /* สร้างเส้นขอบล่าง */
-    border-bottom: 10px solid !important;
+    border-bottom: 20px solid !important;
     /* กำหนดสีแบบไล่เฉด */
     border-image-source: linear-gradient(to right, #004D40, #D4AF37, #004D40) !important;
     border-image-slice: 1 !important;
