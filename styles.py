@@ -93,6 +93,13 @@ def apply_custom_css():
         font-style: normal !important;
         font-weight: 600;
     }
+    /* 7. เพิ่มกิมมิคความหรูหราที่หัวข้อ */
+    .univ-name {
+        background: linear-gradient(to right, #004D40, #D4AF37);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800 !important;
+    }
 
     /* ปรับแต่ง Scrollbar ให้ดูเรียบที่สุด */
     ::-webkit-scrollbar { width: 4px; }
