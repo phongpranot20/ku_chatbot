@@ -3,87 +3,107 @@ import base64
 import os
 
 def apply_custom_css():
+    # นำ CSS และ Google Fonts จากไฟล์เพิ่มเติมมาประยุกต์ใช้
     st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;600&family=Sarabun:wght@300;400;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;600;700&family=Nunito:wght@400;600;700&family=Sarabun:wght@300;400;600;700&display=swap');
 
-    /* พื้นหลังหลักแบบ iOS */
+    /* กำหนดตัวแปรสีธีม มก.ศรช. (เขียว-ทอง) ในรูปแบบ Modern */
+    :root {
+        --ku-green: #006633;
+        --ku-gold: #E2C792;
+        --bg-rgb: 8, 12, 28;
+        --surface-rgb: 255, 255, 255;
+    }
+
+    /* พื้นหลังแบบ Nebula Effect จากไฟล์เพิ่มเติม */
     .stApp {
-        background-color: #F5F5F7 !important;
-        font-family: 'SF Pro Display', 'Sarabun', sans-serif !important;
+        background: radial-gradient(circle at bottom center, #004422, #080c1c) !important;
+        color: #FFFFFF !important;
+        font-family: 'Nunito', 'Sarabun', sans-serif !important;
     }
 
-    /* Sidebar แบบโปร่งแสง */
+    /* ตกแต่ง Sidebar แบบ Glassmorphism */
     [data-testid="stSidebar"] {
-        background-color: rgba(255, 255, 255, 0.5) !important;
+        background: rgba(255, 255, 255, 0.05) !important;
         backdrop-filter: blur(20px);
-        border-right: 1px solid rgba(0,0,0,0.05);
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    /* Header ที่ดูคลีนขึ้น */
-    header[data-testid="stHeader"] {
-        background: rgba(255, 255, 255, 0.7) !important;
-        backdrop-filter: blur(15px);
-        border-bottom: 0.5px solid rgba(0,0,0,0.1) !important;
-    }
-
-    /* กล่องแชท (Chat Bubbles) แบบ iOS */
+    /* กล่องแชทสไตล์ iOS + Modern Cyber */
     .stChatMessage {
-        background-color: #FFFFFF !important;
-        border-radius: 20px !important; /* มนมากขึ้น */
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
-        border: 1px solid rgba(0,0,0,0.02) !important;
-        padding: 15px !important;
-        margin-bottom: 12px !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+        backdrop-filter: blur(10px);
+        border-radius: 20px !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37) !important;
+        margin-bottom: 15px !important;
     }
 
-    /* ปุ่ม Quick Links ให้เหมือน Widget ใน iOS */
+    /* ปุ่ม Quick Links (Widget Style) */
     div.stButton > button {
-        background-color: #FFFFFF !important;
-        border: none !important;
-        border-radius: 15px !important;
-        color: #1D1D1F !important;
-        padding: 12px 16px !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
-        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)) !important;
+        border: 1px solid rgba(255,255,255,0.2) !important;
+        border-radius: 16px !important;
+        color: #FFFFFF !important;
+        padding: 12px 20px !important;
+        transition: all 0.3s ease !important;
+        backdrop-filter: blur(5px);
     }
 
     div.stButton > button:hover {
-        transform: scale(1.02);
-        background-color: #FBFBFF !important;
-        border-left: none !important; /* เอาเส้นทองออกเพื่อความ Minimal */
+        transform: translateY(-2px);
+        background: rgba(0, 102, 51, 0.4) !important; /* สีเขียว KU เมื่อ Hover */
+        border-color: #E2C792 !important; /* ขอบสีทอง */
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2) !important;
     }
 
-    /* Input Bar ด้านล่าง */
+    /* หัวข้อภาษาไทย (Sarabun) */
+    h1, h2, h3 {
+        font-family: 'Fredoka', 'Sarabun', sans-serif !important;
+        color: #E2C792 !important; /* สีทองนนทรี */
+    }
+
+    /* Input Bar */
     [data-testid="stChatInput"] {
-        border-radius: 25px !important;
-        border: 1px solid rgba(0,0,0,0.1) !important;
-        background-color: rgba(255, 255, 255, 0.8) !important;
-        backdrop-filter: blur(10px);
+        border-radius: 30px !important;
+        background: rgba(255, 255, 255, 0.15) !important;
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
     }
 
-    /* ปรับแต่ง Gradient ที่ชื่อมหาวิทยาลัยให้เบาลง */
+    /* Animation สำหรับชื่อมหาวิทยาลัย */
     .univ-name {
-        background: linear-gradient(to bottom, #333, #000);
+        background: linear-gradient(to right, #E2C792, #FFFFFF);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        font-weight: 600 !important;
-        letter-spacing: -0.5px !important;
+        font-weight: 700 !important;
+        font-size: 24px;
+        animation: pulse-slow 3s infinite;
+    }
+
+    @keyframes pulse-slow {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
     }
     </style>
+
+    <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none;">
+        <div style="position: absolute; width: 300px; height: 300px; background: rgba(0, 102, 51, 0.2); filter: blur(100px); top: 10%; left: 10%;"></div>
+        <div style="position: absolute; width: 400px; height: 400px; background: rgba(226, 199, 146, 0.1); filter: blur(120px); bottom: 10%; right: 10%;"></div>
+    </div>
     """, unsafe_allow_html=True)
 
 def get_image_base64(path):
-    """ฟังก์ชันจัดการรูปภาพ (ย้ายมาจากส่วนที่ 3)"""
     if os.path.exists(path):
         with open(path, "rb") as img_file:
             return base64.b64encode(img_file.read()).decode()
     return ""
 
-# พจนานุกรมภาษา (ย้ายมาจากส่วนที่ 2)
+# พจนานุกรมภาษา (คงเดิม)
 translation = {
     "TH": {
-        "univ_name": "Kasetsart University",
+        "univ_name": "Kasetsart University Sriracha",
         "new_chat": "➕ แชทใหม่",
         "chat_hist": "💬 ประวัติการแชท",
         "exam_table": "📅 ค้นหาตารางสอบ",
@@ -99,7 +119,7 @@ translation = {
         "ai_identity": "คุณคือรุ่นพี่ มก.ศรช. ใจดี ตอบเป็นภาษาไทยเป็นหลัก"
     },
     "EN": {
-        "univ_name": "Kasetsart University",
+        "univ_name": "Kasetsart University Sriracha",
         "new_chat": "➕ New Chat",
         "chat_hist": "💬 Chat History",
         "exam_table": "📅 Exam Schedule",
@@ -115,3 +135,32 @@ translation = {
         "ai_identity": "You are a friendly KU Sriracha senior. Please respond in English."
     }
 }
+
+# ส่วนแสดงผล Streamlit
+def main():
+    apply_custom_css()
+    
+    # เลือกภาษา
+    lang = st.sidebar.selectbox("Language / ภาษา", ["TH", "EN"])
+    t = translation[lang]
+
+    # แสดงชื่อมหาวิทยาลัยพร้อมตกแต่ง
+    st.markdown(f'<p class="univ-name">{t["univ_name"]}</p>', unsafe_allow_html=True)
+    
+    # ตัวอย่างการใช้งาน Sidebar Widgets
+    with st.sidebar:
+        st.button(t["new_chat"], use_container_width=True)
+        st.markdown("---")
+        st.button(t["exam_table"], use_container_width=True)
+        st.button(t["gpa_calc"], use_container_width=True)
+        st.button(t["forms"], use_container_width=True)
+
+    # ตัวอย่างข้อความแชท
+    with st.chat_message("assistant"):
+        st.write(f"{t['welcome']}! {t['ai_identity']}")
+
+    # ช่องรับข้อมูล
+    st.chat_input(t["input_placeholder"])
+
+if __name__ == "__main__":
+    main()
