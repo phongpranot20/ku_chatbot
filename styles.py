@@ -62,13 +62,24 @@ def apply_custom_css():
         backdrop-filter: blur(10px);
     }
 
-    /* ปรับแต่ง Gradient ที่ชื่อมหาวิทยาลัยให้เบาลง */
+    /* --- ลูกเล่นชื่อมหาวิทยาลัยแบบ Animated Gradient --- */
     .univ-name {
-        background: linear-gradient(to bottom, #333, #000);
+        background: linear-gradient(-45deg, #006633, #2e7d32, #b5a01e, #006633);
+        background-size: 400% 400%;
+        animation: gradient 15s ease infinite;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        font-weight: 600 !important;
-        letter-spacing: -0.5px !important;
+        font-family: 'Fredoka', sans-serif;
+        font-size: 26px;
+        font-weight: 600;
+        text-align: center;
+        padding: 10px 0;
+    }
+
+    @keyframes gradient {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
     }
     </style>
     """, unsafe_allow_html=True)
