@@ -5,33 +5,23 @@ import os
 def apply_custom_css():
     st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Sarabun:wght@300;400;600&display=swap');
+    /* 1. นำเข้า Fonts ระดับพรีเมียมจากไฟล์เพิ่มเติม */
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;600;700&family=Sarabun:wght@300;400;600;700&display=swap');
 
-    /* 1. พื้นหลังหลักแบบ Dynamic Gradient (มินิมอลแต่ไม่เรียบเกินไป) */
+    /* 2. พื้นหลังแบบ Glassmorphism Gradient (นุ่มนวลแต่มีมิติ) */
     .stApp {
-        background: radial-gradient(circle at top right, #e8f5e9, #ffffff, #f1f8e9) !important;
+        background: radial-gradient(circle at 50% 50%, #fdfdfd 0%, #e8f0eb 100%) !important;
         font-family: 'Sarabun', sans-serif !important;
     }
 
-    /* 2. Sidebar แบบกระจกฝ้า (Ultra Glass) */
+    /* 3. Sidebar ตกแต่งแบบ Control Center (iOS Style) */
     [data-testid="stSidebar"] {
         background-color: rgba(255, 255, 255, 0.4) !important;
-        backdrop-filter: blur(20px) saturate(150%);
-        border-right: 1px solid rgba(0, 102, 51, 0.05);
+        backdrop-filter: blur(25px) saturate(150%);
+        border-right: 1px solid rgba(0, 102, 51, 0.1);
     }
 
-    /* 3. หัวชื่อมหาวิทยาลัยพร้อม Floating Animation */
-    .univ-container {
-        animation: floating 3s ease-in-out infinite;
-        text-align: center;
-        padding: 15px 0;
-    }
-
-    @keyframes floating {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-8px); }
-    }
-
+    /* 4. ลูกเล่นชื่อมหาวิทยาลัย: เพิ่มเอฟเฟกต์ Shine และการขยับ */
     .univ-name {
         background: linear-gradient(90deg, #006633, #b5a01e, #006633);
         background-size: 200% auto;
@@ -39,154 +29,145 @@ def apply_custom_css():
         -webkit-text-fill-color: transparent;
         font-family: 'Fredoka', sans-serif;
         font-size: 28px;
-        font-weight: 600;
-        animation: shineText 4s linear infinite;
+        font-weight: 700;
+        text-align: center;
+        animation: shineText 3s linear infinite, float 4s ease-in-out infinite;
+        padding: 10px 0;
     }
 
     @keyframes shineText {
         to { background-position: 200% center; }
     }
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+    }
 
-    /* 4. ปุ่มกดแบบ Shine Effect (ลูกเล่นแสงวิ่ง) */
+    /* 5. ปุ่มกด (Buttons) - ลูกเล่นจัดเต็มแบบ Neo-Brutalism + iOS */
     div.stButton > button {
-        background: white !important;
+        background: rgba(255, 255, 255, 0.9) !important;
         color: #006633 !important;
         border: 1px solid rgba(0, 102, 51, 0.1) !important;
         border-radius: 18px !important;
-        padding: 12px 20px !important;
+        padding: 14px 20px !important;
         font-weight: 600 !important;
         width: 100%;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03) !important;
         position: relative;
-        overflow: hidden; /* เพื่อให้แสงไม่หลุดขอบ */
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.03) !important;
+        overflow: hidden;
     }
 
-    /* เอฟเฟกต์แสงวิ่งผ่านปุ่ม */
-    div.stButton > button::after {
-        content: "";
-        position: absolute;
-        top: -50%; left: -50%;
-        width: 200%; height: 200%;
-        background: linear-gradient(to bottom right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
-        transform: rotate(45deg);
-        transition: 0.6s;
-    }
-
+    /* เอฟเฟกต์ตอน Hover: ปุ่มจะขยาย, เปลี่ยนสีเป็นเขียวเข้ม และมีเงาสีทองฟุ้ง */
     div.stButton > button:hover {
-        transform: scale(1.05) translateY(-2px);
-        background: #006633 !important;
-        color: white !important;
-        box-shadow: 0 10px 20px rgba(0, 102, 51, 0.2) !important;
+        transform: translateY(-5px) scale(1.03) !important;
+        background: linear-gradient(135deg, #006633 0%, #004d26 100%) !important;
+        color: #E2C792 !important; /* ตัวหนังสือสีทอง */
+        box-shadow: 0 15px 30px rgba(0, 102, 51, 0.2) !important;
+        border: none !important;
     }
 
-    div.stButton > button:hover::after {
-        left: 100%;
-    }
-
-    /* 5. กล่องแชท (Chat Bubbles) แบบนุ่มนวล */
+    /* 6. กล่องแชท (Chat Bubbles) - ตกแต่งแบบลอยตัว (Floating Card) */
     .stChatMessage {
-        background-color: rgba(255, 255, 255, 0.7) !important;
+        background: rgba(255, 255, 255, 0.8) !important;
         backdrop-filter: blur(10px);
         border-radius: 25px !important;
         border: 1px solid rgba(255, 255, 255, 0.5) !important;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04) !important;
-        padding: 20px !important;
-        margin-bottom: 15px !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04) !important;
+        padding: 22px !important;
+        margin-bottom: 18px !important;
         transition: all 0.3s ease;
     }
-
     .stChatMessage:hover {
-        background-color: rgba(255, 255, 255, 0.9) !important;
-        transform: translateX(5px);
+        background: #ffffff !important;
+        box-shadow: 0 15px 40px rgba(0, 102, 51, 0.08) !important;
+        transform: scale(1.01);
     }
 
-    /* 6. Input Bar (ช่องพิมพ์) */
+    /* 7. Input Bar (ช่องพิมพ์) - ดีไซน์โค้งมนพร้อมเงาแบบ Soft Glow */
     [data-testid="stChatInput"] {
-        border-radius: 25px !important;
-        border: 1px solid rgba(0, 102, 51, 0.1) !important;
-        background-color: white !important;
-        padding: 5px 15px !important;
-        box-shadow: 0 -5px 25px rgba(0,0,0,0.03) !important;
+        border-radius: 30px !important;
+        border: 1px solid rgba(0, 102, 51, 0.15) !important;
+        background: white !important;
+        padding: 10px 20px !important;
+        box-shadow: 0 -10px 25px rgba(0,0,0,0.02) !important;
     }
 
-    /* 7. ปรับแต่ง Scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
+    /* ซ่อน Header และ Footer ของ Streamlit เพื่อความมินิมอลขั้นสุด */
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
+    
+    /* ตกแต่ง Scrollbar ให้ดูแพง */
+    ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-thumb {
-        background: rgba(0, 102, 51, 0.1);
+        background: rgba(0, 102, 51, 0.2);
         border-radius: 10px;
     }
-    ::-webkit-scrollbar-thumb:hover { background: #006633; }
-
-    /* ซ่อน Streamlit branding */
-    header {visibility: hidden;}
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
     </style>
     """, unsafe_allow_html=True)
 
-# ฟังก์ชันจัดการรูปภาพ (เหมือนเดิม)
+# ฟังก์ชันจัดการรูปภาพ
 def get_image_base64(path):
     if os.path.exists(path):
         with open(path, "rb") as img_file:
             return base64.b64encode(img_file.read()).decode()
     return ""
 
-# พจนานุกรมภาษา
 translation = {
     "TH": {
-        "univ_name": "Kasetsart Sriracha",
+        "univ_name": "Kasetsart University",
+        "campus": "SRIRACHA CAMPUS",
         "new_chat": "➕ เริ่มบทสนทนาใหม่",
-        "chat_hist": "💬 ประวัติการแชท",
         "exam_table": "📅 ค้นหาตารางสอบ",
         "gpa_calc": "🧮 คำนวณเกรด (GPA)",
-        "forms": "📄 แบบฟอร์มนิสิต",
-        "input_placeholder": "คุยกับพี่นนทรีได้เลย...",
+        "forms": "📄 ดาวน์โหลดแบบฟอร์ม",
+        "input_placeholder": "พิมพ์ถามพี่นนทรีได้เลย...",
         "welcome": "สวัสดีครับนิสิต!",
-        "ai_identity": "พี่นนทรี AI รุ่นพี่ มก.ศรช. พร้อมช่วยแนะนำครับ"
+        "ai_identity": "พี่นนทรี AI รุ่นพี่ มก.ศรช. ยินดีที่ได้พบคุณครับ"
     },
     "EN": {
-        "univ_name": "Kasetsart Sriracha",
-        "new_chat": "➕ New Chat",
-        "chat_hist": "💬 Chat History",
+        "univ_name": "Kasetsart University",
+        "campus": "SRIRACHA CAMPUS",
+        "new_chat": "➕ New Conversation",
         "exam_table": "📅 Exam Schedule",
         "gpa_calc": "🧮 GPA Calculator",
-        "forms": "📄 Forms",
-        "input_placeholder": "Ask Nontri...",
+        "forms": "📄 Student Forms",
+        "input_placeholder": "Ask Nontri anything...",
         "welcome": "Hello Student!",
-        "ai_identity": "I'm Nontri AI, your KU Sriracha Senior Buddy."
+        "ai_identity": "I'm Nontri AI, your friendly KU Sriracha senior buddy."
     }
 }
 
 def main():
     apply_custom_css()
     
-    # --- Sidebar ---
     with st.sidebar:
-        st.markdown('<div class="univ-container">', unsafe_allow_html=True)
+        # แสดงชื่อมหาวิทยาลัยพร้อมเอฟเฟกต์ Shine และ Float
         st.markdown(f'<div class="univ-name">{translation["TH"]["univ_name"]}</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="text-align:center; color:#666; font-size:11px; margin-top:-10px; letter-spacing:2px;">{translation["TH"]["campus"]}</div>', unsafe_allow_html=True)
         
-        lang = st.radio("Select Language", ["TH", "EN"], horizontal=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+        lang = st.radio("Language", ["TH", "EN"], horizontal=True)
         t = translation[lang]
         
         st.markdown("---")
-        # ปุ่ม Quick Links จัดเต็มลูกเล่น Shine
+        # ปุ่ม Quick Links พร้อมลูกเล่น Bounce & Hover
         st.button(t["new_chat"])
-        st.markdown("### 🎓 Student Tools")
+        st.markdown("#### 🎓 บริการนิสิต")
         st.button(t["exam_table"])
         st.button(t["gpa_calc"])
         st.button(t["forms"])
         
         st.divider()
-        st.caption("KU Smart Assistant v2.0")
+        st.caption("KU SRC Buddy Assistant v2.0")
 
-    # --- Main Chat ---
+    # หน้าจอแชทหลัก
+    st.markdown(f'<h3 style="color:#006633; font-family:Fredoka;">KU SRC Smart Buddy</h3>', unsafe_allow_html=True)
+    
     with st.chat_message("assistant"):
         st.write(f"**{t['welcome']}** {t['ai_identity']}")
 
-    # ช่องรับ Input
+    # ช่องรับข้อมูล
     st.chat_input(t["input_placeholder"])
 
 if __name__ == "__main__":
