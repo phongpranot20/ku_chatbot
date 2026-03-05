@@ -5,141 +5,113 @@ import os
 def apply_custom_css():
     st.markdown("""
     <style>
-    /* นำเข้า Font ที่ดูสะอาดตาและทันสมัย */
-    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Sarabun:wght@300;400;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;600&family=Sarabun:wght@300;400;600&display=swap');
 
-    /* พื้นหลังแบบไล่เฉดสีอ่อนๆ ให้ดูสบายตา (Minimal Grainy Gradient) */
+    /* พื้นหลังหลักแบบ iOS */
     .stApp {
-        background: linear-gradient(135deg, #f5f7fa 0%, #e4ece9 100%) !important;
-        font-family: 'Sarabun', sans-serif !important;
+        background-color: #F5F5F7 !important;
+        font-family: 'SF Pro Display', 'Sarabun', sans-serif !important;
     }
 
-    /* --- Sidebar แต่งแบบ Glassmorphism --- */
+    /* Sidebar แบบโปร่งแสง */
     [data-testid="stSidebar"] {
-        background-color: rgba(255, 255, 255, 0.3) !important;
+        background-color: rgba(255, 255, 255, 0.5) !important;
+        backdrop-filter: blur(20px);
+        border-right: 1px solid rgba(0,0,0,0.05);
+    }
+
+    /* Header ที่ดูคลีนขึ้น */
+    header[data-testid="stHeader"] {
+        background: rgba(255, 255, 255, 0.7) !important;
         backdrop-filter: blur(15px);
-        border-right: 1px solid rgba(0, 102, 51, 0.1);
+        border-bottom: 0.5px solid rgba(0,0,0,0.1) !important;
     }
 
-    /* --- ลูกเล่นชื่อมหาวิทยาลัยแบบ Animated Gradient --- */
-    .univ-name {
-        background: linear-gradient(-45deg, #006633, #2e7d32, #b5a01e, #006633);
-        background-size: 400% 400%;
-        animation: gradient 15s ease infinite;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        font-family: 'Fredoka', sans-serif;
-        font-size: 26px;
-        font-weight: 600;
-        text-align: center;
-        padding: 10px 0;
+    /* กล่องแชท (Chat Bubbles) แบบ iOS */
+    .stChatMessage {
+        background-color: #FFFFFF !important;
+        border-radius: 20px !important; /* มนมากขึ้น */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+        border: 1px solid rgba(0,0,0,0.02) !important;
+        padding: 15px !important;
+        margin-bottom: 12px !important;
     }
 
-    @keyframes gradient {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-    }
-
-    /* --- ปุ่มกด (Buttons) เพิ่มลูกเล่น Hover ให้เด้งและเงาฟุ้ง --- */
+    /* ปุ่ม Quick Links ให้เหมือน Widget ใน iOS */
     div.stButton > button {
-        background: rgba(255, 255, 255, 0.8) !important;
-        border: 1px solid rgba(0, 102, 51, 0.15) !important;
-        border-radius: 16px !important;
-        color: #006633 !important;
-        font-weight: 500 !important;
-        padding: 12px 20px !important;
-        width: 100%;
-        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.02) !important;
+        background-color: #FFFFFF !important;
+        border: none !important;
+        border-radius: 15px !important;
+        color: #1D1D1F !important;
+        padding: 12px 16px !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
+        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 
     div.stButton > button:hover {
-        transform: translateY(-3px) scale(1.02);
-        background: #006633 !important;
-        color: white !important;
-        box-shadow: 0 10px 20px rgba(0, 102, 51, 0.15) !important;
-        border: none !important;
+        transform: scale(1.02);
+        background-color: #FBFBFF !important;
+        border-left: none !important; /* เอาเส้นทองออกเพื่อความ Minimal */
     }
 
-    /* --- กล่องแชท (Chat Bubbles) สไตล์ Neumorphism ผสม Glass --- */
-    .stChatMessage {
-        background: rgba(255, 255, 255, 0.6) !important;
-        backdrop-filter: blur(10px);
-        border-radius: 22px !important;
-        border: 1px solid rgba(255, 255, 255, 0.4) !important;
-        box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.02), -8px -8px 16px rgba(255, 255, 255, 0.5) !important;
-        padding: 20px !important;
-        margin-bottom: 15px !important;
-    }
-
-    /* --- ช่องพิมพ์ข้อความ (Input) --- */
+    /* Input Bar ด้านล่าง */
     [data-testid="stChatInput"] {
-        border-radius: 30px !important;
-        border: 1px solid rgba(0, 102, 51, 0.2) !important;
-        background-color: rgba(255, 255, 255, 0.9) !important;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.05) !important;
+        border-radius: 25px !important;
+        border: 1px solid rgba(0,0,0,0.1) !important;
+        background-color: rgba(255, 255, 255, 0.8) !important;
+        backdrop-filter: blur(10px);
     }
 
-    /* ซ่อน Header รกๆ เพื่อความ Minimal */
-    header {visibility: hidden;}
+    /* ปรับแต่ง Gradient ที่ชื่อมหาวิทยาลัยให้เบาลง */
+    .univ-name {
+        background: linear-gradient(to bottom, #333, #000);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 600 !important;
+        letter-spacing: -0.5px !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
 def get_image_base64(path):
+    """ฟังก์ชันจัดการรูปภาพ (ย้ายมาจากส่วนที่ 3)"""
     if os.path.exists(path):
         with open(path, "rb") as img_file:
             return base64.b64encode(img_file.read()).decode()
     return ""
 
+# พจนานุกรมภาษา (ย้ายมาจากส่วนที่ 2)
 translation = {
     "TH": {
-        "univ_name": "Kasetsart Sriracha",
-        "new_chat": "➕ เริ่มแชทใหม่",
-        "exam_table": "📅 ตารางสอบ",
-        "gpa_calc": "🧮 คำนวณเกรด",
-        "forms": "📄 แบบฟอร์มนิสิต",
-        "input_placeholder": "คุยกับพี่นนทรีได้เลย...",
-        "welcome": "สวัสดีครับนิสิต!",
-        "ai_identity": "พี่นนทรี AI (KU Sriracha Senior) ยินดีช่วยเหลือครับ"
+        "univ_name": "Kasetsart University",
+        "new_chat": "➕ แชทใหม่",
+        "chat_hist": "💬 ประวัติการแชท",
+        "exam_table": "📅 ค้นหาตารางสอบ",
+        "gpa_calc": "🧮 คำนวณเกรด (GPA)",
+        "forms": "📄 ลิงก์แบบฟอร์มต่างๆ",
+        "input_placeholder": "พิมพ์ถามพี่นนทรีได้เลย...",
+        "welcome": "สวัสดีคุณ",
+        "topic": "หัวข้อ",
+        "loading": "*(พี่กำลังหาคำตอบให้...)*",
+        "btn_find": "ค้นหา",
+        "btn_open": "เปิดระบบ",
+        "btn_download": "โหลด",
+        "ai_identity": "คุณคือรุ่นพี่ มก.ศรช. ใจดี ตอบเป็นภาษาไทยเป็นหลัก"
     },
     "EN": {
-        "univ_name": "Kasetsart Sriracha",
+        "univ_name": "Kasetsart University",
         "new_chat": "➕ New Chat",
+        "chat_hist": "💬 Chat History",
         "exam_table": "📅 Exam Schedule",
         "gpa_calc": "🧮 GPA Calculator",
-        "forms": "📄 Forms",
-        "input_placeholder": "Ask Nontri...",
-        "welcome": "Hello Student!",
-        "ai_identity": "I'm Nontri AI, your friendly KU Sriracha senior."
+        "forms": "📄 Document Forms",
+        "input_placeholder": "Ask Nontri anything...",
+        "welcome": "Hello",
+        "topic": "Topic",
+        "loading": "*(Nontri is thinking...)*",
+        "btn_find": "Search",
+        "btn_open": "Open",
+        "btn_download": "Get",
+        "ai_identity": "You are a friendly KU Sriracha senior. Please respond in English."
     }
 }
-
-def main():
-    apply_custom_css()
-    
-    # เลือกภาษาผ่าน Sidebar
-    with st.sidebar:
-        st.markdown(f'<div class="univ-name">{translation["TH"]["univ_name"]}</div>', unsafe_allow_html=True)
-        lang = st.radio("Language / ภาษา", ["TH", "EN"], horizontal=True)
-        t = translation[lang]
-        
-        st.markdown("---")
-        # ปุ่ม Quick Links พร้อมลูกเล่นใหม่
-        st.button(t["new_chat"])
-        st.button(t["exam_table"])
-        st.button(t["gpa_calc"])
-        st.button(t["forms"])
-        
-        st.divider()
-        st.caption("KU SRC Smart Buddy v1.0")
-
-    # ส่วนแสดงหน้าจอแชท
-    with st.chat_message("assistant"):
-        st.write(f"**{t['welcome']}** {t['ai_identity']}")
-
-    # รับ Input
-    st.chat_input(t["input_placeholder"])
-
-if __name__ == "__main__":
-    main()
