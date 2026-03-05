@@ -3,217 +3,73 @@ import base64
 import os
 
 def apply_custom_css():
-    """จัดการ CSS เพื่อความหรูหรา เน้น White Space และความสะอาดตา"""
     st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap');
-    
-    /* 1. จัดการพื้นหลังและ Font */
+    @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;600&family=Sarabun:wght@300;400;600&display=swap');
+
+    /* พื้นหลังหลักแบบ iOS */
     .stApp {
-        background: #FFFFFF; /* ขาวสะอาดตา */
-        font-family: 'Sarabun', sans-serif !important;
-    }
-   /* แก้ไข Top Bar ให้ดูหรูและไม่ทับ Sidebar */
-header[data-testid="stHeader"] {
-    background: rgba(255, 255, 255, 0.8) !important;
-    backdrop-filter: blur(10px);
-    /* เปลี่ยนจาก border หนาๆ เป็นเส้นบางๆ ที่ดูแพง */
-    border-bottom: 3px solid !important;
-    border-image: linear-gradient(to right, #004D40, #D4AF37, #004D40) 1 !important;
-    height: 60px !important; /* กำหนดความสูงที่แน่นอน */
-}
-
-/* ปรับตำแหน่งปุ่ม Hamburger (เมนูซ้าย) ให้ลอยเด่นขึ้นมา */
-button[data-testid="stSidebarCollapseButton"] {
-    background-color: white !important;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
-    border-radius: 50% !important;
-    margin-left: 10px !important;
-}
-
-    /* จัดการระยะห่างระหว่างปุ่มใน Sidebar */
-    [data-testid="stSidebar"] .stButton {
-        margin-bottom: 12px !important; /* เว้นระยะห่างระหว่างปุ่มไม่ให้เบียดกัน */
+        background-color: #F5F5F7 !important;
+        font-family: 'SF Pro Display', 'Sarabun', sans-serif !important;
     }
 
-    /* 3. Header ที่หรูหราและสะอาด (เน้นใช้ PNG โปร่งใส) */
-    .custom-header {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        padding: 20px !important;
-        background: transparent; /* ตัดพื้นหลังสีขาวออกเพื่อให้กลืนไปกับจอ */
-        border-bottom: 1px solid rgba(0,0,0,0.05); /* เพิ่มเส้นขีดจางๆ ใต้ Header */
-        margin-bottom: 10px !important;
+    /* Sidebar แบบโปร่งแสง */
+    [data-testid="stSidebar"] {
+        background-color: rgba(255, 255, 255, 0.5) !important;
+        backdrop-filter: blur(20px);
+        border-right: 1px solid rgba(0,0,0,0.05);
     }
 
-    .header-logo-img { 
-        max-width: 75px !important; /* ปรับขนาดโลโก้ให้เด่นขึ้นแต่พอดี */
-        height: auto !important; 
-        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05)); /* เงาจางๆ ให้โลโก้ดูมีมิติ */
+    /* Header ที่ดูคลีนขึ้น */
+    header[data-testid="stHeader"] {
+        background: rgba(255, 255, 255, 0.7) !important;
+        backdrop-filter: blur(15px);
+        border-bottom: 0.5px solid rgba(0,0,0,0.1) !important;
     }
 
-    .univ-name {
-        color: #1A1A1A !important;
-        font-size: 1.3rem !important;
-        font-weight: 700;
-        letter-spacing: 1px;
-        line-height: 1.3;
-    }
-    /* ปรับแต่งช่อง Input ด้านล่าง */
-[data-testid="stChatInput"] {
-    border-radius: 20px !important;
-    border: 1px solid rgba(0, 77, 64, 0.1) !important;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-    background: #ffffff !important;
-}
-
-[data-testid="stChatInput"]:focus-within {
-    border-color: #D4AF37 !important;
-    box-shadow: 0 0 15px rgba(212, 175, 55, 0.2) !important; /* แสงสีทองจางๆ */
-    transform: scale(1.01); /* ขยายใหญ่ขึ้นนิดเดียวให้ดูมีชีวิต */
-}
-    /* 4. **ปรับปรุงส่วนที่คุณต้องการให้มีมิติ (ค้นหา, เปิดระบบ, โหลด)** */
-    /* เน้น class .btn-action ที่ใช้ใน HTML สำหรับลิงก์เหล่านี้ */
-    .btn-action {
-        display: inline-block !important;
-        padding: 8px 24px !important; /* เพิ่ม Padding ให้ดูเป็นปุ่มที่เต็มอิ่ม */
-        background: linear-gradient(135deg, #004D40 0%, #00695C 100%) !important; /* เขียวมรกตไล่เฉดสีเพิ่มมิติ */
-        color: white !important;
-        border-radius: 50px !important; /* ทรงมนดูทันสมัยและน่ากด */
-        text-decoration: none !important;
-        font-size: 0.85rem !important;
-        font-weight: 600 !important;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        
-        /* เทคนิคสร้างมิติ (Shadow) */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), /* เงาหลักจางๆ */
-                    0 1px 3px rgba(0, 0, 0, 0.08) !important; /* เงาที่คมขึ้นที่ขอบ */
-                    
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important; /* อนิเมชั่นที่ Smooth */
-        border: 1px solid rgba(255, 255, 255, 0.1) !important; /* เส้นขอบบางๆ สีขาวช่วยให้ปุ่มดูคม */
-        text-align: center;
-        min-width: 100px;
-        margin-top: 10px; /* เว้นระยะจากข้อความด้านบน */
-    }
-
-    /* ลูกเล่นเมื่อเมาส์ไปวาง (Hover) */
-    .btn-action:hover {
-        background: linear-gradient(135deg, #00695C 0%, #004D40 100%) !important; /* สลับสีเฉดให้ดูเคลื่อนไหว */
-        color: #ffffff !important;
-        
-        /* ปรับเงาเมื่อ Hover ให้ดูเหมือนลอยขึ้น */
-        box-shadow: 0 7px 14px rgba(0, 0, 0, 0.15), 
-                    0 3px 6px rgba(0, 0, 0, 0.1) !important;
-        transform: translateY(-2px); /* ลอยขึ้นเล็กน้อย */
-    }
-
-    /* ลูกเล่นเมื่อกด (Active) */
-    .btn-action:active {
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), 
-                    0 1px 2px rgba(0, 0, 0, 0.1) !important;
-        transform: translateY(1px); /* ยุบตัวลงเล็กน้อย */
-    }
-
-    div.stButton > button {
-    border: none !important;
-    background: transparent !important;
-    transition: all 0.3s ease !important;
-    width: 100% !important;
-    text-align: left !important;
-    padding: 10px 15px !important;
-}
-
-div.stButton > button:hover {
-    background: rgba(212, 175, 55, 0.08) !important; /* สีทองจางๆ */
-    color: #004D40 !important;
-    padding-left: 25px !important; /* Slide effect */
-    border-left: 4px solid #D4AF37 !important; /* เส้นสีทองด้านข้าง */
-}
-
-    /* 5. กล่อง Chat ที่ดูละมุนสายตา */
+    /* กล่องแชท (Chat Bubbles) แบบ iOS */
     .stChatMessage {
-        background: #F9F9F9 !important;
+        background-color: #FFFFFF !important;
+        border-radius: 20px !important; /* มนมากขึ้น */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+        border: 1px solid rgba(0,0,0,0.02) !important;
+        padding: 15px !important;
+        margin-bottom: 12px !important;
+    }
+
+    /* ปุ่ม Quick Links ให้เหมือน Widget ใน iOS */
+    div.stButton > button {
+        background-color: #FFFFFF !important;
         border: none !important;
-        border-radius: 12px !important;
-        padding: 20px !important;
-        margin-bottom: 20px !important;
+        border-radius: 15px !important;
+        color: #1D1D1F !important;
+        padding: 12px 16px !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
+        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 
-    .stChatMessageContent {
-        font-size: 1.05rem !important;
-        font-weight: 300 !important; /* ใช้ตัวบางเพื่อให้ดูแพง */
-        color: #333333 !important;
+    div.stButton > button:hover {
+        transform: scale(1.02);
+        background-color: #FBFBFF !important;
+        border-left: none !important; /* เอาเส้นทองออกเพื่อความ Minimal */
     }
 
-    /* 6. ตัว Loading ที่ดู Smooth */
-    .stMarkdown em {
-        color: #D4AF37 !important;
-        font-style: normal !important;
-        font-weight: 600;
+    /* Input Bar ด้านล่าง */
+    [data-testid="stChatInput"] {
+        border-radius: 25px !important;
+        border: 1px solid rgba(0,0,0,0.1) !important;
+        background-color: rgba(255, 255, 255, 0.8) !important;
+        backdrop-filter: blur(10px);
     }
-    /* 7. เพิ่มกิมมิคความหรูหราที่หัวข้อ */
+
+    /* ปรับแต่ง Gradient ที่ชื่อมหาวิทยาลัยให้เบาลง */
     .univ-name {
-        background: linear-gradient(to right, #004D40, #D4AF37);
+        background: linear-gradient(to bottom, #333, #000);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        font-weight: 800 !important;
+        font-weight: 600 !important;
+        letter-spacing: -0.5px !important;
     }
-    .btn-action {
-    position: relative;
-    overflow: hidden; /* จำเป็นสำหรับ Shimmer */
-    /* ... (โค้ดเดิมของคุณ) ... */
-}
-
-.btn-action::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -60%;
-    width: 20%;
-    height: 200%;
-    background: rgba(255, 255, 255, 0.3);
-    transform: rotate(30deg);
-    transition: none;
-}
-
-.btn-action:hover::after {
-    left: 120%;
-    transition: all 0.6s ease-in-out;
-}
-/* แอนิเมชันจุดไข่ปลาวิ่ง */
-.typing {
-  align-items: center;
-  display: flex;
-  height: 17px;
-}
-.typing .dot {
-  animation: mercuryTypingAnimation 1.8s infinite ease-in-out;
-  background-color: #D4AF37; /* สีทอง */
-  border-radius: 50%;
-  height: 7px;
-  margin-right: 4px;
-  vertical-align: middle;
-  width: 7px;
-  display: inline-block;
-}
-.typing .dot:nth-child(1) { animation-delay: 200ms; }
-.typing .dot:nth-child(2) { animation-delay: 300ms; }
-.typing .dot:nth-child(3) { animation-delay: 400ms; }
-
-@keyframes mercuryTypingAnimation {
-  0% { transform: translateY(0px); background-color: #D4AF37; }
-  28% { transform: translateY(-7px); background-color: #004D40; }
-  44% { transform: translateY(0px); background-color: #D4AF37; }
-}
-
-    /* ปรับแต่ง Scrollbar ให้ดูเรียบที่สุด */
-  /* เมื่อเอาเมาส์ไปวางที่แถบเลื่อน ให้สีเข้มขึ้นนิดนึงเพื่อให้รู้ว่ากำลังเลื่อนอยู่ */
-::-webkit-scrollbar-thumb:hover {
-    background: #D4AF37 !important; /* เปลี่ยนเป็นสีทองจางๆ เมื่อใช้งาน */
-}
-
     </style>
     """, unsafe_allow_html=True)
 
