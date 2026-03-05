@@ -1,149 +1,111 @@
 import streamlit as st
 import base64
-import os
 
-def apply_custom_css():
-    # นำ CSS จาก html.txt และ CSS เดิมมา Mix กัน
+# --- 1. ส่วนการตกแต่ง (Mix HTML/CSS จากไฟล์ของคุณ) ---
+def apply_custom_design():
     st.markdown("""
     <style>
-    /* 1. นำเข้า Fonts จากทั้งสองแหล่ง */
-    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;600;700&family=Nunito:wght@400;600;700&family=Sarabun:wght@300;400;600;700&display=swap');
+    /* นำเข้า Font และพื้นหลัง Nebula จากไฟล์ HTML */
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;600;700&family=Sarabun:wght@300;400;600;700&display=swap');
 
-    /* 2. พื้นหลังแบบ Nebula Effect (จาก html.txt) และ Glassmorphism */
     .stApp {
         background: radial-gradient(circle at bottom center, #121c30, #080c1c) !important;
-        font-family: 'Sarabun', 'Nunito', sans-serif !important;
-        color: #f5faff !important;
+        background-attachment: fixed !important;
+        color: #f5faff;
     }
 
-    /* สร้างลูกเล่น Nebula Blobs ด้วย CSS */
+    /* สร้าง Effect แสงสีชมพู-ฟ้า (Nebula) แบบในไฟล์ HTML */
     .stApp::before {
         content: "";
         position: fixed;
         top: 0; left: 0; width: 100%; height: 100%;
         background: 
-            radial-gradient(circle at 10% 10%, rgba(6, 182, 212, 0.15) 0%, transparent 50%),
-            radial-gradient(circle at 90% 90%, rgba(236, 72, 153, 0.15) 0%, transparent 50%);
+            radial-gradient(circle at 20% 30%, rgba(6, 182, 212, 0.15) 0%, transparent 40%),
+            radial-gradient(circle at 80% 70%, rgba(236, 72, 153, 0.15) 0%, transparent 40%);
         z-index: -1;
     }
 
-    /* 3. Sidebar ตกแต่งแบบ iOS Glass (จากโค้ดเดิม) */
+    /* ตกแต่ง Sidebar แบบ Glassmorphism */
     [data-testid="stSidebar"] {
-        background-color: rgba(255, 255, 255, 0.05) !important;
-        backdrop-filter: blur(20px);
+        background-color: rgba(255, 255, 255, 0.03) !important;
+        backdrop-filter: blur(15px);
         border-right: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    /* 4. ชื่อมหาวิทยาลัย: Shine & Float Effect */
+    /* ชื่อมหาวิทยาลัยแบบมี Animation */
     .univ-name {
         background: linear-gradient(90deg, #00ffcc, #f472b6, #00ffcc);
         background-size: 200% auto;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         font-family: 'Fredoka', sans-serif;
-        font-size: 26px;
+        font-size: 24px;
         font-weight: 700;
         text-align: center;
-        animation: shineText 3s linear infinite, float 4s ease-in-out infinite;
+        animation: shine 3s linear infinite;
     }
+    @keyframes shine { to { background-position: 200% center; } }
 
-    @keyframes shineText { to { background-position: 200% center; } }
-    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-
-    /* 5. ปุ่มกด: Neo-Brutalism + Cyber Neon (Mix ระหว่าง 2 โค้ด) */
+    /* ปุ่มกดสไตล์พรีเมียม */
     div.stButton > button {
-        background: rgba(255, 255, 255, 0.1) !important;
-        color: #f5faff !important;
-        border: 1px solid rgba(6, 182, 212, 0.3) !important;
-        border-radius: 20px !important;
-        transition: all 0.3s ease !important;
-        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.05) !important;
+        color: white !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 15px !important;
+        transition: all 0.3s ease;
     }
     div.stButton > button:hover {
-        transform: translateY(-3px) !important;
-        background: linear-gradient(135deg, #06b6d4 0%, #ec4899 100%) !important;
-        box-shadow: 0 10px 20px rgba(6, 182, 212, 0.3) !important;
-        color: white !important;
+        background: linear-gradient(90deg, #06b6d4, #ec4899) !important;
+        transform: scale(1.02);
+        border: none !important;
     }
 
-    /* 6. กล่องแชท: Floating Card Style */
-    .stChatMessage {
-        background: rgba(255, 255, 255, 0.05) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 20px !important;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
-        margin-bottom: 15px !important;
-    }
-
-    /* 7. Input Bar: Glow Effect */
+    /* ช่อง Chat Input */
     [data-testid="stChatInput"] {
-        border-radius: 25px !important;
-        border: 1px solid rgba(6, 182, 212, 0.3) !important;
-        background: rgba(8, 12, 28, 0.8) !important;
-        color: white !important;
+        background-color: rgba(15, 23, 42, 0.8) !important;
+        border: 1px solid rgba(6, 182, 212, 0.5) !important;
+        border-radius: 20px !important;
     }
-
-    /* ซ่อน Streamlit Elements */
-    header {visibility: hidden;}
-    footer {visibility: hidden;}
     </style>
     """, unsafe_allow_html=True)
 
-# --- โครงสร้าง Python เดิมของคุณ ---
-translation = {
-    "TH": {
-        "univ_name": "Kasetsart University",
-        "campus": "SRIRACHA CAMPUS",
-        "new_chat": "➕ เริ่มบทสนทนาใหม่",
-        "exam_table": "📅 ค้นหาตารางสอบ",
-        "gpa_calc": "🧮 คำนวณเกรด (GPA)",
-        "forms": "📄 ดาวน์โหลดแบบฟอร์ม",
-        "input_placeholder": "พิมพ์ถามพี่นนทรีได้เลย...",
-        "welcome": "สวัสดีครับนิสิต!",
-        "ai_identity": "พี่นนทรี AI รุ่นพี่ มก.ศรช. ยินดีที่ได้พบคุณครับ"
-    },
-    "EN": {
-        "univ_name": "Kasetsart University",
-        "campus": "SRIRACHA CAMPUS",
-        "new_chat": "➕ New Conversation",
-        "exam_table": "📅 Exam Schedule",
-        "gpa_calc": "🧮 GPA Calculator",
-        "forms": "📄 Student Forms",
-        "input_placeholder": "Ask Nontri anything...",
-        "welcome": "Hello Student!",
-        "ai_identity": "I'm Nontri AI, your friendly KU Sriracha senior buddy."
-    }
-}
-
+# --- 2. ส่วนของ Logic (Python โครงเดิมของคุณ) ---
 def main():
-    apply_custom_css()
+    apply_custom_design()
     
+    # ตั้งค่าภาษา
+    if 'lang' not in st.session_state:
+        st.session_state.lang = "TH"
+
     with st.sidebar:
-        # ใช้ลูกเล่น Univ-name จาก CSS ด้านบน
-        st.markdown(f'<div class="univ-name">{translation["TH"]["univ_name"]}</div>', unsafe_allow_html=True)
-        st.markdown(f'<div style="text-align:center; color:#8291aa; font-size:11px; margin-top:-10px; letter-spacing:2px;">{translation["TH"]["campus"]}</div>', unsafe_allow_html=True)
-        
-        st.markdown("<br>", unsafe_allow_html=True)
-        lang = st.radio("Language", ["TH", "EN"], horizontal=True)
-        t = translation[lang]
-        
-        st.markdown("---")
-        st.button(t["new_chat"])
-        st.markdown("#### 🎓 บริการนิสิต")
-        st.button(t["exam_table"])
-        st.button(t["gpa_calc"])
-        st.button(t["forms"])
-        
+        st.markdown('<div class="univ-name">Kasetsart University</div>', unsafe_allow_html=True)
+        st.markdown('<div style="text-align:center; color:#8291aa; font-size:10px;">SRIRACHA CAMPUS</div>', unsafe_allow_html=True)
         st.divider()
-        st.caption("KU SRC Buddy Assistant v2.0")
+        
+        col1, col2 = st.columns(2)
+        if col1.button("ไทย"): st.session_state.lang = "TH"
+        if col2.button("English"): st.session_state.lang = "EN"
 
-    # หน้าจอแชทหลัก (ปรับสีให้เข้ากับ Theme ใหม่)
-    st.markdown(f'<h3 style="color:#00ffcc; font-family:Fredoka; text-shadow: 0 0 10px rgba(0,255,204,0.3);">KU SRC Smart Buddy</h3>', unsafe_allow_html=True)
-    
-    with st.chat_message("assistant"):
-        st.write(f"**{t['welcome']}** {t['ai_identity']}")
+    # ระบบจำข้อความ (Chat History)
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
 
-    st.chat_input(t["input_placeholder"])
+    # แสดงข้อความที่เคยคุยกัน
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+    # ช่องรับข้อความ
+    if prompt := st.chat_input("พิมพ์ข้อความที่นี่..."):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        # จำลองการตอบกลับของ AI (ส่วนนี้คุณเอาไปเชื่อมต่อ API ได้)
+        response = f"พี่นนทรีได้รับข้อความ: '{prompt}' แล้วครับ!"
+        with st.chat_message("assistant"):
+            st.markdown(response)
+        st.session_state.messages.append({"role": "assistant", "content": response})
 
 if __name__ == "__main__":
     main()
