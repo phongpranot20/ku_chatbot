@@ -182,6 +182,31 @@ div.stButton > button:hover {
     left: 120%;
     transition: all 0.6s ease-in-out;
 }
+/* แอนิเมชันจุดไข่ปลาวิ่ง */
+.typing {
+  align-items: center;
+  display: flex;
+  height: 17px;
+}
+.typing .dot {
+  animation: mercuryTypingAnimation 1.8s infinite ease-in-out;
+  background-color: #D4AF37; /* สีทอง */
+  border-radius: 50%;
+  height: 7px;
+  margin-right: 4px;
+  vertical-align: middle;
+  width: 7px;
+  display: inline-block;
+}
+.typing .dot:nth-child(1) { animation-delay: 200ms; }
+.typing .dot:nth-child(2) { animation-delay: 300ms; }
+.typing .dot:nth-child(3) { animation-delay: 400ms; }
+
+@keyframes mercuryTypingAnimation {
+  0% { transform: translateY(0px); background-color: #D4AF37; }
+  28% { transform: translateY(-7px); background-color: #004D40; }
+  44% { transform: translateY(0px); background-color: #D4AF37; }
+}
 
     /* ปรับแต่ง Scrollbar ให้ดูเรียบที่สุด */
   /* เมื่อเอาเมาส์ไปวางที่แถบเลื่อน ให้สีเข้มขึ้นนิดนึงเพื่อให้รู้ว่ากำลังเลื่อนอยู่ */
