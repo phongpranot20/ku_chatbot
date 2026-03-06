@@ -61,13 +61,19 @@ def apply_custom_css():
         backdrop-filter: blur(10px);
     }
 
-    /* ปรับแต่ง Gradient ที่ชื่อมหาวิทยาลัย */
+   /* Animation สำหรับชื่อมหาวิทยาลัย */
     .univ-name {
-        background: linear-gradient(to bottom, #333, #000);
+        background: linear-gradient(to right, #E2C792, #FFFFFF);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        font-weight: 600 !important;
-        letter-spacing: -0.5px !important;
+        font-weight: 700 !important;
+        font-size: 24px;
+        animation: pulse-slow 3s infinite;
+    }
+
+    @keyframes pulse-slow {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
     }
     </style>
     """, unsafe_allow_html=True) # <--- ต้องมีบรรทัดนี้ปิดท้ายฟังก์ชันเสมอ
