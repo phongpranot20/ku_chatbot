@@ -3,7 +3,6 @@ import base64
 import os
 
 def apply_custom_css():
-    # ต้องมี """ ปิดท้ายหลังจากเขียน CSS เสร็จ
     st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;600&family=Sarabun:wght@300;400;600&display=swap');
@@ -72,7 +71,7 @@ def apply_custom_css():
         letter-spacing: -0.5px !important;
     }
     </style>
-    """, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)#
 
 def get_image_base64(path):
     """ฟังก์ชันจัดการรูปภาพ (ย้ายมาจากส่วนที่ 3)"""
