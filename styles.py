@@ -114,4 +114,4 @@ translation = {
         "btn_download": "Get",
         "ai_identity": "You are a friendly KU Sriracha senior. Please respond in English."
     }
-} 
+}
