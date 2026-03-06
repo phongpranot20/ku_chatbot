@@ -1,8 +1,10 @@
 import streamlit as st
 import base64
 import os
+
 def apply_custom_css():
-    st.markdown("""
+    # ต้องมี """ ปิดท้ายหลังจากเขียน CSS เสร็จ
+    st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;600&family=Sarabun:wght@300;400;600&display=swap');
 
