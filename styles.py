@@ -1,4 +1,6 @@
-
+import streamlit as st
+import base64
+import os
 def apply_custom_css():
     st.markdown("""
     <style>
