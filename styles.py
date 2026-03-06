@@ -61,19 +61,23 @@ def apply_custom_css():
         backdrop-filter: blur(10px);
     }
 
-   /* Animation สำหรับชื่อมหาวิทยาลัย */
+ /* 4. หัวข้อชื่อมหาวิทยาลัยพร้อมเอฟเฟกต์ Shine */
+    .univ-container {
+        padding: 20px 0;
+        text-align: center;
+    }
     .univ-name {
-        background: linear-gradient(to right, #E2C792, #FFFFFF);
+        background: linear-gradient(90deg, #006633, #00ab55, #006633);
+        background-size: 200% auto;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        font-weight: 700 !important;
-        font-size: 24px;
-        animation: pulse-slow 3s infinite;
+        font-family: 'Fredoka', sans-serif;
+        font-size: 28px;
+        font-weight: 700;
+        animation: shine 3s linear infinite;
     }
-
-    @keyframes pulse-slow {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.8; }
+    @keyframes shine {
+        to { background-position: 200% center; }
     }
     </style>
     """, unsafe_allow_html=True) # <--- ต้องมีบรรทัดนี้ปิดท้ายฟังก์ชันเสมอ
